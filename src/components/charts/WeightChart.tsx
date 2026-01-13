@@ -77,16 +77,29 @@ export function WeightChart({ data }: WeightChartProps) {
                             height={30}
                             iconType="circle"
                             wrapperStyle={{ fontSize: '10px', paddingTop: '0px' }}
+                            payload={[
+                                { value: 'Tendencia', type: 'line', id: 'ID01', color: '#2563eb' },
+                                { value: '% Grasa', type: 'line', id: 'ID02', color: '#10b981' }
+                            ]}
                         />
 
                         {/* Goal Lines */}
                         <ReferenceLine yAxisId="right" y={13} label={{ value: '13%', position: 'insideRight', fill: '#ef4444', fontSize: 8 }} stroke="#ef4444" strokeDasharray="3 3" />
                         <ReferenceLine yAxisId="right" y={18} label={{ value: '18%', position: 'insideRight', fill: '#3b82f6', fontSize: 8 }} stroke="#3b82f6" strokeDasharray="3 3" />
 
-                        {/* Daily Weight Area */}
-                        <Area yAxisId="left" type="monotone" dataKey="Weight" stroke="none" fill="url(#colorWeight)" isAnimationActive={false} legendType="none" />
+                        {/* Daily Weight Area - Explicitly hidden from legend */}
+                        <Area
+                            yAxisId="left"
+                            type="monotone"
+                            dataKey="Weight"
+                            stroke="none"
+                            fill="url(#colorWeight)"
+                            isAnimationActive={false}
+                            legendType="none"
+                            name="ignore_area"
+                        />
 
-                        {/* Daily dots - Hidden from legend to save space */}
+                        {/* Daily dots - Explicitly hidden from legend */}
                         <Line
                             yAxisId="left"
                             type="monotone"
@@ -95,7 +108,7 @@ export function WeightChart({ data }: WeightChartProps) {
                             strokeWidth={0}
                             dot={{ r: 2, fill: "#60a5fa", strokeWidth: 0 }}
                             activeDot={{ r: 4 }}
-                            name="Peso"
+                            name="ignore_line"
                             legendType="none"
                             isAnimationActive={false}
                         />
