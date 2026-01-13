@@ -11,6 +11,7 @@ import { NotesList } from './components/charts/NotesList';
 import { TrainingCalendar } from './components/charts/TrainingCalendar';
 import { StepsChart } from './components/charts/StepsChart';
 import { GoalProjections } from './components/charts/GoalProjections';
+import { PersonalInfo } from './components/ui/PersonalInfo';
 import { Activity, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { FadeIn, FadeInStagger } from './components/ui/FadeIn';
@@ -120,6 +121,11 @@ function App() {
                             </div>
                         </div>
                     </div>
+                </FadeIn>
+
+                {/* Personal Info Bar */}
+                <FadeIn>
+                    <PersonalInfo age={42} height={179} sex="Masculino" />
                 </FadeIn>
 
                 {/* Row 1: Health Trends */}
