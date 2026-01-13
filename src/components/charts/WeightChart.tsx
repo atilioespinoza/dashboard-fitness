@@ -25,9 +25,9 @@ export function WeightChart({ data }: WeightChartProps) {
             <CardHeader className="p-4 md:p-6 pb-2 md:pb-4">
                 <CardTitle className="text-lg md:text-xl font-bold text-slate-100 italic">Tendencias de Peso y Grasa</CardTitle>
             </CardHeader>
-            <CardContent className="h-[280px] md:h-[350px] p-2 md:p-6">
+            <CardContent className="h-[280px] md:h-[350px] p-2 md:p-6 text-slate-400">
                 <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={dataWithTrend} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
+                    <ComposedChart data={dataWithTrend} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
@@ -53,7 +53,8 @@ export function WeightChart({ data }: WeightChartProps) {
                             tickLine={false}
                             axisLine={false}
                             fontSize={10}
-                            width={40}
+                            width={35}
+                            tickFormatter={(val) => Math.round(val).toString()}
                         />
                         <YAxis
                             yAxisId="right"
@@ -63,7 +64,7 @@ export function WeightChart({ data }: WeightChartProps) {
                             tickLine={false}
                             axisLine={false}
                             fontSize={10}
-                            width={30}
+                            width={25}
                         />
                         <Tooltip
                             contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }}
