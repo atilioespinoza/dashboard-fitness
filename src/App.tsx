@@ -12,6 +12,7 @@ import { TrainingCalendar } from './components/charts/TrainingCalendar';
 import { StepsChart } from './components/charts/StepsChart';
 import { Activity, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { FadeIn, FadeInStagger } from './components/ui/FadeIn';
 
 function App() {
     const { data, loading, error } = useFitnessData();
@@ -96,74 +97,96 @@ function App() {
             <div className="max-w-7xl mx-auto space-y-4 md:space-y-8">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-4 px-1">
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                            <Activity className="text-blue-500" size={24} />
-                            Registro Fitness Pro
-                        </h1>
-                        <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5 md:mt-1">Panel de Tendencias y Análisis</p>
-                    </div>
-                    <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto justify-between md:justify-end">
-                        <button
-                            onClick={toggleTheme}
-                            className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-sm"
-                            aria-label="Toggle theme"
-                        >
-                            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-                        </button>
-                        <div className="px-3 py-1 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 text-[10px] md:text-xs text-slate-500 dark:text-slate-500 font-mono shadow-sm">
-                            Última Actualización: {latest?.Date}
+                <FadeIn>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-4 px-1">
+                        <div>
+                            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                                <Activity className="text-blue-500" size={24} />
+                                Registro Fitness Pro
+                            </h1>
+                            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5 md:mt-1">Panel de Tendencias y Análisis</p>
+                        </div>
+                        <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto justify-between md:justify-end">
+                            <button
+                                onClick={toggleTheme}
+                                className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-sm"
+                                aria-label="Toggle theme"
+                            >
+                                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                            </button>
+                            <div className="px-3 py-1 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 text-[10px] md:text-xs text-slate-500 dark:text-slate-500 font-mono shadow-sm">
+                                Última Actualización: {latest?.Date}
+                            </div>
                         </div>
                     </div>
-                </div>
+                </FadeIn>
 
                 {/* Row 1: Health Trends */}
                 <div className="grid grid-cols-12 gap-4 md:gap-6">
-                    <WeightChart data={data} />
-                    <div className="col-span-12 lg:col-span-4 flex flex-col gap-4 md:gap-6">
-                        <WaistCard currentWaist={latest?.Waist || 0} />
-                        <LossGauge
-                            weeklyRate={weeklyRate}
-                            weeklyDeficit={weeklyAvgDeficit}
-                            totalDeficit={cumulativeDeficit}
-                            fatLoss={theoreticalFatLoss}
-                        />
-                    </div>
+                    <FadeIn className="col-span-12 lg:col-span-8">
+                        <WeightChart data={data} />
+                    </FadeIn>
+                    <FadeInStagger className="col-span-12 lg:col-span-4 flex flex-col gap-4 md:gap-6">
+                        <FadeIn>
+                            <WaistCard currentWaist={latest?.Waist || 0} />
+                        </FadeIn>
+                        <FadeIn delay={0.1}>
+                            <LossGauge
+                                weeklyRate={weeklyRate}
+                                weeklyDeficit={weeklyAvgDeficit}
+                                totalDeficit={cumulativeDeficit}
+                                fatLoss={theoreticalFatLoss}
+                            />
+                        </FadeIn>
+                    </FadeInStagger>
                 </div>
 
                 {/* Row 2: Nutrition & Activity Consistency */}
                 <div className="grid grid-cols-12 gap-4 md:gap-6">
-                    <BalanceChart data={data} />
+                    <FadeIn className="col-span-12 lg:col-span-6">
+                        <BalanceChart data={data} />
+                    </FadeIn>
                     <div className="col-span-12 lg:col-span-6 flex flex-col gap-4 md:gap-6">
-                        <ConsistencyGrid data={data} />
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                            <StreakCounter label="Calorías" count={calorieStreak} goal="Bajo TDEE" />
-                            <StreakCounter label="Proteínas" count={proteinStreak} goal="Min 140g" />
-                            <StreakCounter label="Pasos" count={stepsStreak} goal="Min 12k" />
-                        </div>
+                        <FadeIn>
+                            <ConsistencyGrid data={data} />
+                        </FadeIn>
+                        <FadeInStagger className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                            <FadeIn>
+                                <StreakCounter label="Calorías" count={calorieStreak} goal="Bajo TDEE" />
+                            </FadeIn>
+                            <FadeIn>
+                                <StreakCounter label="Proteínas" count={proteinStreak} goal="Min 140g" />
+                            </FadeIn>
+                            <FadeIn>
+                                <StreakCounter label="Pasos" count={stepsStreak} goal="Min 12k" />
+                            </FadeIn>
+                        </FadeInStagger>
                     </div>
                 </div>
 
                 {/* Row 3: Macro Insights (Full Width) */}
-                <div className="grid grid-cols-12 gap-6">
+                <FadeIn className="grid grid-cols-12 gap-6">
                     <MacroDonut data={data} />
-                </div>
+                </FadeIn>
 
                 {/* Row 4: Activity Analysis (Steps) */}
-                <div className="grid grid-cols-12 gap-6">
+                <FadeIn className="grid grid-cols-12 gap-6">
                     <StepsChart data={data} />
-                </div>
+                </FadeIn>
 
                 {/* Row 5: Training Calendar (REPLACED CARDS) */}
-                <div className="grid grid-cols-12 gap-6">
+                <FadeIn className="grid grid-cols-12 gap-6">
                     <TrainingCalendar data={data} />
-                </div>
+                </FadeIn>
 
                 {/* Row 5: Trends & Analysis */}
                 <div className="grid grid-cols-12 gap-6">
-                    <CorrelationChart data={data} />
-                    <NotesList data={data} />
+                    <FadeIn className="col-span-12 lg:col-span-8">
+                        <CorrelationChart data={data} />
+                    </FadeIn>
+                    <FadeIn className="col-span-12 lg:col-span-4">
+                        <NotesList data={data} />
+                    </FadeIn>
                 </div>
 
             </div>

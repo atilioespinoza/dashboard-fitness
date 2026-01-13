@@ -12,6 +12,7 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.26.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.468.0",
     "papaparse": "^5.4.1",
