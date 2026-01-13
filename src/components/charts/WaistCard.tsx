@@ -4,6 +4,7 @@ import { cn } from "../../lib/utils";
 import { FitnessEntry } from '../../data/mockData';
 import { format, addDays, parseISO, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
+import Counter from '../ui/Counter';
 
 interface WaistCardProps {
     currentWaist: number;
@@ -52,7 +53,9 @@ export function WaistCard({ currentWaist, data }: WaistCardProps) {
                     <div>
                         <p className="text-[10px] md:text-sm font-medium text-slate-500 uppercase tracking-wider">Cintura Actual</p>
                         <div className="flex items-baseline mt-0.5 space-x-1.5">
-                            <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">{currentWaist}</span>
+                            <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">
+                                <Counter value={currentWaist} decimals={1} />
+                            </span>
                             <span className="text-slate-500 font-medium text-sm">cm</span>
                         </div>
                     </div>

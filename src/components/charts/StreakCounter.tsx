@@ -1,5 +1,6 @@
 import { Card, CardContent } from '../ui/card';
 import { Flame } from 'lucide-react';
+import Counter from '../ui/Counter';
 
 interface StreakProps {
     label: string;
@@ -15,7 +16,9 @@ export function StreakCounter({ label, count, goal }: StreakProps) {
                     <Flame size={20} className="md:w-6 md:h-6" />
                 </div>
                 <div className="min-w-0">
-                    <div className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 leading-none">{count}</div>
+                    <div className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 leading-none">
+                        <Counter value={count} />
+                    </div>
                     <div className="text-[9px] md:text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-tight md:tracking-wider mt-1 truncate">Racha {label}</div>
                     {goal && (
                         <div className="text-[8px] md:text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-0.5 truncate">

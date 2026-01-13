@@ -1,5 +1,6 @@
 import { User, Ruler, Calendar } from 'lucide-react';
 import { Card, CardContent } from './card';
+import Counter from './Counter';
 
 interface PersonalInfoProps {
     age: number;
@@ -21,13 +22,13 @@ export function PersonalInfo({ age, height, sex }: PersonalInfoProps) {
                     <div className="flex items-center gap-2">
                         <Calendar size={16} className="text-indigo-500" />
                         <span className="text-xs font-bold uppercase tracking-wider opacity-60">Edad:</span>
-                        <span className="text-sm font-black text-slate-900 dark:text-white">{age} años</span>
+                        <span className="text-sm font-black text-slate-900 dark:text-white"><Counter value={age} /> años</span>
                     </div>
 
                     <div className="flex items-center gap-2">
                         <Ruler size={16} className="text-emerald-500" />
                         <span className="text-xs font-bold uppercase tracking-wider opacity-60">Estatura:</span>
-                        <span className="text-sm font-black text-slate-900 dark:text-white">{height} cm</span>
+                        <span className="text-sm font-black text-slate-900 dark:text-white"><Counter value={height} /> cm</span>
                     </div>
 
                     <div className="flex items-center gap-2">

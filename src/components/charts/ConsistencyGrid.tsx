@@ -4,6 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '../../lib/utils';
 import { Check, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface ConsistencyGridProps {
     data: FitnessEntry[];
@@ -44,12 +45,18 @@ export function ConsistencyGrid({ data }: ConsistencyGridProps) {
                                 return (
                                     <td key={i} className="text-center py-3">
                                         <div className="flex justify-center">
-                                            <div className={cn(
-                                                "w-6 h-6 md:w-8 md:h-8 rounded flex items-center justify-center transition-all duration-300",
-                                                hit ? "bg-green-500/10 text-green-600 dark:text-green-500 border border-green-500/20" : "bg-red-500/10 text-red-600 dark:text-red-500 border border-red-500/20"
-                                            )}>
+                                            <motion.div
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                whileInView={{ scale: 1, opacity: 1 }}
+                                                viewport={{ once: false }}
+                                                transition={{ type: "spring", stiffness: 300, damping: 20, delay: i * 0.05 }}
+                                                className={cn(
+                                                    "w-6 h-6 md:w-8 md:h-8 rounded flex items-center justify-center transition-all duration-300",
+                                                    hit ? "bg-green-500/10 text-green-600 dark:text-green-500 border border-green-500/20" : "bg-red-500/10 text-red-600 dark:text-red-500 border border-red-500/20"
+                                                )}
+                                            >
                                                 {hit ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
-                                            </div>
+                                            </motion.div>
                                         </div>
                                     </td>
                                 );
@@ -64,12 +71,18 @@ export function ConsistencyGrid({ data }: ConsistencyGridProps) {
                                 return (
                                     <td key={i} className="text-center py-3">
                                         <div className="flex justify-center">
-                                            <div className={cn(
-                                                "w-6 h-6 md:w-8 md:h-8 rounded flex items-center justify-center transition-all duration-300",
-                                                hit ? "bg-green-500/10 text-green-600 dark:text-green-500 border border-green-500/20" : "bg-red-500/10 text-red-600 dark:text-red-500 border border-red-500/20"
-                                            )}>
+                                            <motion.div
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                whileInView={{ scale: 1, opacity: 1 }}
+                                                viewport={{ once: false }}
+                                                transition={{ type: "spring", stiffness: 300, damping: 20, delay: i * 0.05 }}
+                                                className={cn(
+                                                    "w-6 h-6 md:w-8 md:h-8 rounded flex items-center justify-center transition-all duration-300",
+                                                    hit ? "bg-green-500/10 text-green-600 dark:text-green-500 border border-green-500/20" : "bg-red-500/10 text-red-600 dark:text-red-500 border border-red-500/20"
+                                                )}
+                                            >
                                                 {hit ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
-                                            </div>
+                                            </motion.div>
                                         </div>
                                     </td>
                                 );

@@ -1,6 +1,7 @@
 import { ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { FitnessEntry } from '../../data/mockData';
+import Counter from '../ui/Counter';
 
 interface MacroDonutProps {
     data: FitnessEntry[];
@@ -56,7 +57,7 @@ export function MacroDonut({ data }: MacroDonutProps) {
                 <div className="flex items-center md:flex-col md:items-end justify-between md:justify-center bg-slate-100 dark:bg-slate-800/30 md:bg-transparent px-3 py-2 md:p-0 rounded-lg">
                     <p className="text-[9px] md:text-xs font-bold text-slate-500 uppercase tracking-widest md:mb-1">Promedio Cal</p>
                     <p className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400 leading-none">
-                        {Math.round(avgCals)} <span className="text-xs font-normal text-slate-500">kcal</span>
+                        <Counter value={avgCals} /> <span className="text-xs font-normal text-slate-500">kcal</span>
                     </p>
                 </div>
             </CardHeader>
@@ -89,22 +90,24 @@ export function MacroDonut({ data }: MacroDonutProps) {
                             </ResponsiveContainer>
                             {/* Center Summary */}
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">{Math.round(avgProt + avgCarb + avgFat)}g</span>
+                                <span className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">
+                                    <Counter value={avgProt + avgCarb + avgFat} />g
+                                </span>
                                 <span className="text-[8px] md:text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Promedio Diario</span>
                             </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2 px-1">
                             <div className="text-center bg-slate-50 dark:bg-slate-800/20 py-2 rounded-lg border border-slate-200 dark:border-slate-800/40 transition-colors">
                                 <p className="text-[8px] md:text-[10px] text-red-600 dark:text-red-400 font-bold uppercase">Prot</p>
-                                <p className="text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight">{Math.round(avgProt)}g</p>
+                                <p className="text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight"><Counter value={avgProt} />g</p>
                             </div>
                             <div className="text-center bg-slate-50 dark:bg-slate-800/20 py-2 rounded-lg border border-slate-200 dark:border-slate-800/40 transition-colors">
                                 <p className="text-[8px] md:text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase">Carbo</p>
-                                <p className="text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight">{Math.round(avgCarb)}g</p>
+                                <p className="text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight"><Counter value={avgCarb} />g</p>
                             </div>
                             <div className="text-center bg-slate-50 dark:bg-slate-800/20 py-2 rounded-lg border border-slate-200 dark:border-slate-800/40 transition-colors">
                                 <p className="text-[8px] md:text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase">Grasa</p>
-                                <p className="text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight">{Math.round(avgFat)}g</p>
+                                <p className="text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight"><Counter value={avgFat} />g</p>
                             </div>
                         </div>
                     </div>

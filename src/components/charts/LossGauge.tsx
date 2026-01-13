@@ -1,4 +1,5 @@
 import { Card, CardContent } from '../ui/card';
+import Counter from '../ui/Counter';
 
 interface LossGaugeProps {
     weeklyRate: number; // e.g., -0.7
@@ -34,14 +35,18 @@ export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss }: 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col items-center justify-center border-r border-slate-200 dark:border-slate-800 pr-2">
                         <span className="text-[9px] md:text-[10px] uppercase font-bold text-slate-500 mb-1">Ritmo de Peso</span>
-                        <span className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-none">{weeklyRate}</span>
+                        <span className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-none">
+                            <Counter value={weeklyRate} decimals={1} />
+                        </span>
                         <span className="text-[9px] md:text-[10px] text-slate-500 mt-1 uppercase">kg / semana</span>
                         <span className="text-[9px] md:text-[10px] uppercase font-bold mt-1" style={{ color: rateColor }}>{rateText}</span>
                     </div>
 
                     <div className="flex flex-col items-center justify-center pl-2">
                         <span className="text-[9px] md:text-[10px] uppercase font-bold text-slate-500 mb-1">Déficit Promedio</span>
-                        <span className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-none">{weeklyDeficit}</span>
+                        <span className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-none">
+                            <Counter value={weeklyDeficit} />
+                        </span>
                         <span className="text-[9px] md:text-[10px] text-slate-500 mt-1 uppercase">kcal / día</span>
                         <div className="flex flex-col items-center mt-1">
                             <span className="text-[9px] md:text-[10px] uppercase font-bold" style={{ color: deficitColor }}>
@@ -56,11 +61,17 @@ export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss }: 
                     <div className="flex justify-between items-end">
                         <div>
                             <span className="text-[9px] md:text-[10px] uppercase font-bold text-slate-500 block">Déficit Acumulado</span>
-                            <span className="text-xl font-bold text-slate-900 dark:text-white">{totalDeficit.toLocaleString()} <span className="text-xs text-slate-500 font-medium tracking-normal lowercase">kcal</span></span>
+                            <span className="text-xl font-bold text-slate-900 dark:text-white">
+                                <Counter value={totalDeficit} />
+                                <span className="text-xs text-slate-500 font-medium tracking-normal lowercase"> kcal</span>
+                            </span>
                         </div>
                         <div className="text-right">
                             <span className="text-[9px] md:text-[10px] uppercase font-black text-blue-500 dark:text-blue-500 block">Grasa Teórica</span>
-                            <span className="text-xl font-black text-blue-600 dark:text-blue-400">-{fatLoss} <span className="text-xs font-bold lowercase">kg</span></span>
+                            <span className="text-xl font-black text-blue-600 dark:text-blue-400">
+                                -<Counter value={Math.abs(fatLoss)} decimals={2} />
+                                <span className="text-xs font-bold lowercase"> kg</span>
+                            </span>
                         </div>
                     </div>
 

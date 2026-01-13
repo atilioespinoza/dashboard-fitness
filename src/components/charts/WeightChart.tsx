@@ -101,7 +101,6 @@ export function WeightChart({ data }: WeightChartProps) {
                             dataKey="Weight"
                             stroke="none"
                             fill="url(#colorWeight)"
-                            isAnimationActive={false}
                             legendType="none"
                             name="weight_area"
                         />
@@ -117,7 +116,6 @@ export function WeightChart({ data }: WeightChartProps) {
                             activeDot={{ r: 4 }}
                             name="Peso"
                             legendType="none"
-                            isAnimationActive={false}
                         />
 
                         {/* Moving Average Line */}

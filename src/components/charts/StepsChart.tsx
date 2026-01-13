@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Footprints, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import Counter from '../ui/Counter';
 
 interface StepsChartProps {
     data: FitnessEntry[];
@@ -34,7 +35,7 @@ export function StepsChart({ data }: StepsChartProps) {
                         Actividad Diaria (Pasos)
                     </CardTitle>
                     <div className="flex items-center gap-3 mt-1">
-                        <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Promedio 7D: <span className="text-slate-700 dark:text-slate-300">{avgLast7.toLocaleString()}</span></p>
+                        <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Promedio 7D: <span className="text-slate-700 dark:text-slate-300"><Counter value={avgLast7} /></span></p>
                         <div className={cn(
                             "flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase",
                             trend === 'up' ? "bg-green-500/10 text-green-600 dark:text-green-500 border border-green-500/20" :
@@ -50,7 +51,7 @@ export function StepsChart({ data }: StepsChartProps) {
                 </div>
                 <div className="text-right">
                     <span className="text-[10px] text-slate-500 uppercase font-black">Meta Diaria</span>
-                    <p className="text-xl font-black text-green-500">{STEP_GOAL.toLocaleString()}</p>
+                    <p className="text-xl font-black text-green-500"><Counter value={STEP_GOAL} /></p>
                 </div>
             </CardHeader>
             <CardContent className="h-[250px] md:h-[300px] p-2 md:p-6">

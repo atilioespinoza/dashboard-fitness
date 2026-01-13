@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import Counter from '../ui/Counter';
 import { FitnessEntry } from '../../data/mockData';
 import { addDays, format, parseISO, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -74,7 +75,7 @@ export function GoalProjections({ data }: GoalProjectionsProps) {
                     <Target className="text-blue-500" size={20} />
                     Proyecciones de Metas
                 </CardTitle>
-                <p className="text-xs text-slate-500 italic">Basado en el promedio histórico de los últimos {daysDiff} días</p>
+                <p className="text-xs text-slate-500 italic">Basado en el promedio histórico de los últimos <Counter value={daysDiff} /> días</p>
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
