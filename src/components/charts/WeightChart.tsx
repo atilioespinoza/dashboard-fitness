@@ -84,7 +84,7 @@ export function WeightChart({ data }: WeightChartProps) {
                         <ReferenceLine yAxisId="right" y={18} label={{ value: '18%', position: 'insideRight', fill: '#3b82f6', fontSize: 8 }} stroke="#3b82f6" strokeDasharray="3 3" />
 
                         {/* Daily Weight Area */}
-                        <Area yAxisId="left" type="monotone" dataKey="Weight" stroke="none" fill="url(#colorWeight)" isAnimationActive={false} />
+                        <Area yAxisId="left" type="monotone" dataKey="Weight" stroke="none" fill="url(#colorWeight)" isAnimationActive={false} legendType="none" />
 
                         {/* Daily dots - Hidden from legend to save space */}
                         <Line
