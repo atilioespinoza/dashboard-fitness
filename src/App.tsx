@@ -8,7 +8,7 @@ import { StreakCounter } from './components/charts/StreakCounter';
 import { MacroDonut } from './components/charts/MacroDonut';
 import { CorrelationChart } from './components/charts/CorrelationChart';
 import { NotesList } from './components/charts/NotesList';
-import { TrainingInsights } from './components/charts/TrainingInsights';
+import { TrainingCalendar } from './components/charts/TrainingCalendar';
 import { Activity } from 'lucide-react';
 
 function App() {
@@ -37,6 +37,7 @@ function App() {
     // Simple logic for streak: consecutive days meeting criteria working backwards from latest
     let calorieStreak = 0;
     let proteinStreak = 0;
+    let stepsStreak = 0;
 
     // Sort descending for streak calc
     const sortedData = [...data].sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime());
@@ -48,6 +49,11 @@ function App() {
 
     for (const day of sortedData) {
         if (day.Protein >= 140) proteinStreak++;
+        else break;
+    }
+
+    for (const day of sortedData) {
+        if (day.Steps >= 12000) stepsStreak++;
         else break;
     }
 
@@ -63,7 +69,7 @@ function App() {
         : 0;
 
     return (
-        <div className="min-h-screen bg-dashboard-bg text-slate-100 p-3 md:p-8 font-sans">
+        <div className="min-h-screen bg-dashboard-bg text-slate-100 p-3 md:p-8 font-sans pb-20 md:pb-8">
             <div className="max-w-7xl mx-auto space-y-4 md:space-y-8">
 
                 {/* Header */}
@@ -91,14 +97,15 @@ function App() {
                     </div>
                 </div>
 
-                {/* Row 2: Nutrition */}
+                {/* Row 2: Nutrition & Activity Consistency */}
                 <div className="grid grid-cols-12 gap-4 md:gap-6">
                     <BalanceChart data={data} />
                     <div className="col-span-12 lg:col-span-6 flex flex-col gap-4 md:gap-6">
                         <ConsistencyGrid data={data} />
-                        <div className="grid grid-cols-2 gap-4 md:gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                             <StreakCounter label="Calorías" count={calorieStreak} goal="Bajo TDEE" />
                             <StreakCounter label="Proteínas" count={proteinStreak} goal="Min 140g" />
+                            <StreakCounter label="Pasos" count={stepsStreak} goal="Min 12k" />
                         </div>
                     </div>
                 </div>
@@ -108,15 +115,15 @@ function App() {
                     <MacroDonut data={data} />
                 </div>
 
-                {/* Row 4: Trends & Analysis */}
+                {/* Row 4: Training Calendar (REPLACED CARDS) */}
+                <div className="grid grid-cols-12 gap-6">
+                    <TrainingCalendar data={data} />
+                </div>
+
+                {/* Row 5: Trends & Analysis */}
                 <div className="grid grid-cols-12 gap-6">
                     <CorrelationChart data={data} />
                     <NotesList data={data} />
-                </div>
-
-                {/* Row 5: Training Log */}
-                <div className="grid grid-cols-12 gap-6">
-                    <TrainingInsights data={data} />
                 </div>
 
             </div>
@@ -124,4 +131,4 @@ function App() {
     )
 }
 
-export default App
+export default App;
