@@ -18,54 +18,53 @@ export function WaistCard({ currentWaist }: WaistCardProps) {
 
     return (
         <Card className="col-span-12 md:col-span-6 lg:col-span-4 flex flex-col justify-center bg-slate-900 border-slate-800">
-            <CardContent className="pt-6">
-                <div className="flex justify-between items-start mb-4">
+            <CardContent className="p-4 md:p-6">
+                <div className="flex justify-between items-start mb-3">
                     <div>
-                        <p className="text-sm font-medium text-slate-400">Cintura Actual</p>
-                        <div className="flex items-baseline mt-1 space-x-2">
-                            <span className="text-4xl font-bold text-white">{currentWaist}</span>
-                            <span className="text-slate-500 font-medium">cm</span>
+                        <p className="text-[10px] md:text-sm font-medium text-slate-500 uppercase tracking-wider">Cintura Actual</p>
+                        <div className="flex items-baseline mt-0.5 space-x-1.5">
+                            <span className="text-3xl md:text-4xl font-bold text-white tracking-tight">{currentWaist}</span>
+                            <span className="text-slate-500 font-medium text-sm">cm</span>
                         </div>
                     </div>
                     <div className={cn(
-                        "px-2.5 py-0.5 rounded-full text-xs font-semibold flex flex-col items-end",
-                        isHit ? "bg-green-500/20 text-green-400" : "bg-blue-500/20 text-blue-400"
+                        "px-2 py-1 rounded-lg text-[10px] font-bold flex flex-col items-end shadow-sm",
+                        isHit ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
                     )}>
-                        <span>{isHit ? "¡Meta Alcanzada!" : `${(currentWaist - goal).toFixed(1)}cm para la meta`}</span>
-                        {!isHit && isIntermediateHit && (
-                            <span className="text-[10px] opacity-80">Siguiente: Meta Final</span>
-                        )}
-                        {!isIntermediateHit && (
-                            <span className="text-[10px] opacity-80">Siguiente: {intermediateGoal}cm</span>
+                        <span>{isHit ? "¡MÁXIMA META!" : `${(currentWaist - goal).toFixed(1)}cm para el fin`}</span>
+                        {!isHit && (
+                            <span className="text-[8px] opacity-60 mt-0.5">
+                                Sig: {isIntermediateHit ? "83cm (Meta)" : "91cm (Inter)"}
+                            </span>
                         )}
                     </div>
                 </div>
 
                 {/* Progress Bar */}
-                <div className="space-y-3">
-                    <div className="flex justify-between text-[10px] uppercase tracking-wider text-slate-500 font-bold px-0.5">
+                <div className="space-y-2.5">
+                    <div className="flex justify-between text-[9px] uppercase tracking-tighter text-slate-500 font-bold px-0.5">
                         <div className="flex flex-col">
-                            <span className="text-slate-600">Inicio</span>
-                            <span>{start}cm</span>
+                            <span className="text-slate-600 opacity-70">Inicio</span>
+                            <span className="text-slate-400">{start}cm</span>
                         </div>
-                        <div className={cn("flex flex-col items-center transition-colors duration-500", isIntermediateHit ? "text-blue-400" : "text-slate-500")}>
-                            <span className="text-slate-600">Intermedio</span>
+                        <div className={cn("flex flex-col items-center transition-colors duration-500", isIntermediateHit ? "text-blue-400" : "text-slate-600")}>
+                            <span className="opacity-70">Intermedia</span>
                             <span>{intermediateGoal}cm</span>
                         </div>
-                        <div className={cn("flex flex-col items-end transition-colors duration-500", isHit ? "text-green-400" : "text-slate-500")}>
-                            <span className="text-slate-600">Meta</span>
+                        <div className={cn("flex flex-col items-end transition-colors duration-500", isHit ? "text-green-400" : "text-slate-600")}>
+                            <span className="opacity-70">Meta</span>
                             <span>{goal}cm</span>
                         </div>
                     </div>
                     <div className="relative">
-                        <div className="h-4 w-full bg-slate-800/50 rounded-full p-[2px] shadow-inner overflow-hidden">
+                        <div className="h-3 w-full bg-slate-800/40 rounded-full p-[1.5px] shadow-inner overflow-hidden border border-slate-800">
                             <div
                                 className={cn(
-                                    "h-full transition-all duration-1000 rounded-full shadow-[0_0_15px_-3px_rgba(59,130,246,0.5)]",
+                                    "h-full transition-all duration-1000 rounded-full",
                                     isHit
-                                        ? "bg-gradient-to-r from-blue-600 via-emerald-500 to-green-400"
+                                        ? "bg-gradient-to-r from-blue-600 via-emerald-500 to-green-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]"
                                         : isIntermediateHit
-                                            ? "bg-gradient-to-r from-blue-600 to-emerald-400"
+                                            ? "bg-gradient-to-r from-blue-600 to-emerald-400 shadow-[0_0_10px_rgba(59,130,246,0.3)]"
                                             : "bg-blue-600"
                                 )}
                                 style={{ width: `${progress}%` }}
@@ -74,8 +73,8 @@ export function WaistCard({ currentWaist }: WaistCardProps) {
                         {/* Intermediate Mark */}
                         <div
                             className={cn(
-                                "absolute top-0 bottom-0 w-1 rounded-full z-10 transition-colors duration-500",
-                                isIntermediateHit ? "bg-white/50" : "bg-slate-700"
+                                "absolute top-0 bottom-0 w-0.5 rounded-full z-10 transition-colors duration-500",
+                                isIntermediateHit ? "bg-white/40" : "bg-slate-700"
                             )}
                             style={{ left: '50%', transform: 'translateX(-50%)' }}
                         />

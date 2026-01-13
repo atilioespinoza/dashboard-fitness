@@ -48,31 +48,33 @@ export function MacroDonut({ data }: MacroDonutProps) {
 
     return (
         <Card className="col-span-12 bg-slate-900 border-slate-800">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800/50 pb-4">
+            <CardHeader className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-800/50 p-4 md:p-6 gap-2">
                 <div>
-                    <CardTitle className="text-xl font-bold text-white">Análisis de Macros</CardTitle>
-                    <p className="text-sm text-slate-400">Promedio General vs Tendencias Semanales</p>
+                    <CardTitle className="text-lg md:text-xl font-bold text-white tracking-tight">Análisis de Macros</CardTitle>
+                    <p className="text-xs md:text-sm text-slate-500">Promedio General vs Semanal</p>
                 </div>
-                <div className="text-right">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Promedio Calorías</p>
-                    <p className="text-2xl font-bold text-blue-400">{Math.round(avgCals)} <span className="text-sm font-normal text-slate-500">kcal</span></p>
+                <div className="flex items-center md:flex-col md:items-end justify-between md:justify-center bg-slate-800/30 md:bg-transparent px-3 py-2 md:p-0 rounded-lg">
+                    <p className="text-[9px] md:text-xs font-bold text-slate-500 uppercase tracking-widest md:mb-1">Promedio Cal</p>
+                    <p className="text-xl md:text-2xl font-bold text-blue-400 leading-none">
+                        {Math.round(avgCals)} <span className="text-xs font-normal text-slate-500">kcal</span>
+                    </p>
                 </div>
             </CardHeader>
-            <CardContent className="pt-6">
-                <div className="grid grid-cols-12 gap-8">
+            <CardContent className="p-4 md:p-6">
+                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8">
                     {/* General Average Donut */}
-                    <div className="col-span-12 lg:col-span-4 space-y-4">
-                        <h3 className="text-sm font-medium text-slate-300 text-center">Distribución General</h3>
-                        <div className="h-[240px] relative">
+                    <div className="lg:col-span-4 space-y-4">
+                        <h3 className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-wider text-center">Distribución General</h3>
+                        <div className="h-[200px] md:h-[240px] relative">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={overallChartData}
                                         cx="50%"
                                         cy="50%"
-                                        innerRadius={65}
-                                        outerRadius={85}
-                                        paddingAngle={8}
+                                        innerRadius={55}
+                                        outerRadius={75}
+                                        paddingAngle={6}
                                         dataKey="value"
                                         stroke="none"
                                     >
@@ -81,59 +83,58 @@ export function MacroDonut({ data }: MacroDonutProps) {
                                         ))}
                                     </Pie>
                                     <Tooltip
-                                        contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', border: '1px solid #334155' }}
-                                        itemStyle={{ color: '#f8fafc', fontSize: '12px' }}
+                                        contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', border: '1px solid #334155', fontSize: '10px' }}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
                             {/* Center Summary */}
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span className="text-2xl font-bold text-white">{Math.round(avgProt + avgCarb + avgFat)}g</span>
-                                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">Total Promedio</span>
+                                <span className="text-xl md:text-2xl font-bold text-white">{Math.round(avgProt + avgCarb + avgFat)}g</span>
+                                <span className="text-[8px] md:text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Promedio Diario</span>
                             </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-2 px-2">
-                            <div className="text-center">
-                                <p className="text-[10px] text-red-400 font-bold uppercase">Prot</p>
-                                <p className="text-lg font-bold text-white">{Math.round(avgProt)}g</p>
+                        <div className="grid grid-cols-3 gap-2 px-1">
+                            <div className="text-center bg-slate-800/20 py-2 rounded-lg border border-slate-800/40">
+                                <p className="text-[8px] md:text-[10px] text-red-400 font-bold uppercase">Prot</p>
+                                <p className="text-base md:text-lg font-bold text-white tracking-tight">{Math.round(avgProt)}g</p>
                             </div>
-                            <div className="text-center">
-                                <p className="text-[10px] text-amber-400 font-bold uppercase">Carbo</p>
-                                <p className="text-lg font-bold text-white">{Math.round(avgCarb)}g</p>
+                            <div className="text-center bg-slate-800/20 py-2 rounded-lg border border-slate-800/40">
+                                <p className="text-[8px] md:text-[10px] text-amber-400 font-bold uppercase">Carbo</p>
+                                <p className="text-base md:text-lg font-bold text-white tracking-tight">{Math.round(avgCarb)}g</p>
                             </div>
-                            <div className="text-center">
-                                <p className="text-[10px] text-blue-400 font-bold uppercase">Grasa</p>
-                                <p className="text-lg font-bold text-white">{Math.round(avgFat)}g</p>
+                            <div className="text-center bg-slate-800/20 py-2 rounded-lg border border-slate-800/40">
+                                <p className="text-[8px] md:text-[10px] text-blue-400 font-bold uppercase">Grasa</p>
+                                <p className="text-base md:text-lg font-bold text-white tracking-tight">{Math.round(avgFat)}g</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Weekly Trends Bar Chart */}
-                    <div className="col-span-12 lg:col-span-8 space-y-4">
-                        <h3 className="text-sm font-medium text-slate-300 text-center lg:text-left">Progresión Semanal</h3>
-                        <div className="h-[280px] w-full">
+                    <div className="lg:col-span-8 space-y-4">
+                        <h3 className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-wider text-center lg:text-left">Progresión Semanal</h3>
+                        <div className="h-[220px] md:h-[280px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={weeklyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                                <BarChart data={weeklyData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} opacity={0.3} />
                                     <XAxis
                                         dataKey="name"
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: '#94a3b8', fontSize: 11 }}
+                                        tick={{ fill: '#475569', fontSize: 10 }}
                                     />
                                     <YAxis
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: '#94a3b8', fontSize: 11 }}
+                                        tick={{ fill: '#475569', fontSize: 10 }}
                                     />
                                     <Tooltip
-                                        cursor={{ fill: '#1e293b', opacity: 0.4 }}
-                                        contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px' }}
+                                        cursor={{ fill: '#1e293b', opacity: 0.2 }}
+                                        contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '10px' }}
                                     />
-                                    <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ fontSize: '12px', paddingBottom: '20px' }} />
-                                    <Bar dataKey="Proteína" stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} barSize={40} />
-                                    <Bar dataKey="Carbos" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} barSize={40} />
-                                    <Bar dataKey="Grasa" stackId="a" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
+                                    <Legend verticalAlign="top" align="center" iconType="circle" wrapperStyle={{ fontSize: '10px', paddingBottom: '10px' }} />
+                                    <Bar dataKey="Proteína" stackId="a" fill="#ef4444" barSize={30} />
+                                    <Bar dataKey="Carbos" stackId="a" fill="#f59e0b" barSize={30} />
+                                    <Bar dataKey="Grasa" stackId="a" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={30} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

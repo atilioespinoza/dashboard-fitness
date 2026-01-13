@@ -63,20 +63,20 @@ function App() {
         : 0;
 
     return (
-        <div className="min-h-screen bg-gray-950 text-slate-100 p-4 md:p-8 font-sans">
-            <div className="max-w-7xl mx-auto space-y-8">
+        <div className="min-h-screen bg-dashboard-bg text-slate-100 p-3 md:p-8 font-sans">
+            <div className="max-w-7xl mx-auto space-y-4 md:space-y-8">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4 px-1">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-                            <Activity className="text-blue-500" size={32} />
+                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <Activity className="text-blue-500" size={24} />
                             Registro Fitness Pro
                         </h1>
-                        <p className="text-slate-400 mt-1">Panel Avanzado de Tendencias y Análisis</p>
+                        <p className="text-xs md:text-sm text-slate-400 mt-0.5 md:mt-1">Panel de Tendencias y Análisis</p>
                     </div>
                     <div className="flex gap-2">
-                        <div className="px-3 py-1 bg-slate-900 rounded-full border border-slate-800 text-xs text-slate-400 font-mono">
+                        <div className="px-2 py-0.5 md:px-3 md:py-1 bg-slate-900 rounded-full border border-slate-800 text-[10px] md:text-xs text-slate-500 font-mono">
                             Última Actualización: {latest?.Date}
                         </div>
                     </div>

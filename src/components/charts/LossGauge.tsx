@@ -25,23 +25,23 @@ export function LossGauge({ weeklyRate, weeklyDeficit }: LossGaugeProps) {
 
     return (
         <Card className="col-span-12 md:col-span-6 lg:col-span-4 bg-slate-900 border-slate-800">
-            <CardContent className="pt-6 grid grid-cols-2 gap-4 h-full min-h-[160px]">
-                <div className="flex flex-col items-center justify-center border-r border-slate-800">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 mb-1">Ritmo de Peso</span>
-                    <span className="text-3xl font-bold text-white leading-none">{weeklyRate}</span>
-                    <span className="text-[10px] text-slate-500 mt-1">kg / semana</span>
-                    <span className="text-[10px] uppercase font-bold mt-1" style={{ color: rateColor }}>{rateText}</span>
+            <CardContent className="p-4 md:pt-6 grid grid-cols-2 gap-2 md:gap-4 h-full min-h-[140px] md:min-h-[160px]">
+                <div className="flex flex-col items-center justify-center border-r border-slate-800 pr-2">
+                    <span className="text-[9px] md:text-[10px] uppercase font-bold text-slate-500 mb-1">Ritmo de Peso</span>
+                    <span className="text-2xl md:text-3xl font-bold text-white leading-none">{weeklyRate}</span>
+                    <span className="text-[9px] md:text-[10px] text-slate-500 mt-1">kg / semana</span>
+                    <span className="text-[9px] md:text-[10px] uppercase font-bold mt-1" style={{ color: rateColor }}>{rateText}</span>
                 </div>
 
-                <div className="flex flex-col items-center justify-center">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 mb-1">Déficit Promedio</span>
-                    <span className="text-3xl font-bold text-white leading-none">{weeklyDeficit}</span>
-                    <span className="text-[10px] text-slate-500 mt-1">kcal / día</span>
+                <div className="flex flex-col items-center justify-center pl-2">
+                    <span className="text-[9px] md:text-[10px] uppercase font-bold text-slate-500 mb-1">Déficit Promedio</span>
+                    <span className="text-2xl md:text-3xl font-bold text-white leading-none">{weeklyDeficit}</span>
+                    <span className="text-[9px] md:text-[10px] text-slate-500 mt-1">kcal / día</span>
                     <div className="flex flex-col items-center mt-1">
-                        <span className="text-[10px] uppercase font-bold" style={{ color: deficitColor }}>
+                        <span className="text-[9px] md:text-[10px] uppercase font-bold" style={{ color: deficitColor }}>
                             {weeklyDeficit < 500 ? "Bajo" : weeklyDeficit > 700 ? "Alto" : "En Meta"}
                         </span>
-                        <span className="text-[9px] text-slate-600">Meta: 500-700</span>
+                        <span className="text-[8px] md:text-[9px] text-slate-600">Meta: 500-700</span>
                     </div>
                 </div>
             </CardContent>
