@@ -19,51 +19,64 @@ export function ConsistencyGrid({ data }: ConsistencyGridProps) {
 
     return (
         <Card className="col-span-12 lg:col-span-6 bg-slate-900 border-slate-800">
-            <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-100">Consistencia Semanal</CardTitle>
+            <CardHeader className="p-4 md:p-6 pb-2 md:pb-4">
+                <CardTitle className="text-lg md:text-xl font-bold text-slate-100 italic">Consistencia Semanal</CardTitle>
             </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-8 gap-2 text-center text-sm">
-                    {/* Header Row */}
-                    <div className="text-slate-500 font-medium text-left flex items-center">Métrica</div>
-                    {last7.map(day => (
-                        <div key={day.Date} className="text-slate-400 font-medium">
-                            {format(parseISO(day.Date), 'EEE', { locale: es })}
-                        </div>
-                    ))}
-
-                    {/* Calorie Row */}
-                    <div className="text-slate-300 font-medium text-left flex items-center uppercase text-[10px]">Calorías</div>
-                    {last7.map(day => {
-                        const hit = day.Calories <= day.TDEE;
-                        return (
-                            <div key={`cal-${day.Date}`} className="flex justify-center">
-                                <div className={cn(
-                                    "w-8 h-8 rounded-md flex items-center justify-center",
-                                    hit ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
-                                )}>
-                                    {hit ? <Check size={16} strokeWidth={3} /> : <X size={16} strokeWidth={3} />}
-                                </div>
-                            </div>
-                        );
-                    })}
-
-                    {/* Protein Row */}
-                    <div className="text-slate-300 font-medium text-left flex items-center uppercase text-[10px]">Proteínas</div>
-                    {last7.map(day => {
-                        const hit = day.Protein >= PROTEIN_GOAL;
-                        return (
-                            <div key={`prot-${day.Date}`} className="flex justify-center">
-                                <div className={cn(
-                                    "w-8 h-8 rounded-md flex items-center justify-center",
-                                    hit ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
-                                )}>
-                                    {hit ? <Check size={16} strokeWidth={3} /> : <X size={16} strokeWidth={3} />}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+            <CardContent className="p-2 md:p-6 overflow-x-hidden">
+                <table className="w-full">
+                    <thead>
+                        <tr className="text-[9px] md:text-[10px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-800">
+                            <th className="text-left py-2 px-1">Métrica</th>
+                            {last7.map((day, i) => (
+                                <th key={i} className="text-center py-2 px-0.5">
+                                    {format(parseISO(day.Date), 'EEE', { locale: es }).slice(0, 2)}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/50">
+                        <tr className="group hover:bg-slate-800/20 transition-colors">
+                            <td className="py-3 px-1">
+                                <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-tighter block leading-none">Calorías</span>
+                            </td>
+                            {last7.map((day, i) => {
+                                const hit = day.Calories <= day.TDEE;
+                                return (
+                                    <td key={i} className="text-center py-3">
+                                        <div className="flex justify-center">
+                                            <div className={cn(
+                                                "w-6 h-6 md:w-8 md:h-8 rounded flex items-center justify-center transition-all duration-300",
+                                                hit ? "bg-green-500/10 text-green-500 border border-green-500/20" : "bg-red-500/10 text-red-500 border border-red-500/20"
+                                            )}>
+                                                {hit ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
+                                            </div>
+                                        </div>
+                                    </td>
+                                );
+                            })}
+                        </tr>
+                        <tr className="group hover:bg-slate-800/20 transition-colors">
+                            <td className="py-3 px-1">
+                                <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-tighter block leading-none">Proteínas</span>
+                            </td>
+                            {last7.map((day, i) => {
+                                const hit = day.Protein >= PROTEIN_GOAL;
+                                return (
+                                    <td key={i} className="text-center py-3">
+                                        <div className="flex justify-center">
+                                            <div className={cn(
+                                                "w-6 h-6 md:w-8 md:h-8 rounded flex items-center justify-center transition-all duration-300",
+                                                hit ? "bg-green-500/10 text-green-500 border border-green-500/20" : "bg-red-500/10 text-red-500 border border-red-500/20"
+                                            )}>
+                                                {hit ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
+                                            </div>
+                                        </div>
+                                    </td>
+                                );
+                            })}
+                        </tr>
+                    </tbody>
+                </table>
             </CardContent>
         </Card>
     );

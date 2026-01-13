@@ -83,20 +83,20 @@ function App() {
                 </div>
 
                 {/* Row 1: Health Trends */}
-                <div className="grid grid-cols-12 gap-6">
+                <div className="grid grid-cols-12 gap-4 md:gap-6">
                     <WeightChart data={data} />
-                    <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+                    <div className="col-span-12 lg:col-span-4 flex flex-col gap-4 md:gap-6">
                         <WaistCard currentWaist={latest?.Waist || 0} />
                         <LossGauge weeklyRate={weeklyRate} weeklyDeficit={weeklyAvgDeficit} />
                     </div>
                 </div>
 
                 {/* Row 2: Nutrition */}
-                <div className="grid grid-cols-12 gap-6">
+                <div className="grid grid-cols-12 gap-4 md:gap-6">
                     <BalanceChart data={data} />
-                    <div className="col-span-12 lg:col-span-6 flex flex-col gap-6">
+                    <div className="col-span-12 lg:col-span-6 flex flex-col gap-4 md:gap-6">
                         <ConsistencyGrid data={data} />
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-2 gap-4 md:gap-6">
                             <StreakCounter label="Calorías" count={calorieStreak} goal="Bajo TDEE" />
                             <StreakCounter label="Proteínas" count={proteinStreak} goal="Min 140g" />
                         </div>
