@@ -69,6 +69,10 @@ function App() {
         ? Math.round(last7Days.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0) / last7Days.length)
         : 0;
 
+    // Cumulative Deficit and Theoretical Fat Loss (7700 kcal = 1kg fat)
+    const cumulativeDeficit = data.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0);
+    const theoreticalFatLoss = Number((cumulativeDeficit / 7700).toFixed(2));
+
     return (
         <div className="min-h-screen bg-dashboard-bg text-slate-100 p-3 md:p-8 font-sans pb-20 md:pb-8">
             <div className="max-w-7xl mx-auto space-y-4 md:space-y-8">
@@ -94,7 +98,12 @@ function App() {
                     <WeightChart data={data} />
                     <div className="col-span-12 lg:col-span-4 flex flex-col gap-4 md:gap-6">
                         <WaistCard currentWaist={latest?.Waist || 0} />
-                        <LossGauge weeklyRate={weeklyRate} weeklyDeficit={weeklyAvgDeficit} />
+                        <LossGauge
+                            weeklyRate={weeklyRate}
+                            weeklyDeficit={weeklyAvgDeficit}
+                            totalDeficit={cumulativeDeficit}
+                            fatLoss={theoreticalFatLoss}
+                        />
                     </div>
                 </div>
 
