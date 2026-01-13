@@ -55,19 +55,19 @@ export function TrainingCalendar({ data }: TrainingCalendarProps) {
 
     return (
         <Card className="col-span-12">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-200 dark:border-slate-800/50 pb-4">
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-200 dark:border-slate-800/50 pb-4 gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-500">
+                    <div className="p-2 bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-500 shrink-0">
                         <CalendarIcon size={24} />
                     </div>
                     <div>
-                        <CardTitle className="text-xl font-bold capitalize">
+                        <CardTitle className="text-lg md:text-xl font-bold capitalize leading-tight">
                             Calendario de Entrenamiento
                         </CardTitle>
-                        <p className="text-sm text-slate-500">Vista mensual de actividad y sesiones</p>
+                        <p className="text-xs md:text-sm text-slate-500">Vista mensual de actividad y sesiones</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-950 p-1 rounded-lg border border-slate-200 dark:border-slate-800 transition-colors">
+                <div className="flex items-center justify-between sm:justify-center gap-2 bg-slate-100 dark:bg-slate-950 p-1 rounded-lg border border-slate-200 dark:border-slate-800 transition-colors w-full sm:w-auto">
                     <button onClick={prevMonth} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-500 dark:text-slate-400 transition-colors">
                         <ChevronLeft size={18} />
                     </button>
