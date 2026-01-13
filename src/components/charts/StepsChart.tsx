@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { FitnessEntry } from '../../data/mockData';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Footprints } from 'lucide-react';
+import { Footprints, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 interface StepsChartProps {
     data: FitnessEntry[];
@@ -14,6 +15,16 @@ export function StepsChart({ data }: StepsChartProps) {
     const last30 = data.slice(-30);
     const STEP_GOAL = 12000;
 
+    // Calculate Trend (Last 7 vs Previous 7)
+    const last7 = data.slice(-7);
+    const prev7 = data.slice(-14, -7);
+
+    const avgLast7 = last7.length > 0 ? Math.round(last7.reduce((acc, d) => acc + d.Steps, 0) / last7.length) : 0;
+    const avgPrev7 = prev7.length > 0 ? Math.round(prev7.reduce((acc, d) => acc + d.Steps, 0) / prev7.length) : 0;
+
+    const diff = avgLast7 - avgPrev7;
+    const trend = diff > 500 ? 'up' : diff < -500 ? 'down' : 'stable';
+
     return (
         <Card className="col-span-12 bg-slate-900 border-slate-800">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -22,11 +33,24 @@ export function StepsChart({ data }: StepsChartProps) {
                         <Footprints className="text-green-500" size={24} />
                         Actividad Diaria (Pasos)
                     </CardTitle>
-                    <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mt-1">Histórico de los últimos 30 días</p>
+                    <div className="flex items-center gap-3 mt-1">
+                        <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Promedio 7D: <span className="text-slate-300">{avgLast7.toLocaleString()}</span></p>
+                        <div className={cn(
+                            "flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase",
+                            trend === 'up' ? "bg-green-500/10 text-green-500" :
+                                trend === 'down' ? "bg-red-500/10 text-red-500" :
+                                    "bg-slate-800 text-slate-400"
+                        )}>
+                            {trend === 'up' && <TrendingUp size={12} />}
+                            {trend === 'down' && <TrendingDown size={12} />}
+                            {trend === 'stable' && <Minus size={12} />}
+                            {trend === 'up' ? 'Subiendo' : trend === 'down' ? 'Bajando' : 'Estable'}
+                        </div>
+                    </div>
                 </div>
                 <div className="text-right">
                     <span className="text-[10px] text-slate-500 uppercase font-black">Meta Diaria</span>
-                    <p className="text-xl font-black text-green-500">12,000</p>
+                    <p className="text-xl font-black text-green-500">{STEP_GOAL.toLocaleString()}</p>
                 </div>
             </CardHeader>
             <CardContent className="h-[250px] md:h-[300px] p-2 md:p-6">
