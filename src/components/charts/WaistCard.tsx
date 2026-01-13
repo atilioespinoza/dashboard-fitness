@@ -1,11 +1,16 @@
 import { Card, CardContent } from '../ui/card';
 import { cn } from "../../lib/utils";
 
+import { FitnessEntry } from '../../data/mockData';
+import { format, addDays, parseISO, differenceInDays } from 'date-fns';
+import { es } from 'date-fns/locale';
+
 interface WaistCardProps {
     currentWaist: number;
+    data: FitnessEntry[];
 }
 
-export function WaistCard({ currentWaist }: WaistCardProps) {
+export function WaistCard({ currentWaist, data }: WaistCardProps) {
     const goal = 83;
     const intermediateGoal = 91;
     const start = 100;
@@ -15,6 +20,20 @@ export function WaistCard({ currentWaist }: WaistCardProps) {
 
     const isHit = currentWaist <= goal;
     const isIntermediateHit = currentWaist <= intermediateGoal;
+
+    // Projection - Global Average
+    const sortedData = [...data].sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
+    const first = sortedData[0];
+    const latest = sortedData[sortedData.length - 1];
+    const daysDiff = differenceInDays(parseISO(latest.Date), parseISO(first.Date)) || 1;
+    const waistRate = (latest.Waist - first.Waist) / daysDiff;
+
+    let estimatedDate = "";
+    if (waistRate < 0 && !isHit) {
+        const remaining = currentWaist - goal;
+        const daysToGoal = Math.ceil(remaining / Math.abs(waistRate));
+        estimatedDate = format(addDays(parseISO(latest.Date), daysToGoal), "MMM yyyy", { locale: es });
+    }
 
     return (
         <Card className="col-span-12 md:col-span-6 lg:col-span-4 flex flex-col justify-center">
@@ -33,9 +52,16 @@ export function WaistCard({ currentWaist }: WaistCardProps) {
                     )}>
                         <span>{isHit ? "¡MÁXIMA META!" : `${(currentWaist - goal).toFixed(1)}cm para el fin`}</span>
                         {!isHit && (
-                            <span className="text-[8px] opacity-60 mt-0.5">
-                                Sig: {isIntermediateHit ? "83cm (Meta)" : "91cm (Inter)"}
-                            </span>
+                            <div className="flex flex-col items-end">
+                                <span className="text-[8px] opacity-60 mt-0.5">
+                                    Sig: {isIntermediateHit ? "83cm (Meta)" : "91cm (Inter)"}
+                                </span>
+                                {estimatedDate && (
+                                    <span className="text-[8px] font-bold text-blue-500 mt-0.5">
+                                        Est: {estimatedDate}
+                                    </span>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>

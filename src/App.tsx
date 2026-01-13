@@ -10,6 +10,7 @@ import { CorrelationChart } from './components/charts/CorrelationChart';
 import { NotesList } from './components/charts/NotesList';
 import { TrainingCalendar } from './components/charts/TrainingCalendar';
 import { StepsChart } from './components/charts/StepsChart';
+import { GoalProjections } from './components/charts/GoalProjections';
 import { Activity, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { FadeIn, FadeInStagger } from './components/ui/FadeIn';
@@ -128,7 +129,7 @@ function App() {
                     </FadeIn>
                     <FadeInStagger className="col-span-12 lg:col-span-4 flex flex-col gap-4 md:gap-6">
                         <FadeIn>
-                            <WaistCard currentWaist={latest?.Waist || 0} />
+                            <WaistCard currentWaist={latest?.Waist || 0} data={data} />
                         </FadeIn>
                         <FadeIn delay={0.1}>
                             <LossGauge
@@ -140,6 +141,11 @@ function App() {
                         </FadeIn>
                     </FadeInStagger>
                 </div>
+
+                {/* Row 1.5: Projections */}
+                <FadeIn>
+                    <GoalProjections data={data} />
+                </FadeIn>
 
                 {/* Row 2: Nutrition & Activity Consistency */}
                 <div className="grid grid-cols-12 gap-4 md:gap-6">
