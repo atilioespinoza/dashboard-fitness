@@ -28,11 +28,21 @@ export function WaistCard({ currentWaist, data }: WaistCardProps) {
     const daysDiff = differenceInDays(parseISO(latest.Date), parseISO(first.Date)) || 1;
     const waistRate = (latest.Waist - first.Waist) / daysDiff;
 
-    let estimatedDate = "";
-    if (waistRate < 0 && !isHit) {
-        const remaining = currentWaist - goal;
-        const daysToGoal = Math.ceil(remaining / Math.abs(waistRate));
-        estimatedDate = format(addDays(parseISO(latest.Date), daysToGoal), "MMM yyyy", { locale: es });
+    let estimatedFinalDate = "";
+    let estimatedInterDate = "";
+
+    if (waistRate < 0) {
+        if (!isHit) {
+            const remainingFinal = currentWaist - goal;
+            const daysToFinal = Math.ceil(remainingFinal / Math.abs(waistRate));
+            estimatedFinalDate = format(addDays(parseISO(latest.Date), daysToFinal), "MMM yyyy", { locale: es });
+        }
+
+        if (!isIntermediateHit) {
+            const remainingInter = currentWaist - intermediateGoal;
+            const daysToInter = Math.ceil(remainingInter / Math.abs(waistRate));
+            estimatedInterDate = format(addDays(parseISO(latest.Date), daysToInter), "MMM yyyy", { locale: es });
+        }
     }
 
     return (
@@ -56,9 +66,9 @@ export function WaistCard({ currentWaist, data }: WaistCardProps) {
                                 <span className="text-[8px] opacity-60 mt-0.5">
                                     Sig: {isIntermediateHit ? "83cm (Meta)" : "91cm (Inter)"}
                                 </span>
-                                {estimatedDate && (
+                                {estimatedFinalDate && (
                                     <span className="text-[8px] font-bold text-blue-500 mt-0.5">
-                                        Est: {estimatedDate}
+                                        Est: {estimatedFinalDate}
                                     </span>
                                 )}
                             </div>
@@ -76,10 +86,16 @@ export function WaistCard({ currentWaist, data }: WaistCardProps) {
                         <div className={cn("flex flex-col items-center transition-colors duration-500", isIntermediateHit ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-600")}>
                             <span className="opacity-70">Intermedia</span>
                             <span>{intermediateGoal}cm</span>
+                            {estimatedInterDate && !isIntermediateHit && (
+                                <span className="text-[7px] font-bold lowercase opacity-80">{estimatedInterDate}</span>
+                            )}
                         </div>
                         <div className={cn("flex flex-col items-end transition-colors duration-500", isHit ? "text-green-600 dark:text-green-400" : "text-slate-400 dark:text-slate-600")}>
                             <span className="opacity-70">Meta</span>
                             <span>{goal}cm</span>
+                            {estimatedFinalDate && !isHit && (
+                                <span className="text-[7px] font-bold lowercase opacity-80">{estimatedFinalDate}</span>
+                            )}
                         </div>
                     </div>
                     <div className="relative">
