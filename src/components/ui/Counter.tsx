@@ -22,7 +22,7 @@ export default function Counter({
         damping: 30,
         stiffness: 100,
     });
-    const isInView = useInView(ref, { once: false, margin: "-50px" });
+    const isInView = useInView(ref, { once: false, margin: "-10px" });
 
     useEffect(() => {
         if (isInView) {
@@ -33,7 +33,16 @@ export default function Counter({
     }, [motionValue, isInView, value, direction]);
 
     useEffect(() => {
-        springValue.on("change", (latest) => {
+        // Initialize with starting value
+        if (ref.current) {
+            const initial = direction === "down" ? value : 0;
+            ref.current.textContent = prefix + Intl.NumberFormat("en-US", {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+            }).format(initial) + suffix;
+        }
+
+        const unsubscribe = springValue.on("change", (latest) => {
             if (ref.current) {
                 ref.current.textContent = prefix + Intl.NumberFormat("en-US", {
                     minimumFractionDigits: decimals,
@@ -41,7 +50,8 @@ export default function Counter({
                 }).format(latest) + suffix;
             }
         });
-    }, [springValue, decimals, prefix, suffix]);
+        return () => unsubscribe();
+    }, [springValue, decimals, prefix, suffix, value, direction]);
 
-    return <span ref={ref} />;
+    return <span ref={ref} style={{ fontVariantNumeric: 'tabular-nums' }} />;
 }

@@ -45,7 +45,7 @@ export const FadeIn = ({
             variants={variants}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: false, margin: "-50px" }}
+            viewport={{ once: false, margin: "-10px" }}
             className={`${fullWidth ? "w-full" : ""} ${className}`}
         >
             {children}
@@ -58,7 +58,7 @@ export const FadeInStagger = ({ children, staggerDelay = 0.1, className = "" }: 
         <motion.div
             initial="hidden"
             whileInView="show"
-            viewport={{ once: false, margin: "-50px" }}
+            viewport={{ once: false, margin: "-10px" }}
             variants={{
                 hidden: {},
                 show: {
