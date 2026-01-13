@@ -47,15 +47,15 @@ export function MacroDonut({ data }: MacroDonutProps) {
     weeklyData.reverse();
 
     return (
-        <Card className="col-span-12 bg-slate-900 border-slate-800">
-            <CardHeader className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-800/50 p-4 md:p-6 gap-2">
+        <Card className="col-span-12">
+            <CardHeader className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 dark:border-slate-800/50 p-4 md:p-6 gap-2">
                 <div>
-                    <CardTitle className="text-lg md:text-xl font-bold text-white tracking-tight">Análisis de Macros</CardTitle>
+                    <CardTitle className="text-lg md:text-xl font-bold tracking-tight">Análisis de Macros</CardTitle>
                     <p className="text-xs md:text-sm text-slate-500">Promedio General vs Semanal</p>
                 </div>
-                <div className="flex items-center md:flex-col md:items-end justify-between md:justify-center bg-slate-800/30 md:bg-transparent px-3 py-2 md:p-0 rounded-lg">
+                <div className="flex items-center md:flex-col md:items-end justify-between md:justify-center bg-slate-100 dark:bg-slate-800/30 md:bg-transparent px-3 py-2 md:p-0 rounded-lg">
                     <p className="text-[9px] md:text-xs font-bold text-slate-500 uppercase tracking-widest md:mb-1">Promedio Cal</p>
-                    <p className="text-xl md:text-2xl font-bold text-blue-400 leading-none">
+                    <p className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400 leading-none">
                         {Math.round(avgCals)} <span className="text-xs font-normal text-slate-500">kcal</span>
                     </p>
                 </div>
@@ -83,28 +83,28 @@ export function MacroDonut({ data }: MacroDonutProps) {
                                         ))}
                                     </Pie>
                                     <Tooltip
-                                        contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', border: '1px solid #334155', fontSize: '10px' }}
+                                        contentStyle={{ backgroundColor: 'var(--chart-tooltip-bg)', borderColor: 'var(--chart-tooltip-border)', borderRadius: '8px', border: '1px solid var(--chart-tooltip-border)', fontSize: '10px' }}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
                             {/* Center Summary */}
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span className="text-xl md:text-2xl font-bold text-white">{Math.round(avgProt + avgCarb + avgFat)}g</span>
+                                <span className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">{Math.round(avgProt + avgCarb + avgFat)}g</span>
                                 <span className="text-[8px] md:text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Promedio Diario</span>
                             </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2 px-1">
-                            <div className="text-center bg-slate-800/20 py-2 rounded-lg border border-slate-800/40">
-                                <p className="text-[8px] md:text-[10px] text-red-400 font-bold uppercase">Prot</p>
-                                <p className="text-base md:text-lg font-bold text-white tracking-tight">{Math.round(avgProt)}g</p>
+                            <div className="text-center bg-slate-50 dark:bg-slate-800/20 py-2 rounded-lg border border-slate-200 dark:border-slate-800/40 transition-colors">
+                                <p className="text-[8px] md:text-[10px] text-red-600 dark:text-red-400 font-bold uppercase">Prot</p>
+                                <p className="text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight">{Math.round(avgProt)}g</p>
                             </div>
-                            <div className="text-center bg-slate-800/20 py-2 rounded-lg border border-slate-800/40">
-                                <p className="text-[8px] md:text-[10px] text-amber-400 font-bold uppercase">Carbo</p>
-                                <p className="text-base md:text-lg font-bold text-white tracking-tight">{Math.round(avgCarb)}g</p>
+                            <div className="text-center bg-slate-50 dark:bg-slate-800/20 py-2 rounded-lg border border-slate-200 dark:border-slate-800/40 transition-colors">
+                                <p className="text-[8px] md:text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase">Carbo</p>
+                                <p className="text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight">{Math.round(avgCarb)}g</p>
                             </div>
-                            <div className="text-center bg-slate-800/20 py-2 rounded-lg border border-slate-800/40">
-                                <p className="text-[8px] md:text-[10px] text-blue-400 font-bold uppercase">Grasa</p>
-                                <p className="text-base md:text-lg font-bold text-white tracking-tight">{Math.round(avgFat)}g</p>
+                            <div className="text-center bg-slate-50 dark:bg-slate-800/20 py-2 rounded-lg border border-slate-200 dark:border-slate-800/40 transition-colors">
+                                <p className="text-[8px] md:text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase">Grasa</p>
+                                <p className="text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight">{Math.round(avgFat)}g</p>
                             </div>
                         </div>
                     </div>
@@ -115,21 +115,21 @@ export function MacroDonut({ data }: MacroDonutProps) {
                         <div className="h-[220px] md:h-[280px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={weeklyData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} opacity={0.3} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.3} />
                                     <XAxis
                                         dataKey="name"
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: '#475569', fontSize: 10 }}
+                                        tick={{ fill: 'var(--chart-text)', fontSize: 10 }}
                                     />
                                     <YAxis
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: '#475569', fontSize: 10 }}
+                                        tick={{ fill: 'var(--chart-text)', fontSize: 10 }}
                                     />
                                     <Tooltip
-                                        cursor={{ fill: '#1e293b', opacity: 0.2 }}
-                                        contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '10px' }}
+                                        cursor={{ fill: 'var(--chart-grid)', opacity: 0.2 }}
+                                        contentStyle={{ backgroundColor: 'var(--chart-tooltip-bg)', borderColor: 'var(--chart-tooltip-border)', borderRadius: '8px', fontSize: '10px' }}
                                     />
                                     <Legend verticalAlign="top" align="center" iconType="circle" wrapperStyle={{ fontSize: '10px', paddingBottom: '10px' }} />
                                     <Bar dataKey="Proteína" stackId="a" fill="#ef4444" barSize={30} />

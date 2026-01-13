@@ -21,11 +21,11 @@ export function WeightChart({ data }: WeightChartProps) {
     });
 
     return (
-        <Card className="col-span-12 lg:col-span-8 bg-slate-900 border-slate-800">
+        <Card className="col-span-12 lg:col-span-8">
             <CardHeader className="p-4 md:p-6 pb-2 md:pb-4">
-                <CardTitle className="text-lg md:text-xl font-bold text-slate-100 italic">Tendencias de Peso y Grasa</CardTitle>
+                <CardTitle className="text-lg md:text-xl font-bold italic">Tendencias de Peso y Grasa</CardTitle>
             </CardHeader>
-            <CardContent className="h-[280px] md:h-[350px] p-2 md:p-6 text-slate-400">
+            <CardContent className="h-[280px] md:h-[350px] p-2 md:p-6 text-slate-500">
                 <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={dataWithTrend} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                         <defs>
@@ -34,11 +34,11 @@ export function WeightChart({ data }: WeightChartProps) {
                                 <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} opacity={0.5} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
                         <XAxis
                             dataKey="Date"
                             tickFormatter={(date) => format(parseISO(date), 'dd MMM', { locale: es })}
-                            stroke="#475569"
+                            stroke="var(--chart-text)"
                             fontSize={10}
                             tickLine={false}
                             axisLine={false}
@@ -67,8 +67,14 @@ export function WeightChart({ data }: WeightChartProps) {
                             width={25}
                         />
                         <Tooltip
-                            contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }}
-                            labelStyle={{ color: '#94a3b8', fontWeight: 'bold' }}
+                            contentStyle={{
+                                backgroundColor: 'var(--chart-tooltip-bg)',
+                                borderColor: 'var(--chart-tooltip-border)',
+                                borderRadius: '8px',
+                                fontSize: '11px',
+                                color: 'var(--chart-text)'
+                            }}
+                            labelStyle={{ color: 'var(--chart-text)', fontWeight: 'bold' }}
                             labelFormatter={(label) => format(parseISO(label as string), 'dd MMM, yyyy', { locale: es })}
                         />
                         <Legend

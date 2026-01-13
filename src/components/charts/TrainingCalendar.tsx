@@ -54,40 +54,40 @@ export function TrainingCalendar({ data }: TrainingCalendarProps) {
     const [selectedDay, setSelectedDay] = useState<FitnessEntry | null>(null);
 
     return (
-        <Card className="col-span-12 bg-slate-900 border-slate-800">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800/50 pb-4">
+        <Card className="col-span-12">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-200 dark:border-slate-800/50 pb-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                    <div className="p-2 bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-500">
                         <CalendarIcon size={24} />
                     </div>
                     <div>
-                        <CardTitle className="text-xl font-bold text-white capitalize">
+                        <CardTitle className="text-xl font-bold capitalize">
                             Calendario de Entrenamiento
                         </CardTitle>
                         <p className="text-sm text-slate-500">Vista mensual de actividad y sesiones</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                    <button onClick={prevMonth} className="p-2 hover:bg-slate-800 rounded-md text-slate-400 transition-colors">
+                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-950 p-1 rounded-lg border border-slate-200 dark:border-slate-800 transition-colors">
+                    <button onClick={prevMonth} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-500 dark:text-slate-400 transition-colors">
                         <ChevronLeft size={18} />
                     </button>
-                    <span className="text-sm font-bold text-white min-w-[100px] text-center capitalize">
+                    <span className="text-sm font-bold text-slate-900 dark:text-white min-w-[100px] text-center capitalize">
                         {format(currentMonth, 'MMMM yyyy', { locale: es })}
                     </span>
-                    <button onClick={nextMonth} className="p-2 hover:bg-slate-800 rounded-md text-slate-400 transition-colors">
+                    <button onClick={nextMonth} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-500 dark:text-slate-400 transition-colors">
                         <ChevronRight size={18} />
                     </button>
                 </div>
             </CardHeader>
             <CardContent className="p-0">
-                <div className="grid grid-cols-7 border-b border-slate-800 bg-slate-950/30">
+                <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/30">
                     {['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'].map(day => (
-                        <div key={day} className="py-2 text-center text-[10px] uppercase font-black text-slate-600 tracking-widest">
+                        <div key={day} className="py-2 text-center text-[10px] uppercase font-black text-slate-400 dark:text-slate-600 tracking-widest">
                             {day}
                         </div>
                     ))}
                 </div>
-                <div className="grid grid-cols-7 gap-px bg-slate-800">
+                <div className="grid grid-cols-7 gap-px bg-slate-200 dark:bg-slate-800 overflow-hidden rounded-b-xl border-t border-slate-200 dark:border-slate-800">
                     {calendarDays.map((day, idx) => {
                         const training = getTrainingForDay(day);
                         const isCurrentMonth = isSameDay(startOfMonth(day), monthStart);
@@ -96,8 +96,8 @@ export function TrainingCalendar({ data }: TrainingCalendarProps) {
                             <div
                                 key={idx}
                                 className={cn(
-                                    "min-h-[80px] md:min-h-[110px] bg-slate-900 p-2 transition-all duration-300 relative group",
-                                    !isCurrentMonth && "bg-slate-900/40 opacity-30",
+                                    "min-h-[80px] md:min-h-[110px] bg-white dark:bg-slate-900 p-2 transition-all duration-300 relative group",
+                                    !isCurrentMonth && "bg-slate-50 dark:bg-slate-900/40 opacity-40 dark:opacity-30",
                                     isToday(day) && "bg-blue-500/5"
                                 )}
                                 onClick={() => training?.Training && setSelectedDay(training)}
@@ -105,7 +105,7 @@ export function TrainingCalendar({ data }: TrainingCalendarProps) {
                                 <div className="flex justify-between items-start mb-1">
                                     <span className={cn(
                                         "text-xs font-mono",
-                                        isToday(day) ? "bg-blue-600 text-white w-6 h-6 flex items-center justify-center rounded-full" : "text-slate-500"
+                                        isToday(day) ? "bg-blue-600 text-white w-6 h-6 flex items-center justify-center rounded-full" : "text-slate-400 dark:text-slate-500"
                                     )}>
                                         {format(day, 'd')}
                                     </span>
@@ -116,7 +116,7 @@ export function TrainingCalendar({ data }: TrainingCalendarProps) {
 
                                 {training?.Training && (
                                     <div className="mt-1 flex flex-col items-center justify-center gap-1 cursor-pointer">
-                                        <div className="p-1.5 md:p-2 bg-slate-800 rounded-lg group-hover:bg-slate-700 group-hover:scale-110 transition-all">
+                                        <div className="p-1.5 md:p-2 bg-slate-50 dark:bg-slate-800 rounded-lg group-hover:bg-slate-100 dark:group-hover:bg-slate-700 group-hover:scale-110 transition-all shadow-sm">
                                             {getWorkoutIcon(training.Training, 20)}
                                         </div>
                                         <span className="text-[9px] md:text-[10px] text-slate-400 font-medium hidden md:block text-center line-clamp-1">
@@ -136,41 +136,41 @@ export function TrainingCalendar({ data }: TrainingCalendarProps) {
 
             {/* Popover / Overlay Detail */}
             {selectedDay && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" onClick={() => setSelectedDay(null)}>
-                    <div className="bg-slate-900 border border-slate-700 p-6 rounded-2xl max-w-sm w-full shadow-2xl space-y-4" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 dark:bg-slate-950/80 backdrop-blur-sm transition-all" onClick={() => setSelectedDay(null)}>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl max-w-sm w-full shadow-2xl space-y-4" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-start">
                             <div className="flex items-center gap-3">
-                                <div className="p-3 bg-slate-800 rounded-xl">
+                                <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl">
                                     {getWorkoutIcon(selectedDay.Training || "", 24)}
                                 </div>
                                 <div>
-                                    <h4 className="text-white font-bold text-lg">Sesión de Entrenamiento</h4>
-                                    <p className="text-blue-400 text-xs font-mono">{format(parseISO(selectedDay.Date), 'dd MMMM, yyyy', { locale: es })}</p>
+                                    <h4 className="text-slate-900 dark:text-white font-bold text-lg leading-tight">Sesión de Entrenamiento</h4>
+                                    <p className="text-blue-600 dark:text-blue-400 text-xs font-mono mt-0.5">{format(parseISO(selectedDay.Date), 'dd MMMM, yyyy', { locale: es })}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setSelectedDay(null)} className="p-1 hover:bg-slate-800 rounded-md text-slate-500">
+                            <button onClick={() => setSelectedDay(null)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-slate-400 transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-                            <p className="text-slate-200 text-sm leading-relaxed">
+                        <div className="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                            <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed">
                                 {selectedDay.Training}
                             </p>
                         </div>
 
                         <div className="grid grid-cols-3 gap-2">
-                            <div className="bg-slate-950 p-2 rounded-lg text-center">
+                            <div className="bg-slate-100 dark:bg-slate-950 p-2 rounded-lg text-center transition-colors">
                                 <p className="text-[10px] text-slate-500 uppercase font-bold">Resumen</p>
-                                <p className="text-xs text-white mt-1">{selectedDay.Protein}g Prot</p>
+                                <p className="text-xs text-slate-900 dark:text-white mt-1 font-medium">{selectedDay.Protein}g Prot</p>
                             </div>
-                            <div className="bg-slate-950 p-2 rounded-lg text-center">
+                            <div className="bg-slate-100 dark:bg-slate-950 p-2 rounded-lg text-center transition-colors">
                                 <p className="text-[10px] text-slate-500 uppercase font-bold">Sueño</p>
-                                <p className="text-xs text-white mt-1">{selectedDay.Sleep}h</p>
+                                <p className="text-xs text-slate-900 dark:text-white mt-1 font-medium">{selectedDay.Sleep}h</p>
                             </div>
-                            <div className="bg-slate-950 p-2 rounded-lg text-center">
+                            <div className="bg-slate-100 dark:bg-slate-950 p-2 rounded-lg text-center transition-colors">
                                 <p className="text-[10px] text-slate-500 uppercase font-bold">Pasos</p>
-                                <p className={cn("text-xs mt-1", selectedDay.Steps >= 12000 ? "text-green-400 font-bold" : "text-white")}>
+                                <p className={cn("text-xs mt-1 font-medium", selectedDay.Steps >= 12000 ? "text-green-600 dark:text-green-400 font-bold" : "text-slate-900 dark:text-white")}>
                                     {selectedDay.Steps}
                                 </p>
                             </div>

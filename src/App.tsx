@@ -10,14 +10,32 @@ import { CorrelationChart } from './components/charts/CorrelationChart';
 import { NotesList } from './components/charts/NotesList';
 import { TrainingCalendar } from './components/charts/TrainingCalendar';
 import { StepsChart } from './components/charts/StepsChart';
-import { Activity } from 'lucide-react';
+import { Activity, Sun, Moon } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 function App() {
     const { data, loading, error } = useFitnessData();
+    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+        if (typeof window !== 'undefined') {
+            return (localStorage.getItem('theme') as 'light' | 'dark') || 'dark';
+        }
+        return 'dark';
+    });
+
+    useEffect(() => {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-dashboard-bg text-white flex items-center justify-center">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex items-center justify-center transition-colors duration-300">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
         );
@@ -25,7 +43,7 @@ function App() {
 
     if (error && data.length === 0) {
         return (
-            <div className="min-h-screen bg-dashboard-bg text-white flex items-center justify-center p-4">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex items-center justify-center p-4 transition-colors duration-300">
                 <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-lg max-w-md">
                     <h2 className="text-lg font-bold mb-2">Error al Cargar Datos</h2>
                     <p>{error}</p>
@@ -74,20 +92,27 @@ function App() {
     const theoreticalFatLoss = Number((cumulativeDeficit / 7700).toFixed(2));
 
     return (
-        <div className="min-h-screen bg-dashboard-bg text-slate-100 p-3 md:p-8 font-sans pb-20 md:pb-8">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-3 md:p-8 font-sans pb-20 md:pb-8 transition-colors duration-300">
             <div className="max-w-7xl mx-auto space-y-4 md:space-y-8">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4 px-1">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-4 px-1">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                             <Activity className="text-blue-500" size={24} />
                             Registro Fitness Pro
                         </h1>
-                        <p className="text-xs md:text-sm text-slate-400 mt-0.5 md:mt-1">Panel de Tendencias y Análisis</p>
+                        <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5 md:mt-1">Panel de Tendencias y Análisis</p>
                     </div>
-                    <div className="flex gap-2">
-                        <div className="px-2 py-0.5 md:px-3 md:py-1 bg-slate-900 rounded-full border border-slate-800 text-[10px] md:text-xs text-slate-500 font-mono">
+                    <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto justify-between md:justify-end">
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-sm"
+                            aria-label="Toggle theme"
+                        >
+                            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                        </button>
+                        <div className="px-3 py-1 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 text-[10px] md:text-xs text-slate-500 dark:text-slate-500 font-mono shadow-sm">
                             Última Actualización: {latest?.Date}
                         </div>
                     </div>

@@ -26,20 +26,20 @@ export function StepsChart({ data }: StepsChartProps) {
     const trend = diff > 500 ? 'up' : diff < -500 ? 'down' : 'stable';
 
     return (
-        <Card className="col-span-12 bg-slate-900 border-slate-800">
+        <Card className="col-span-12">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div>
-                    <CardTitle className="text-xl font-bold text-slate-100 flex items-center gap-2">
+                    <CardTitle className="text-xl font-bold flex items-center gap-2">
                         <Footprints className="text-green-500" size={24} />
                         Actividad Diaria (Pasos)
                     </CardTitle>
                     <div className="flex items-center gap-3 mt-1">
-                        <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Promedio 7D: <span className="text-slate-300">{avgLast7.toLocaleString()}</span></p>
+                        <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Promedio 7D: <span className="text-slate-700 dark:text-slate-300">{avgLast7.toLocaleString()}</span></p>
                         <div className={cn(
                             "flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase",
-                            trend === 'up' ? "bg-green-500/10 text-green-500" :
-                                trend === 'down' ? "bg-red-500/10 text-red-500" :
-                                    "bg-slate-800 text-slate-400"
+                            trend === 'up' ? "bg-green-500/10 text-green-600 dark:text-green-500 border border-green-500/20" :
+                                trend === 'down' ? "bg-red-500/10 text-red-600 dark:text-red-500 border border-red-500/20" :
+                                    "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                         )}>
                             {trend === 'up' && <TrendingUp size={12} />}
                             {trend === 'down' && <TrendingDown size={12} />}
@@ -56,25 +56,31 @@ export function StepsChart({ data }: StepsChartProps) {
             <CardContent className="h-[250px] md:h-[300px] p-2 md:p-6">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={last30} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} opacity={0.3} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.3} />
                         <XAxis
                             dataKey="Date"
                             tickFormatter={(date) => format(parseISO(date), 'dd MMM', { locale: es })}
-                            stroke="#475569"
+                            stroke="var(--chart-text)"
                             fontSize={10}
                             tickLine={false}
                             axisLine={false}
                         />
                         <YAxis
-                            stroke="#475569"
+                            stroke="var(--chart-text)"
                             fontSize={10}
                             tickLine={false}
                             axisLine={false}
                             tickFormatter={(val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}
                         />
                         <Tooltip
-                            cursor={{ fill: '#1e293b', opacity: 0.4 }}
-                            contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', fontSize: '12px' }}
+                            cursor={{ fill: 'var(--chart-grid)', opacity: 0.4 }}
+                            contentStyle={{
+                                backgroundColor: 'var(--chart-tooltip-bg)',
+                                borderColor: 'var(--chart-tooltip-border)',
+                                borderRadius: '12px',
+                                fontSize: '12px',
+                                color: 'var(--chart-text)'
+                            }}
                             labelFormatter={(label) => format(parseISO(label as string), 'dd MMM, yyyy', { locale: es })}
                         />
 

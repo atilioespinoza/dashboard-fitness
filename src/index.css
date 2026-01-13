@@ -4,14 +4,31 @@
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --chart-grid: #e2e8f0;
+  --chart-text: #64748b;
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-border: #e2e8f0;
+}
+
+.dark {
+  --chart-grid: #1e293b;
+  --chart-text: #94a3b8;
+  --chart-tooltip-bg: #0f172a;
+  --chart-tooltip-border: #334155;
+}
+
+@layer base {
+  body {
+    @apply transition-colors duration-300;
+  }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-slate-900/50 backdrop-blur-md border border-slate-700/50;
+    @apply bg-white/70 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-none;
   }
 }
 
 body {
-  @apply bg-gray-950 text-slate-100;
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
 }
