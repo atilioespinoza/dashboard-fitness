@@ -9,6 +9,7 @@ import { MacroDonut } from './components/charts/MacroDonut';
 import { CorrelationChart } from './components/charts/CorrelationChart';
 import { NotesList } from './components/charts/NotesList';
 import { TrainingCalendar } from './components/charts/TrainingCalendar';
+import { StepsChart } from './components/charts/StepsChart';
 import { Activity } from 'lucide-react';
 
 function App() {
@@ -115,7 +116,12 @@ function App() {
                     <MacroDonut data={data} />
                 </div>
 
-                {/* Row 4: Training Calendar (REPLACED CARDS) */}
+                {/* Row 4: Activity Analysis (Steps) */}
+                <div className="grid grid-cols-12 gap-6">
+                    <StepsChart data={data} />
+                </div>
+
+                {/* Row 5: Training Calendar (REPLACED CARDS) */}
                 <div className="grid grid-cols-12 gap-6">
                     <TrainingCalendar data={data} />
                 </div>
