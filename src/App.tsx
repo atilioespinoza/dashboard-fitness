@@ -11,6 +11,7 @@ import { NotesList } from './components/charts/NotesList';
 import { TrainingCalendar } from './components/charts/TrainingCalendar';
 import { StepsChart } from './components/charts/StepsChart';
 import { GoalProjections } from './components/charts/GoalProjections';
+import { AchievementsGallery } from './components/charts/AchievementsGallery';
 import { PersonalInfo } from './components/ui/PersonalInfo';
 import { Activity, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -148,10 +149,15 @@ function App() {
                     </FadeInStagger>
                 </div>
 
-                {/* Row 1.5: Projections */}
-                <FadeIn>
-                    <GoalProjections data={data} />
-                </FadeIn>
+                {/* Row 1.5: Projections & Achievements */}
+                <div className="grid grid-cols-12 gap-6">
+                    <FadeIn className="col-span-12 lg:col-span-12">
+                        <GoalProjections data={data} />
+                    </FadeIn>
+                    <FadeIn className="col-span-12 lg:col-span-12">
+                        <AchievementsGallery data={data} />
+                    </FadeIn>
+                </div>
 
                 {/* Row 2: Nutrition & Activity Consistency */}
                 <div className="grid grid-cols-12 gap-4 md:gap-6">
