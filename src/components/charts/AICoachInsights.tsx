@@ -1,6 +1,6 @@
 import { useAICoach, Insight } from '../../hooks/useAICoach';
 import { FitnessEntry } from '../../data/mockData';
-import { Bot, Sparkles, TrendingDown, AlertCircle, Info, ChevronRight, ChevronDown } from 'lucide-react';
+import { Bot, Sparkles, AlertCircle, Info, ChevronRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
