@@ -13,6 +13,7 @@ import { StepsChart } from './components/charts/StepsChart';
 import { GoalProjections } from './components/charts/GoalProjections';
 import { AchievementsGallery } from './components/charts/AchievementsGallery';
 import { BodyHeatmap } from './components/charts/BodyHeatmap';
+import { AICoachInsights } from './components/charts/AICoachInsights';
 import { PersonalInfo } from './components/ui/PersonalInfo';
 import { Activity, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -123,6 +124,11 @@ function App() {
                             </div>
                         </div>
                     </div>
+                </FadeIn>
+
+                {/* AI Briefing */}
+                <FadeIn>
+                    <AICoachInsights data={data} />
                 </FadeIn>
 
                 {/* Personal Info Bar */}
