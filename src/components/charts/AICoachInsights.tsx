@@ -8,7 +8,7 @@ interface AICoachInsightsProps {
     data: FitnessEntry[];
 }
 
-const InsightCard = ({ insight, index }: { insight: Insight, index: number }) => {
+const InsightCard = ({ insight }: { insight: Insight }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const icons = {
@@ -23,9 +23,6 @@ const InsightCard = ({ insight, index }: { insight: Insight, index: number }) =>
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
             onClick={() => setIsExpanded(!isExpanded)}
             className={`cursor-pointer group relative overflow-hidden p-4 rounded-2xl border transition-all duration-300 ${config.bg} ${config.border} hover:border-white/20`}
         >
@@ -80,7 +77,6 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="relative">
-                            <div className="absolute inset-0 bg-blue-500 blur-md opacity-30 animate-pulse rounded-2xl" />
                             <div className="relative p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl text-white shadow-lg">
                                 <Bot size={28} />
                             </div>
@@ -118,7 +114,7 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                         ))
                     ) : (
                         insights.map((insight, idx) => (
-                            <InsightCard key={idx} insight={insight} index={idx} />
+                            <InsightCard key={idx} insight={insight} />
                         ))
                     )}
                 </div>
@@ -127,7 +123,6 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                 {!loading && (
                     <div className="pt-2 flex flex-col xs:flex-row xs:items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-500 font-bold uppercase tracking-widest">
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                             {isAI ? "Análisis cognitivo activo" : "Motor heurístico local"}
                         </div>
                         <button className="w-full xs:w-auto px-4 py-2 bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-blue-400 transition-all flex items-center justify-center gap-2 group/btn">
