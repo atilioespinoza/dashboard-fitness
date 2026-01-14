@@ -3,7 +3,7 @@ import { FitnessEntry } from '../../data/mockData';
 import { AchievementBadge } from '../ui/AchievementBadge';
 import { Trophy, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 interface AchievementsGalleryProps {
     data: FitnessEntry[];
@@ -11,34 +11,44 @@ interface AchievementsGalleryProps {
 
 export const AchievementsGallery = ({ data }: AchievementsGalleryProps) => {
     const achievements = useAchievements(data);
-    const prevUnlockedCount = useRef<number>(0);
-
     const unlockedCount = achievements.filter(a => a.isUnlocked).length;
     const totalCount = achievements.length;
     const progressPercent = Math.round((unlockedCount / totalCount) * 100);
 
+    const fireConfetti = () => {
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+            zIndex: 9999
+        });
+    };
+
     useEffect(() => {
-        // Trigger confetti if a new achievement was unlocked since last render
-        // In a real app, this might be stored in localStorage or a DB
+        if (achievements.length === 0) return;
+
         const currentUnlockedCount = achievements.filter(a => a.isUnlocked).length;
+        const lastCelebratedCount = Number(localStorage.getItem('achievements_celebrated_count') || '0');
 
-        if (currentUnlockedCount > prevUnlockedCount.current && prevUnlockedCount.current !== 0) {
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
-            });
+        if (currentUnlockedCount > lastCelebratedCount) {
+            const timer = setTimeout(() => {
+                fireConfetti();
+                localStorage.setItem('achievements_celebrated_count', currentUnlockedCount.toString());
+            }, 1000);
+            return () => clearTimeout(timer);
         }
-
-        prevUnlockedCount.current = currentUnlockedCount;
     }, [achievements]);
 
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-yellow-500/10 rounded-lg">
+                    <div
+                        className="p-2 bg-yellow-500/10 rounded-lg cursor-pointer hover:bg-yellow-500/20 transition-colors"
+                        onClick={fireConfetti}
+                        title="Probar Confetti"
+                    >
                         <Trophy className="text-yellow-500" size={24} />
                     </div>
                     <div>
