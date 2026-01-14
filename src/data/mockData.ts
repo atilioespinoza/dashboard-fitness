@@ -36,6 +36,9 @@ const generateMockData = (): FitnessEntry[] => {
         const steps = Math.floor(8000 + Math.random() * 6000);
         const sleep = Number((7 + Math.random() * 2).toFixed(1));
 
+        const trainingTypes = ["Calistenia", "Bici fija", "Salto de cuerda"];
+        const training = Math.random() > 0.4 ? trainingTypes[Math.floor(Math.random() * trainingTypes.length)] : undefined;
+
         data.push({
             Date: date.toISOString().split('T')[0],
             Weight: weight,
@@ -48,8 +51,8 @@ const generateMockData = (): FitnessEntry[] => {
             Steps: steps,
             TDEE: tdee,
             Sleep: sleep,
-            Notes: Math.random() > 0.7 ? "Great workout today!" : "",
-            Training: Math.random() > 0.5 ? "Strength Training" : (Math.random() > 0.5 ? "Cardio" : undefined),
+            Notes: Math.random() > 0.7 ? "Entrenamiento intenso hoy." : "",
+            Training: training,
         });
     }
     return data;

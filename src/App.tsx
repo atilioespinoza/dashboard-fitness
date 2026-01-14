@@ -12,6 +12,7 @@ import { TrainingCalendar } from './components/charts/TrainingCalendar';
 import { StepsChart } from './components/charts/StepsChart';
 import { GoalProjections } from './components/charts/GoalProjections';
 import { AchievementsGallery } from './components/charts/AchievementsGallery';
+import { BodyHeatmap } from './components/charts/BodyHeatmap';
 import { PersonalInfo } from './components/ui/PersonalInfo';
 import { Activity, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -192,10 +193,15 @@ function App() {
                     <StepsChart data={data} />
                 </FadeIn>
 
-                {/* Row 5: Training Calendar (REPLACED CARDS) */}
-                <FadeIn className="grid grid-cols-12 gap-6">
-                    <TrainingCalendar data={data} />
-                </FadeIn>
+                {/* Row 5: Training Activity & Map */}
+                <div className="grid grid-cols-12 gap-6">
+                    <FadeIn className="col-span-12 lg:col-span-4">
+                        <BodyHeatmap data={data} />
+                    </FadeIn>
+                    <FadeIn className="col-span-12 lg:col-span-8">
+                        <TrainingCalendar data={data} />
+                    </FadeIn>
+                </div>
 
                 {/* Row 5: Trends & Analysis */}
                 <div className="grid grid-cols-12 gap-6">
