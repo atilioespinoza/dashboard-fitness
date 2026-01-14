@@ -5,13 +5,13 @@ const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 export const getGeminiInsights = async (data: FitnessEntry[]) => {
-    if (!genAI) {
-        throw new Error("No Gemini API Key found");
-    }
+  if (!genAI) {
+    throw new Error("No Gemini API Key found");
+  }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
-    const prompt = `
+  const prompt = `
     Eres un Coach de Fitness experto, científico de datos y nutricionista. 
     Analiza los siguientes datos de los últimos 14 días de un usuario y proporciona exactamente 4 insights clave.
     
@@ -32,16 +32,21 @@ export const getGeminiInsights = async (data: FitnessEntry[]) => {
     - TRADUCE TODO AL ESPAÑOL.
   `;
 
-    try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-        // Clean potential markdown from JSON
-        const jsonStr = text.replace(/```json|```/g, "").trim();
-        return JSON.parse(jsonStr);
-    } catch (error) {
-        console.error("Error calling Gemini:", error);
-        return null;
+    // Improved JSON extraction: find the first '[' and last ']'
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      console.error("Could not find JSON array in Gemini response:", text);
+      return null;
     }
+
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Error calling Gemini:", error);
+    return null;
+  }
 };
