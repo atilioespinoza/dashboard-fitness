@@ -62,7 +62,7 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                                 AI Fitness Coach
                                 {isAI ? (
                                     <span className="px-2 py-0.5 bg-purple-500/30 text-purple-300 text-[10px] uppercase font-bold tracking-widest rounded-full border border-purple-500/30">
-                                        Gemini 3 Powered
+                                        Gemini 2.0 Powered
                                     </span>
                                 ) : (
                                     <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-[10px] uppercase tracking-widest rounded-full border border-blue-500/30">
