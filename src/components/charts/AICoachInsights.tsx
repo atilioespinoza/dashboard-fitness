@@ -1,13 +1,16 @@
 import { useAICoach, Insight } from '../../hooks/useAICoach';
 import { FitnessEntry } from '../../data/mockData';
-import { Bot, Sparkles, TrendingDown, AlertCircle, Info, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Bot, Sparkles, TrendingDown, AlertCircle, Info, ChevronRight, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 
 interface AICoachInsightsProps {
     data: FitnessEntry[];
 }
 
 const InsightCard = ({ insight, index }: { insight: Insight, index: number }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+
     const icons = {
         positive: { icon: Sparkles, color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20' },
         warning: { icon: AlertCircle, color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
@@ -20,20 +23,44 @@ const InsightCard = ({ insight, index }: { insight: Insight, index: number }) =>
 
     return (
         <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className={`p-4 rounded-2xl border ${config.bg} ${config.border} flex flex-col gap-2 min-w-[280px] md:min-w-0`}
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`cursor-pointer group relative overflow-hidden p-4 rounded-2xl border transition-all duration-300 ${config.bg} ${config.border} hover:border-white/20`}
         >
-            <div className="flex items-center gap-2">
-                <div className={`p-1.5 rounded-lg bg-white dark:bg-slate-900 ${config.color}`}>
-                    <Icon size={16} />
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-xl bg-white dark:bg-slate-900 shadow-sm ${config.color}`}>
+                        <Icon size={18} />
+                    </div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
+                        {insight.title}
+                    </h4>
                 </div>
-                <h4 className="font-bold text-sm text-slate-900 dark:text-white leading-none">{insight.title}</h4>
+                <motion.div
+                    animate={{ rotate: isExpanded ? 180 : 0 }}
+                    className="text-slate-400 group-hover:text-white"
+                >
+                    <ChevronDown size={16} />
+                </motion.div>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                {insight.message}
-            </p>
+
+            <AnimatePresence>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                        animate={{ height: 'auto', opacity: 1, marginTop: 12 }}
+                        exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                        transition={{ duration: 0.3, ease: "circOut" }}
+                        className="overflow-hidden"
+                    >
+                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed border-t border-white/5 pt-3">
+                            {insight.message}
+                        </p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };
@@ -44,62 +71,68 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
     if (!loading && insights.length === 0) return null;
 
     return (
-        <div className="bg-slate-900 dark:bg-blue-600/5 rounded-3xl p-6 border border-slate-800 dark:border-blue-500/20 shadow-xl overflow-hidden relative group">
-            {/* Background Glows */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
+        <div className="bg-slate-50 dark:bg-slate-950 rounded-[2.5rem] p-6 border border-slate-200 dark:border-white/10 shadow-xl overflow-hidden relative group transition-colors duration-500">
+            {/* Background Aesthetic Glows */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none" />
 
             <div className="relative z-10 space-y-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                {/* Header Section */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
                         <div className="relative">
-                            <div className="absolute inset-0 bg-blue-500 blur-md opacity-40 animate-pulse rounded-full" />
-                            <div className="relative p-2.5 bg-blue-600 rounded-xl text-white shadow-lg shadow-blue-500/20">
-                                <Bot size={24} />
+                            <div className="absolute inset-0 bg-blue-500 blur-md opacity-30 animate-pulse rounded-2xl" />
+                            <div className="relative p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl text-white shadow-lg">
+                                <Bot size={28} />
                             </div>
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                AI Fitness Coach
-                                {isAI ? (
-                                    <span className="px-2 py-0.5 bg-purple-500/30 text-purple-300 text-[10px] uppercase font-bold tracking-widest rounded-full border border-purple-500/30">
-                                        Gemini 3 Powered
-                                    </span>
-                                ) : (
-                                    <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-[10px] uppercase tracking-widest rounded-full border border-blue-500/30">
-                                        Local Heuristics
-                                    </span>
+                            <div className="flex items-center gap-2 mb-1">
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                                    AI Fitness Coach
+                                </h2>
+                                {isAI && (
+                                    <div className="hidden xs:flex px-2 py-0.5 bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[9px] uppercase font-black tracking-tighter rounded-full border border-purple-500/20 backdrop-blur-md">
+                                        Gemini 3 Pro
+                                    </div>
                                 )}
-                            </h2>
-                            <p className="text-sm text-slate-400">
-                                {loading ? "Generando análisis inteligente..." : "Análisis inteligente de tus tendencias diarias"}
+                            </div>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                                {loading ? "Analizando tu progreso..." : "Briefing de inteligencia diaria"}
                             </p>
                         </div>
                     </div>
+
+                    {/* Badge for Mobile (Dynamic positioning) */}
+                    {isAI && (
+                        <div className="xs:hidden self-start px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-300 text-[10px] uppercase font-black tracking-widest rounded-full border border-purple-500/20">
+                            Powered by Gemini 3
+                        </div>
+                    )}
                 </div>
 
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
-                        {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="h-24 bg-white/5 rounded-2xl border border-white/10" />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                        {insights.map((insight, idx) => (
+                {/* Insights List */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {loading ? (
+                        [1, 2, 3, 4].map((i) => (
+                            <div key={i} className="h-16 bg-slate-200/50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5 animate-pulse" />
+                        ))
+                    ) : (
+                        insights.map((insight, idx) => (
                             <InsightCard key={idx} insight={insight} index={idx} />
-                        ))}
-                    </div>
-                )}
+                        ))
+                    )}
+                </div>
 
+                {/* Footer Info */}
                 {!loading && (
-                    <div className="pt-2 flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium uppercase tracking-wider">
-                            <TrendingDown size={14} className="text-blue-500" />
-                            {isAI ? "Análisis cognitivo profundo" : "Basado en reglas heurísticas"}
+                    <div className="pt-2 flex flex-col xs:flex-row xs:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-500 font-bold uppercase tracking-widest">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            {isAI ? "Análisis cognitivo activo" : "Motor heurístico local"}
                         </div>
-                        <button className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 group/btn">
-                            Ver análisis detallado
-                            <ChevronRight size={14} className="group-hover/btn:translate-x-0.5 transition-transform" />
+                        <button className="w-full xs:w-auto px-4 py-2 bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-blue-400 transition-all flex items-center justify-center gap-2 group/btn">
+                            Ver reporte completo
+                            <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                         </button>
                     </div>
                 )}
