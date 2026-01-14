@@ -39,15 +39,14 @@ const InsightCard = ({ insight, index }: { insight: Insight, index: number }) =>
 };
 
 export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
-    const insights = useAICoach(data);
+    const { insights, loading, isAI } = useAICoach(data);
 
-    if (insights.length === 0) return null;
+    if (!loading && insights.length === 0) return null;
 
     return (
         <div className="bg-slate-900 dark:bg-blue-600/5 rounded-3xl p-6 border border-slate-800 dark:border-blue-500/20 shadow-xl overflow-hidden relative group">
             {/* Background Glows */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-[80px] -ml-32 -mb-32 pointer-events-none" />
 
             <div className="relative z-10 space-y-6">
                 <div className="flex items-center justify-between">
@@ -61,29 +60,49 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                         <div>
                             <h2 className="text-xl font-bold text-white flex items-center gap-2">
                                 AI Fitness Coach
-                                <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-[10px] uppercase tracking-widest rounded-full border border-blue-500/30">Beta</span>
+                                {isAI ? (
+                                    <span className="px-2 py-0.5 bg-purple-500/30 text-purple-300 text-[10px] uppercase font-bold tracking-widest rounded-full border border-purple-500/30">
+                                        Gemini 1.5 Powered
+                                    </span>
+                                ) : (
+                                    <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-[10px] uppercase tracking-widest rounded-full border border-blue-500/30">
+                                        Local Heuristics
+                                    </span>
+                                )}
                             </h2>
-                            <p className="text-sm text-slate-400">Análisis inteligente de tus tendencias diarias</p>
+                            <p className="text-sm text-slate-400">
+                                {loading ? "Generando análisis inteligente..." : "Análisis inteligente de tus tendencias diarias"}
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                    {insights.map((insight, idx) => (
-                        <InsightCard key={idx} insight={insight} index={idx} />
-                    ))}
-                </div>
-
-                <div className="pt-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium uppercase tracking-wider">
-                        <TrendingDown size={14} className="text-blue-500" />
-                        Basado en los últimos 14 registros
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="h-24 bg-white/5 rounded-2xl border border-white/10" />
+                        ))}
                     </div>
-                    <button className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 group/btn">
-                        Ver análisis detallado
-                        <ChevronRight size={14} className="group-hover/btn:translate-x-0.5 transition-transform" />
-                    </button>
-                </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                        {insights.map((insight, idx) => (
+                            <InsightCard key={idx} insight={insight} index={idx} />
+                        ))}
+                    </div>
+                )}
+
+                {!loading && (
+                    <div className="pt-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium uppercase tracking-wider">
+                            <TrendingDown size={14} className="text-blue-500" />
+                            {isAI ? "Análisis cognitivo profundo" : "Basado en reglas heurísticas"}
+                        </div>
+                        <button className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 group/btn">
+                            Ver análisis detallado
+                            <ChevronRight size={14} className="group-hover/btn:translate-x-0.5 transition-transform" />
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
