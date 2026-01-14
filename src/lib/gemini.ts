@@ -9,7 +9,7 @@ export const getGeminiInsights = async (data: FitnessEntry[]) => {
     throw new Error("No Gemini API Key found");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
     Eres un Coach de Fitness experto, científico de datos y nutricionista. 
