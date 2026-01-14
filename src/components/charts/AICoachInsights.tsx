@@ -11,10 +11,11 @@ const InsightCard = ({ insight, index }: { insight: Insight, index: number }) =>
     const icons = {
         positive: { icon: Sparkles, color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20' },
         warning: { icon: AlertCircle, color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
-        info: { icon: Info, color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/20' }
+        info: { icon: Info, color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
+        critical: { icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' }
     };
 
-    const config = icons[insight.type];
+    const config = icons[insight.type as keyof typeof icons] || icons.info;
     const Icon = config.icon;
 
     return (

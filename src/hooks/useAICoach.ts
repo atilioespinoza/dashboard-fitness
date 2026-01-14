@@ -2,80 +2,104 @@ import { useMemo } from 'react';
 import { FitnessEntry } from '../data/mockData';
 
 export interface Insight {
-    type: 'positive' | 'warning' | 'info';
+    type: 'positive' | 'warning' | 'info' | 'critical';
     title: string;
     message: string;
 }
 
 export const useAICoach = (data: FitnessEntry[]) => {
     const insights = useMemo(() => {
-        if (!data || data.length < 7) return [];
+        if (!data || data.length < 10) return [];
 
         const list: Insight[] = [];
         const sortedData = [...data].sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime());
+
+        // Window segments
         const last7Days = sortedData.slice(0, 7);
-        const previous7Days = sortedData.slice(7, 14);
+        const prev7Days = sortedData.slice(7, 14);
 
-        // 1. Weight Trend Insight
-        if (last7Days.length === 7 && previous7Days.length === 7) {
-            const avgWeightNow = last7Days.reduce((acc, d) => acc + d.Weight, 0) / 7;
-            const avgWeightPrev = previous7Days.reduce((acc, d) => acc + d.Weight, 0) / 7;
-            const diff = avgWeightNow - avgWeightPrev;
+        // --- 1. METABOLIC EFFICIENCY (The "Grand Truth") ---
+        // Compare theoretical vs actual loss
+        const avgDeficit = last7Days.reduce((acc, d) => acc + (d.TDEE - d.Calories), 0) / 7;
+        const totalDeficit7 = avgDeficit * 7;
+        const theoreticalLoss = totalDeficit7 / 7700; // 7700kcal ~ 1kg fat
 
-            if (diff <= -0.2) {
+        const weightNow = last7Days.reduce((acc, d) => acc + d.Weight, 0) / 7;
+        const weightPrev = prev7Days.reduce((acc, d) => acc + d.Weight, 0) / 7;
+        const actualLoss = weightPrev - weightNow;
+
+        if (actualLoss > 0.1) {
+            const efficiency = actualLoss / theoreticalLoss;
+            if (efficiency > 1.2) {
                 list.push({
                     type: 'positive',
-                    title: 'Ritmo de Pérdida Óptimo',
-                    message: `Tu peso promedio ha bajado ${Math.abs(diff).toFixed(2)}kg esta semana. Estás en la zona ideal para preservar masa muscular.`
+                    title: 'Metabolismo Acelerado',
+                    message: `Estás perdiendo peso un ${(efficiency * 100 - 100).toFixed(0)}% más rápido de lo previsto teóricamente. Tu NEAT (actividad no deportiva) debe estar por las nubes.`
                 });
-            } else if (diff > 0.1) {
+            } else if (efficiency < 0.5) {
                 list.push({
                     type: 'warning',
-                    title: 'Ligero Repunte en Peso',
-                    message: "El peso promedio subió un poco. Revisa si hubo mayor consumo de sodio o si el estrés/descanso están afectando la retención de líquidos."
+                    title: 'Resistencia Metabólica',
+                    message: "Estás perdiendo menos de lo que dicta tu déficit calórico. Considera revisar la precisión del pesaje de alimentos o el estrés inflamatorio."
                 });
             }
         }
 
-        // 2. Sleep & Weight Correlation
-        const sleepAvg = last7Days.reduce((acc, d) => acc + d.Sleep, 0) / 7;
-        if (sleepAvg < 6.5) {
-            list.push({
-                type: 'warning',
-                title: 'Prioriza tu Descanso',
-                message: `Tu promedio de sueño esta semana es de ${sleepAvg.toFixed(1)}h. La falta de sueño eleva el cortisol, lo que puede dificultar la pérdida de grasa.`
-            });
-        } else if (sleepAvg > 7.5) {
+        // --- 2. RECOMPOSITION DETECTION (Waist vs Weight) ---
+        const waistNow = last7Days.reduce((acc, d) => acc + d.Waist, 0) / 7;
+        const waistPrev = prev7Days.reduce((acc, d) => acc + d.Waist, 0) / 7;
+        const waistDiff = waistPrev - waistNow;
+
+        if (Math.abs(actualLoss) < 0.2 && waistDiff > 0.3) {
             list.push({
                 type: 'positive',
-                title: 'Recuperación de Campeón',
-                message: "Estás durmiendo lo suficiente. Esto optimiza tu entorno hormonal para la quema de grasa y recuperación muscular."
+                title: 'Recomposición Corporal',
+                message: "¡Excelente noticia! Tu peso apenas se movió, pero tu cintura bajó significativamente. Estás ganando músculo mientras pierdes grasa."
             });
         }
 
-        // 3. Protein Consistency
+        // --- 3. RECOVERY & TRAINING BALANCE ---
+        const trainingDays = last7Days.filter(d => d.Training).length;
+        const sleepAvg = last7Days.reduce((acc, d) => acc + d.Sleep, 0) / 7;
         const proteinAvg = last7Days.reduce((acc, d) => acc + d.Protein, 0) / 7;
-        if (proteinAvg < 140) {
+
+        if (trainingDays >= 5 && sleepAvg < 6.5) {
+            list.push({
+                type: 'critical',
+                dangerouslySetInnerHTML: true,
+                title: 'Riesgo de Sobreentrenamiento',
+                message: `Entrenaste ${trainingDays} veces pero dormiste solo ${sleepAvg.toFixed(1)}h. Tu cuerpo no está reparando el tejido. ¡Mañana descansa obligatoriamente!`
+            } as any);
+        }
+
+        // --- 4. PLATEAU PREDICTION ---
+        const last3Entries = last7Days.slice(0, 3);
+        const isStable = last3Entries.every(d => Math.abs(d.Weight - weightNow) < 0.2);
+        if (isStable && avgDeficit > 400) {
             list.push({
                 type: 'info',
-                title: 'Ajuste de Proteína',
-                message: `Estás promediando ${Math.round(proteinAvg)}g de proteína. Intentar llegar a 150g protegerá mejor tu músculo durante el déficit.`
-            });
-        } else {
-            list.push({
-                type: 'positive',
-                title: 'Nutrición Sólida',
-                message: "Tu ingesta de proteína es excelente. Esto es clave para mantener tu metabolismo activo."
+                title: 'Predicción de Estancamiento',
+                message: "Llevas 3 días con peso idéntico. Es normal debido a la retención de glucógeno. No bajes más las calorías, el peso caerá de golpe pronto (Whoosh Effect)."
             });
         }
 
-        // 4. Activity/Steps
-        const stepsAvg = last7Days.reduce((acc, d) => acc + d.Steps, 0) / 7;
-        if (stepsAvg > 12000) {
+        // --- 5. CALISTHENICS SPECIFIC HINT ---
+        const hasCalisthenics = last7Days.some(d => d.Training?.toLowerCase().includes('calistenia'));
+        if (hasCalisthenics && proteinAvg < 150) {
+            list.push({
+                type: 'info',
+                title: 'Tip para Calistenia',
+                message: "Para tus dominadas y fondos, la fuerza relativa es clave. Mantener la proteína alta (1.8g/kg) es vital ahora que estás en déficit."
+            });
+        }
+
+        // --- 6. ADHERENCE SCORE ---
+        const consistency = last7Days.filter(d => d.Calories < d.TDEE).length;
+        if (consistency === 7) {
             list.push({
                 type: 'positive',
-                title: 'Gasto Energético Alto',
-                message: `¡Increíble actividad! Con ${Math.round(stepsAvg)} pasos diarios, estás creando un déficit muy saludable sin pasar hambre.`
+                title: 'Adherencia Perfecta',
+                message: "7 de 7 días cumpliendo el déficit. Con esta disciplina, alcanzarás tu meta el " + sortedData[0].Date + " (estimado)."
             });
         }
 
