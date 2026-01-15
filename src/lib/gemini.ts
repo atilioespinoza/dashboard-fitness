@@ -78,13 +78,21 @@ export const getFullReport = async (data: FitnessEntry[]) => {
       "executiveSummary": "Un párrafo potente analizando la evolución metabólica real.",
       "blindSpots": ["Punto ciego 1", "Punto ciego 2"],
       "projections": {
-        "scenario": "Descripción del escenario actual (ej: Déficit moderado)",
-        "estimatedDate": "Fecha estimada de meta (ej: 15 de Marzo)",
-        "probability": "Porcentaje de éxito (0-100)"
+        "scenario": "Descripción del escenario actual",
+        "goals": [
+          { "name": "Grasa Corporal (12%)", "estimatedDate": "Fecha", "progress": 0-100 },
+          { "name": "Cintura (Marcar Abs)", "estimatedDate": "Fecha", "progress": 0-100 }
+        ],
+        "probability": 0-100
       },
-      "metabolicAnalysis": "Explicación técnica de por qué el peso/grasa se mueve a este ritmo basado en el TDEE y el consumo real.",
-      "score": 0-100 (Calificación general de la consistencia)
+      "metabolicAnalysis": "Análisis técnico de por qué los resultados se dan a este ritmo.",
+      "score": 0-100
     }
+
+    REGLAS ADICIONALES:
+    - El usuario quiere marcar abdominales. Prioriza la cintura como indicador clave.
+    - Calcula las fechas basándote en la tendencia real de los últimos 30 días.
+    - Si la cintura no baja, sé directo sobre qué está fallando.
 
     REGLAS:
     - Sé crítico pero constructivo.

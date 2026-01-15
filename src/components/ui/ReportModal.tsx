@@ -6,7 +6,11 @@ interface FullReport {
     blindSpots: string[];
     projections: {
         scenario: string;
-        estimatedDate: string;
+        goals: Array<{
+            name: string;
+            estimatedDate: string;
+            progress: number;
+        }>;
         probability: number;
     };
     metabolicAnalysis: string;
@@ -94,24 +98,36 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                         <div className="space-y-4">
                                             <div>
                                                 <p className="text-[10px] text-slate-500 uppercase font-black">Escenario Actual</p>
-                                                <p className="text-slate-200 font-bold">{report.projections.scenario}</p>
+                                                <p className="text-slate-200 font-bold leading-tight">{report.projections.scenario}</p>
                                             </div>
-                                            <div className="flex justify-between items-end">
-                                                <div>
-                                                    <p className="text-[10px] text-slate-500 uppercase font-black">Meta Estimada</p>
-                                                    <p className="text-xl font-black text-white">{report.projections.estimatedDate}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-[10px] text-slate-500 uppercase font-black">Probabilidad</p>
-                                                    <p className="text-xl font-black text-green-400">{report.projections.probability}%</p>
-                                                </div>
+
+                                            <div className="space-y-3">
+                                                {report.projections.goals.map((goal, idx) => (
+                                                    <div key={idx} className="p-3 bg-slate-900/50 rounded-2xl border border-slate-700/30">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <p className="text-[10px] text-blue-400 uppercase font-black tracking-tighter">{goal.name}</p>
+                                                                <p className="text-sm font-black text-white">{goal.estimatedDate}</p>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="text-[10px] text-slate-500 uppercase font-black">Progreso</p>
+                                                                <p className="text-xs font-bold text-slate-300">{goal.progress}%</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${goal.progress}%` }}
+                                                                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
-                                            <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${report.projections.probability}%` }}
-                                                    className="h-full bg-gradient-to-r from-blue-500 to-green-400"
-                                                />
+
+                                            <div className="flex items-center justify-between pt-2">
+                                                <p className="text-[10px] text-slate-500 uppercase font-black">Probabilidad de éxito</p>
+                                                <p className="text-lg font-black text-green-400">{report.projections.probability}%</p>
                                             </div>
                                         </div>
                                     </div>
