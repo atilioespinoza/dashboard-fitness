@@ -58,3 +58,50 @@ export const getGeminiInsights = async (data: FitnessEntry[]) => {
     return null;
   }
 };
+
+export const getFullReport = async (data: FitnessEntry[]) => {
+  if (!genAI) {
+    throw new Error("No Gemini API Key found");
+  }
+
+  const model = genAI.getGenerativeModel({ model: "gemini-3.0-flash" });
+
+  const prompt = `
+    Eres un Consultor de Salud y High Performance Coach. 
+    Analiza este dataset completo (últimos 30-60 días) y genera un REPORTE EJECUTIVO DE ALTO NIVEL.
+    
+    DATOS DEL USUARIO:
+    ${JSON.stringify(data.slice(0, 60))}
+
+    TU REPORTE DEBE TENER ESTA ESTRUCTURA (JSON):
+    {
+      "executiveSummary": "Un párrafo potente analizando la evolución metabólica real.",
+      "blindSpots": ["Punto ciego 1", "Punto ciego 2"],
+      "projections": {
+        "scenario": "Descripción del escenario actual (ej: Déficit moderado)",
+        "estimatedDate": "Fecha estimada de meta (ej: 15 de Marzo)",
+        "probability": "Porcentaje de éxito (0-100)"
+      },
+      "metabolicAnalysis": "Explicación técnica de por qué el peso/grasa se mueve a este ritmo basado en el TDEE y el consumo real.",
+      "score": 0-100 (Calificación general de la consistencia)
+    }
+
+    REGLAS:
+    - Sé crítico pero constructivo.
+    - Si los datos son inconsistentes (ej: mucho déficit pero el peso no baja), menciónalo como un Punto Ciego (posible subestime de calorías).
+    - TODO EN ESPAÑOL.
+    - Retorna solo el JSON.
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Error generating full report:", error);
+    return null;
+  }
+};

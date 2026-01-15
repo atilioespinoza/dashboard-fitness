@@ -3,6 +3,8 @@ import { FitnessEntry } from '../../data/mockData';
 import { Bot, Sparkles, AlertCircle, Info, ChevronRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
+import { ReportModal } from '../ui/ReportModal';
+import { getFullReport } from '../../lib/gemini';
 
 interface AICoachInsightsProps {
     data: FitnessEntry[];
@@ -86,6 +88,24 @@ const InsightCard = ({ insight }: { insight: Insight }) => {
 
 export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
     const { insights, loading, isAI } = useAICoach(data);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [fullReport, setFullReport] = useState<any>(null);
+    const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+
+    const handleOpenReport = async () => {
+        setIsModalOpen(true);
+        if (!fullReport) {
+            setIsGeneratingReport(true);
+            try {
+                const report = await getFullReport(data);
+                setFullReport(report);
+            } catch (error) {
+                console.error("Error fetching report:", error);
+            } finally {
+                setIsGeneratingReport(false);
+            }
+        }
+    };
 
     if (!loading && insights.length === 0) return null;
 
@@ -147,13 +167,23 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                         <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-500 font-bold uppercase tracking-widest">
                             {isAI ? "Análisis cognitivo activo" : "Motor heurístico local"}
                         </div>
-                        <button className="w-full xs:w-auto px-4 py-2 bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-blue-400 transition-all flex items-center justify-center gap-2 group/btn">
+                        <button
+                            onClick={handleOpenReport}
+                            className="w-full xs:w-auto px-4 py-2 bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-blue-400 transition-all flex items-center justify-center gap-2 group/btn"
+                        >
                             Ver reporte completo
                             <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                         </button>
                     </div>
                 )}
             </div>
+
+            <ReportModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                report={fullReport}
+                loading={isGeneratingReport}
+            />
         </div>
     );
 };
