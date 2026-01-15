@@ -91,13 +91,22 @@ export const getFullReport = async (data: FitnessEntry[]) => {
         "overallProbability": 0-100
       },
       "metabolicAnalysis": "Análisis técnico de por qué los resultados se dan a este ritmo.",
-      "score": 0-100
+      "score": 0-100,
+      "archetype": {
+        "name": "Nombre creativo del arquetipo (ej: La Máquina de Consistencia)",
+        "emoji": "💎",
+        "description": "Explicación de por qué este perfil encaja con el usuario basado en sus patrones de 60 días.",
+        "traits": ["Rasgo 1", "Rasgo 2"]
+      }
     }
 
     REGLAS ADICIONALES:
-    - Incluye al menos 2 metas intermedias (ej: bajar 2cm de cintura, bajar 2kg) y las metas finales (12% grasa y marcar abs).
-    - Para cada meta, calcula una probabilidad específica basada en la racha actual de pasos y nutrición.
-    - El usuario prioriza marcar abdominales. Define hitos de cintura cada 2-3cm.
+    - METAS: Incluye al menos 2 metas intermedias (ej: bajar 2cm de cintura, bajar 2kg) y las metas finales (12% grasa y marcar abs). 
+    - ARQUETIPOS: Identifica si el usuario es 'La Máquina de Consistencia', 'El Guerrero de Fin de Semana', 'El Estratega de Recomposición', 'El Velocista Metabólico' o 'El Maestro de la Recuperación'.
+    - El usuario prioriza MARCAR ABDOMINALES. Define hitos de cintura cada 2-3cm.
+    - Calcula las fechas basándote en la tendencia real de los últimos 30-60 días.
+    - Analiza la probabilidad específica para cada meta basada en la racha actual de pasos y nutrición.
+
 
     REGLAS:
     - Sé crítico pero constructivo.

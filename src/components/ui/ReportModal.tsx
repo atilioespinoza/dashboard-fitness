@@ -17,6 +17,12 @@ interface FullReport {
     };
     metabolicAnalysis: string;
     score: number;
+    archetype: {
+        name: string;
+        emoji: string;
+        description: string;
+        traits: string[];
+    };
 }
 
 interface ReportModalProps {
@@ -79,6 +85,39 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                     </div>
                                 </div>
 
+                                {/* Archetype Section */}
+                                <motion.section
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    className="p-6 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-[2rem] border border-blue-500/20 relative overflow-hidden group"
+                                >
+                                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                                        <span className="text-8xl">{report.archetype.emoji}</span>
+                                    </div>
+
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <span className="text-4xl">{report.archetype.emoji}</span>
+                                            <div>
+                                                <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Tu Perfil Genético-Conductual</p>
+                                                <h3 className="text-2xl font-black text-white italic">{report.archetype.name}</h3>
+                                            </div>
+                                        </div>
+
+                                        <p className="text-sm text-slate-300 mb-4 max-w-2xl leading-relaxed">
+                                            {report.archetype.description}
+                                        </p>
+
+                                        <div className="flex flex-wrap gap-2">
+                                            {report.archetype.traits.map((trait, i) => (
+                                                <span key={i} className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold text-slate-400 border border-white/5">
+                                                    {trait}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </motion.section>
+
                                 {/* Executive Summary */}
                                 <section className="space-y-3">
                                     <div className="flex items-center gap-2 text-blue-400 text-sm font-black uppercase tracking-widest">
@@ -114,8 +153,8 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                                             <div className="text-right">
                                                                 <div className="flex flex-col items-end">
                                                                     <span className={`text-xs font-black mb-1 p-1 rounded-md ${goal.probability > 80 ? 'text-green-400 bg-green-400/10' :
-                                                                            goal.probability > 60 ? 'text-amber-400 bg-amber-400/10' :
-                                                                                'text-red-400 bg-red-400/10'
+                                                                        goal.probability > 60 ? 'text-amber-400 bg-amber-400/10' :
+                                                                            'text-red-400 bg-red-400/10'
                                                                         }`}>
                                                                         {goal.probability}% Prob.
                                                                     </span>
