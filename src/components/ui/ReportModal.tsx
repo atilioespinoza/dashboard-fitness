@@ -104,7 +104,7 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                         className="relative w-full h-full md:h-auto md:max-w-4xl md:max-h-[90vh] overflow-y-auto bg-slate-50 dark:bg-slate-950 border-x-0 md:border border-slate-200 dark:border-slate-800 rounded-none md:rounded-[2.5rem] shadow-2xl no-scrollbar flex flex-col"
                     >
                         {/* Mobile Safe Area Spacer for iPhone 15 Pro Notch/Island */}
-                        <div className="h-16 md:hidden flex-shrink-0" />
+                        <div className="h-20 md:hidden flex-shrink-0" />
 
                         {/* Floating Buttons Bar */}
                         <div className="fixed md:absolute top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 z-[110]">
@@ -150,18 +150,20 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                         ) : report ? (
                             <div ref={reportRef} className="flex-1 space-y-6 md:space-y-8 p-6 md:p-10 bg-slate-50 dark:bg-slate-950">
                                 {/* Header */}
-                                <div className="flex flex-col md:flex-row items-center gap-4 border-b border-slate-200 dark:border-slate-800/50 pb-8">
-                                    <div className="flex items-center gap-5 w-full">
-                                        <div className="p-4 bg-blue-600/10 dark:bg-blue-500/10 rounded-[1.5rem] text-blue-600 dark:text-blue-500 flex-shrink-0">
-                                            <Brain size={36} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-[10px] font-black text-blue-600/60 dark:text-blue-500/60 uppercase tracking-[0.2em] mb-1">Estrategia Biométrica</p>
-                                            <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">Reporte AI</h2>
-                                        </div>
-                                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl text-center min-w-[80px]">
-                                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase leading-none mb-1">Score</p>
-                                            <p className="text-2xl font-black text-blue-600 dark:text-blue-400 leading-none">{report.score}%</p>
+                                <div className="flex flex-col md:flex-row items-center gap-6 border-b border-slate-200 dark:border-slate-800/50 pb-8">
+                                    <div className="flex flex-col sm:flex-row items-center gap-5 w-full">
+                                        <div className="flex items-center gap-4 w-full">
+                                            <div className="p-3 md:p-4 bg-blue-600/10 dark:bg-blue-500/10 rounded-2xl md:rounded-[1.5rem] text-blue-600 dark:text-blue-500 flex-shrink-0">
+                                                <Brain size={28} className="md:w-9 md:h-9" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-[9px] md:text-[10px] font-black text-blue-600/60 dark:text-blue-500/60 uppercase tracking-[0.2em] mb-0.5">Estrategia Biométrica</p>
+                                                <h2 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">Reporte AI</h2>
+                                            </div>
+                                            <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-slate-800 p-2 md:p-3 rounded-xl md:rounded-2xl text-center min-w-[70px] md:min-w-[80px]">
+                                                <p className="text-[9px] md:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase leading-none mb-1">Score</p>
+                                                <p className="text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400 leading-none">{report.score}%</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -184,18 +186,20 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                         {report.metabolicRedAlert?.active ? <Siren size={30} /> : <TrendingUp size={30} />}
                                     </div>
                                     <div className="flex-1 text-center md:text-left">
-                                        <div className="flex items-center gap-2 justify-center md:justify-start mb-1.5">
-                                            <h3 className={`text-xl font-black uppercase tracking-tight ${report.metabolicRedAlert?.active
-                                                ? report.metabolicRedAlert.level === 'critical' ? 'text-red-500' : 'text-amber-500'
-                                                : 'text-emerald-600 dark:text-emerald-500'
-                                                }`}>
-                                                {report.metabolicRedAlert?.active ? report.metabolicRedAlert.title : 'Flujo Metabólico Optimo'}
-                                            </h3>
-                                            {!report.metabolicRedAlert?.active && (
-                                                <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-black uppercase rounded-lg border border-emerald-500/20 shadow-sm shadow-emerald-500/10">
-                                                    Perfecto
-                                                </span>
-                                            )}
+                                        <div className="flex flex-col items-center md:items-start gap-2 mb-3">
+                                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                                                <h3 className={`text-lg md:text-xl font-black uppercase tracking-tight ${report.metabolicRedAlert?.active
+                                                    ? report.metabolicRedAlert.level === 'critical' ? 'text-red-500' : 'text-amber-500'
+                                                    : 'text-emerald-600 dark:text-emerald-500'
+                                                    }`}>
+                                                    {report.metabolicRedAlert?.active ? report.metabolicRedAlert.title : 'Flujo Metabólico Optimo'}
+                                                </h3>
+                                                {!report.metabolicRedAlert?.active && (
+                                                    <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[9px] md:text-[10px] font-black uppercase rounded-lg border border-emerald-500/20">
+                                                        Perfecto
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                         <p className="text-sm text-slate-700 dark:text-slate-400 mb-5 italic leading-relaxed font-serif">
                                             "{report.metabolicRedAlert?.explanation || 'Sin interferencias detectadas en la ruta metabólica. Los sustratos energéticos se están oxidando al ritmo proyectado.'}"
@@ -222,11 +226,11 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                     </div>
 
                                     <div className="relative z-10">
-                                        <div className="flex items-center gap-4 mb-6">
-                                            <div className="text-5xl bg-white dark:bg-white/5 p-4 rounded-3xl shadow-xl shadow-blue-500/10 border border-white/50 dark:border-white/5">{report.archetype.emoji}</div>
-                                            <div>
-                                                <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.3em] mb-1">Tendencia de Comportamiento</p>
-                                                <h3 className="text-3xl font-black text-slate-900 dark:text-white italic leading-none">{report.archetype.name}</h3>
+                                        <div className="flex flex-col sm:flex-row items-center md:items-start gap-4 mb-6">
+                                            <div className="text-4xl md:text-5xl bg-white dark:bg-white/5 p-3 md:p-4 rounded-2xl md:rounded-3xl shadow-xl shadow-blue-500/10 border border-white/50 dark:border-white/5 flex-shrink-0">{report.archetype.emoji}</div>
+                                            <div className="text-center md:text-left">
+                                                <p className="text-[9px] md:text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.3em] mb-1">Tendencia de Comportamiento</p>
+                                                <h3 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white italic leading-tight break-words">{report.archetype.name}</h3>
                                             </div>
                                         </div>
 
@@ -245,7 +249,7 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                 </motion.section>
 
                                 {/* Golden Formula Section */}
-                                <section className="p-8 bg-slate-100/80 dark:bg-slate-900 rounded-[2.5rem] border border-amber-500/30 relative overflow-hidden shadow-sm">
+                                <section className="p-6 md:p-8 bg-slate-100/80 dark:bg-slate-900 rounded-[2.5rem] border border-amber-500/30 relative overflow-hidden shadow-sm">
                                     <div className="relative z-10 text-center md:text-left">
                                         <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
                                             <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-600 dark:text-amber-500 shadow-inner">
@@ -295,8 +299,8 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                         <TrendingUp size={18} />
                                         Directivas Estratégicas
                                     </div>
-                                    <div className="p-8 bg-white dark:bg-white/[0.02] rounded-[2.5rem] border border-slate-200 dark:border-white/5 shadow-inner">
-                                        <p className="text-slate-800 dark:text-slate-200 leading-relaxed text-lg font-medium italic">
+                                    <div className="p-6 md:p-8 bg-white dark:bg-white/[0.02] rounded-[2.5rem] border border-slate-200 dark:border-white/5 shadow-inner">
+                                        <p className="text-slate-800 dark:text-slate-200 leading-relaxed text-base md:text-lg font-medium italic">
                                             "{report.executiveSummary}"
                                         </p>
                                     </div>
@@ -304,10 +308,10 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
                                     {/* Projections */}
-                                    <div className="p-8 bg-slate-100 dark:bg-slate-900/60 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
+                                    <div className="p-6 md:p-8 bg-slate-100 dark:bg-slate-900/60 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-xs font-black uppercase tracking-widest">
-                                                <Target size={20} />
+                                            <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-[10px] md:text-xs font-black uppercase tracking-widest">
+                                                <Target size={18} className="md:w-5 md:h-5" />
                                                 Simulador Cuántico
                                             </div>
                                             <div className="px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[8px] font-black uppercase rounded border border-blue-500/10">V1.2</div>
@@ -362,9 +366,9 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                     </div>
 
                                     {/* Metabolic Analysis */}
-                                    <div className="p-8 bg-slate-100 dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
-                                        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs font-black uppercase tracking-widest">
-                                            <Brain size={20} />
+                                    <div className="p-6 md:p-8 bg-slate-100 dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
+                                        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-[10px] md:text-xs font-black uppercase tracking-widest">
+                                            <Brain size={18} className="md:w-5 md:h-5" />
                                             Deep Bio-Analysis
                                         </div>
                                         <div className="p-6 bg-white dark:bg-slate-950 rounded-2xl border-l-4 border-amber-500/40 relative">
@@ -380,9 +384,9 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                 </div>
 
                                 {/* Blind Spots */}
-                                <section className="p-8 bg-red-600/5 dark:bg-red-500/5 rounded-[2.5rem] border border-red-500/20 space-y-6">
-                                    <div className="flex items-center gap-3 text-red-600 dark:text-red-500 text-xs font-black uppercase tracking-[0.2em] px-1">
-                                        <Search size={22} className="opacity-50" />
+                                <section className="p-6 md:p-8 bg-red-600/5 dark:bg-red-500/5 rounded-[2.5rem] border border-red-500/20 space-y-6">
+                                    <div className="flex items-center gap-3 text-red-600 dark:text-red-500 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] px-1">
+                                        <Search size={18} className="opacity-50 md:w-5 md:h-5" />
                                         Fugas Críticas & Puntos Ciegos
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
