@@ -6,6 +6,9 @@ export interface Insight {
     type: 'positive' | 'warning' | 'info' | 'critical';
     title: string;
     message: string;
+    category: 'Nutrición' | 'Entrenamiento' | 'Recuperación' | 'Hábitos';
+    priority: 'Alta' | 'Media' | 'Baja';
+    action?: string;
 }
 
 export const useAICoach = (data: FitnessEntry[]) => {
@@ -32,7 +35,10 @@ export const useAICoach = (data: FitnessEntry[]) => {
             list.push({
                 type: 'positive',
                 title: 'Recomposición Corporal',
-                message: "Tu cintura baja pero tu peso es estable: Estás perdiendo grasa y ganando músculo simultáneamente."
+                message: "Tu cintura baja pero tu peso es estable: Estás perdiendo grasa y ganando músculo simultáneamente.",
+                category: 'Entrenamiento',
+                priority: 'Alta',
+                action: 'Mantén la intensidad actual de entrenamiento.'
             });
         }
 
@@ -41,7 +47,10 @@ export const useAICoach = (data: FitnessEntry[]) => {
             list.push({
                 type: 'positive',
                 title: 'Blindaje Muscular',
-                message: `Con ${Math.round(proteinAvg)}g de proteína, tu pérdida de peso es de alta calidad.`
+                message: `Con ${Math.round(proteinAvg)}g de proteína, tu pérdida de peso es de alta calidad.`,
+                category: 'Nutrición',
+                priority: 'Media',
+                action: 'Sigue priorizando las fuentes de proteína magra.'
             });
         }
 
@@ -50,7 +59,10 @@ export const useAICoach = (data: FitnessEntry[]) => {
             list.push({
                 type: 'warning',
                 title: 'Deuda de Sueño',
-                message: "Promedias menos de 6.5h de sueño. Esto eleva el cortisol y frena la quema de grasa."
+                message: "Promedias menos de 6.5h de sueño. Esto eleva el cortisol y frena la quema de grasa.",
+                category: 'Recuperación',
+                priority: 'Alta',
+                action: 'Intenta acostarte 30 min antes hoy.'
             });
         }
 

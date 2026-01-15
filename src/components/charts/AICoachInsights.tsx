@@ -26,18 +26,31 @@ const InsightCard = ({ insight }: { insight: Insight }) => {
             onClick={() => setIsExpanded(!isExpanded)}
             className={`cursor-pointer group relative overflow-hidden p-4 rounded-2xl border transition-all duration-300 ${config.bg} ${config.border} hover:border-white/20`}
         >
-            <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl bg-white dark:bg-slate-900 shadow-sm ${config.color}`}>
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                    <div className={`mt-1 p-2 rounded-xl bg-white dark:bg-slate-900 shadow-sm ${config.color}`}>
                         <Icon size={18} />
                     </div>
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
-                        {insight.title}
-                    </h4>
+                    <div>
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-white/10 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/5">
+                                {insight.category}
+                            </span>
+                            <span className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md border ${insight.priority === 'Alta' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                insight.priority === 'Media' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                    'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                }`}>
+                                {insight.priority}
+                            </span>
+                        </div>
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
+                            {insight.title}
+                        </h4>
+                    </div>
                 </div>
                 <motion.div
                     animate={{ rotate: isExpanded ? 180 : 0 }}
-                    className="text-slate-400 group-hover:text-white"
+                    className="mt-1 text-slate-400 group-hover:text-white"
                 >
                     <ChevronDown size={16} />
                 </motion.div>
@@ -52,9 +65,18 @@ const InsightCard = ({ insight }: { insight: Insight }) => {
                         transition={{ duration: 0.3, ease: "circOut" }}
                         className="overflow-hidden"
                     >
-                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed border-t border-white/5 pt-3">
+                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed border-t border-white/5 pt-3 mb-3">
                             {insight.message}
                         </p>
+
+                        {insight.action && (
+                            <div className="p-3 bg-white/50 dark:bg-white/5 rounded-xl border border-blue-500/20">
+                                <span className="block text-[10px] font-black text-blue-500 uppercase tracking-tighter mb-1">Misión Recomendada</span>
+                                <p className="text-xs font-bold text-slate-800 dark:text-blue-50/90 italic">
+                                    " {insight.action} "
+                                </p>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -88,12 +110,12 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                                 </h2>
                                 {isAI && (
                                     <div className="hidden xs:flex px-2 py-0.5 bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[9px] uppercase font-black tracking-tighter rounded-full border border-purple-500/20 backdrop-blur-md">
-                                        Gemini 3 Pro
+                                        Gemini 3.0 Flash
                                     </div>
                                 )}
                             </div>
                             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                                {loading ? "Analizando tu progreso..." : "Briefing de inteligencia diaria"}
+                                {loading ? "Analizando patrones de 30 días..." : "Briefing de inteligencia diaria"}
                             </p>
                         </div>
                     </div>
@@ -101,7 +123,7 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                     {/* Badge for Mobile (Dynamic positioning) */}
                     {isAI && (
                         <div className="xs:hidden self-start px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-300 text-[10px] uppercase font-black tracking-widest rounded-full border border-purple-500/20">
-                            Powered by Gemini 3
+                            Powered by Gemini 3.0
                         </div>
                     )}
                 </div>
