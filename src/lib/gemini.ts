@@ -80,19 +80,24 @@ export const getFullReport = async (data: FitnessEntry[]) => {
       "projections": {
         "scenario": "Descripción del escenario actual",
         "goals": [
-          { "name": "Grasa Corporal (12%)", "estimatedDate": "Fecha", "progress": 0-100 },
-          { "name": "Cintura (Marcar Abs)", "estimatedDate": "Fecha", "progress": 0-100 }
+          { 
+            "name": "Nombre de la meta (ej: Meta Intermedia: Cintura 88cm)", 
+            "estimatedDate": "Fecha estimada", 
+            "progress": 0-100,
+            "probability": 0-100,
+            "analysis": "Breve explicación de por qué este hito es clave y qué lo determina."
+          }
         ],
-        "probability": 0-100
+        "overallProbability": 0-100
       },
       "metabolicAnalysis": "Análisis técnico de por qué los resultados se dan a este ritmo.",
       "score": 0-100
     }
 
     REGLAS ADICIONALES:
-    - El usuario quiere marcar abdominales. Prioriza la cintura como indicador clave.
-    - Calcula las fechas basándote en la tendencia real de los últimos 30 días.
-    - Si la cintura no baja, sé directo sobre qué está fallando.
+    - Incluye al menos 2 metas intermedias (ej: bajar 2cm de cintura, bajar 2kg) y las metas finales (12% grasa y marcar abs).
+    - Para cada meta, calcula una probabilidad específica basada en la racha actual de pasos y nutrición.
+    - El usuario prioriza marcar abdominales. Define hitos de cintura cada 2-3cm.
 
     REGLAS:
     - Sé crítico pero constructivo.

@@ -10,8 +10,10 @@ interface FullReport {
             name: string;
             estimatedDate: string;
             progress: number;
+            probability: number;
+            analysis: string;
         }>;
-        probability: number;
+        overallProbability: number;
     };
     metabolicAnalysis: string;
     score: number;
@@ -101,33 +103,48 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                                 <p className="text-slate-200 font-bold leading-tight">{report.projections.scenario}</p>
                                             </div>
 
-                                            <div className="space-y-3">
+                                            <div className="space-y-4">
                                                 {report.projections.goals.map((goal, idx) => (
-                                                    <div key={idx} className="p-3 bg-slate-900/50 rounded-2xl border border-slate-700/30">
+                                                    <div key={idx} className="p-4 bg-slate-900/50 rounded-2xl border border-slate-700/30 group hover:border-blue-500/30 transition-colors">
                                                         <div className="flex justify-between items-start mb-2">
-                                                            <div>
-                                                                <p className="text-[10px] text-blue-400 uppercase font-black tracking-tighter">{goal.name}</p>
-                                                                <p className="text-sm font-black text-white">{goal.estimatedDate}</p>
+                                                            <div className="flex-1">
+                                                                <p className="text-[10px] text-blue-400 uppercase font-black tracking-widest mb-0.5">{goal.name}</p>
+                                                                <p className="text-base font-black text-white">{goal.estimatedDate}</p>
                                                             </div>
                                                             <div className="text-right">
-                                                                <p className="text-[10px] text-slate-500 uppercase font-black">Progreso</p>
-                                                                <p className="text-xs font-bold text-slate-300">{goal.progress}%</p>
+                                                                <div className="flex flex-col items-end">
+                                                                    <span className={`text-xs font-black mb-1 p-1 rounded-md ${goal.probability > 80 ? 'text-green-400 bg-green-400/10' :
+                                                                            goal.probability > 60 ? 'text-amber-400 bg-amber-400/10' :
+                                                                                'text-red-400 bg-red-400/10'
+                                                                        }`}>
+                                                                        {goal.probability}% Prob.
+                                                                    </span>
+                                                                    <p className="text-[10px] text-slate-500 uppercase font-black">Progreso: {goal.progress}%</p>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+
+                                                        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-3">
                                                             <motion.div
                                                                 initial={{ width: 0 }}
                                                                 animate={{ width: `${goal.progress}%` }}
-                                                                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500"
+                                                                className="h-full bg-gradient-to-r from-blue-600 to-indigo-500"
                                                             />
                                                         </div>
+
+                                                        <p className="text-xs text-slate-400 leading-relaxed bg-slate-950/30 p-2 rounded-lg border border-white/5 italic">
+                                                            "{goal.analysis}"
+                                                        </p>
                                                     </div>
                                                 ))}
                                             </div>
 
-                                            <div className="flex items-center justify-between pt-2">
-                                                <p className="text-[10px] text-slate-500 uppercase font-black">Probabilidad de éxito</p>
-                                                <p className="text-lg font-black text-green-400">{report.projections.probability}%</p>
+                                            <div className="flex items-center justify-between pt-2 border-t border-slate-700/30 mt-4">
+                                                <p className="text-[10px] text-slate-500 uppercase font-black">Probabilidad Global de éxito</p>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                                    <p className="text-lg font-black text-green-400">{report.projections.overallProbability}%</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
