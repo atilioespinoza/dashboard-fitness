@@ -1,5 +1,8 @@
+import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Brain, Target, Search, TrendingUp, AlertTriangle, Sparkles, Zap, Flame, Moon, Siren } from 'lucide-react';
+import { X, Brain, Target, Search, TrendingUp, AlertTriangle, Sparkles, Zap, Flame, Moon, Siren, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface FullReport {
     executiveSummary: string;
@@ -47,6 +50,39 @@ interface ReportModalProps {
 }
 
 export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalProps) => {
+    const reportRef = useRef<HTMLDivElement>(null);
+    const [isDownloading, setIsDownloading] = useState(false);
+
+    const handleDownloadPDF = async () => {
+        if (!reportRef.current) return;
+
+        setIsDownloading(true);
+        try {
+            const element = reportRef.current;
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#0f172a', // slate-900 color
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'px',
+                format: [canvas.width / 2, canvas.height / 2]
+            });
+
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+            pdf.save(`Reporte_Fitness_AI_${new Date().toISOString().split('T')[0]}.pdf`);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
     return (
         <AnimatePresence>
             {isOpen && (
@@ -65,12 +101,26 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
                         className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl p-6 md:p-10 no-scrollbar"
                     >
-                        <button
-                            onClick={onClose}
-                            className="absolute top-6 right-6 p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
-                        >
-                            <X size={20} />
-                        </button>
+                        <div className="absolute top-6 right-6 flex items-center gap-2 z-10">
+                            {report && !loading && (
+                                <button
+                                    onClick={handleDownloadPDF}
+                                    disabled={isDownloading}
+                                    className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 px-4"
+                                >
+                                    <Download size={18} className={isDownloading ? 'animate-bounce' : ''} />
+                                    <span className="text-xs font-bold uppercase tracking-tight">
+                                        {isDownloading ? 'Generando...' : 'Descargar PDF'}
+                                    </span>
+                                </button>
+                            )}
+                            <button
+                                onClick={onClose}
+                                className="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
 
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20 space-y-4">
@@ -81,7 +131,7 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                 <p className="text-slate-400 font-medium animate-pulse">Gemini 3.0 procesando auditoría profunda...</p>
                             </div>
                         ) : report ? (
-                            <div className="space-y-8">
+                            <div ref={reportRef} className="space-y-8 bg-slate-900 p-2 md:p-6 rounded-[2rem]">
                                 {/* Header */}
                                 <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
                                     <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500">
