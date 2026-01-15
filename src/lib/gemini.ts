@@ -97,10 +97,18 @@ export const getFullReport = async (data: FitnessEntry[]) => {
         "emoji": "💎",
         "description": "Explicación de por qué este perfil encaja con el usuario basado en sus patrones de 60 días.",
         "traits": ["Rasgo 1", "Rasgo 2"]
+      },
+      "goldenFormula": {
+        "explanation": "Breve texto explicando que estos valores son tus 'puntos dulces' detectados en tus mejores semanas.",
+        "steps": 0,
+        "calories": 0,
+        "protein": 0,
+        "sleep": 0
       }
     }
 
     REGLAS ADICIONALES:
+    - GOLDEN FORMULA: Identifica los valores promedio de las semanas donde el usuario tuvo el mayor progreso en cintura y mejores notas de energía.
     - METAS: Incluye al menos 2 metas intermedias (ej: bajar 2cm de cintura, bajar 2kg) y las metas finales (12% grasa y marcar abs). 
     - ARQUETIPOS: Identifica si el usuario es 'La Máquina de Consistencia', 'El Guerrero de Fin de Semana', 'El Estratega de Recomposición', 'El Velocista Metabólico' o 'El Maestro de la Recuperación'.
     - El usuario prioriza MARCAR ABDOMINALES. Define hitos de cintura cada 2-3cm.

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Brain, Target, Search, TrendingUp, AlertTriangle } from 'lucide-react';
+import { X, Brain, Target, Search, TrendingUp, AlertTriangle, Sparkles, Zap, Flame, Moon } from 'lucide-react';
 
 interface FullReport {
     executiveSummary: string;
@@ -22,6 +22,13 @@ interface FullReport {
         emoji: string;
         description: string;
         traits: string[];
+    };
+    goldenFormula: {
+        explanation: string;
+        steps: number;
+        calories: number;
+        protein: number;
+        sleep: number;
     };
 }
 
@@ -117,6 +124,52 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                         </div>
                                     </div>
                                 </motion.section>
+
+                                {/* Golden Formula Section */}
+                                <section className="p-6 bg-slate-800/20 rounded-[2rem] border border-amber-500/10 relative overflow-hidden">
+                                    <div className="absolute -top-10 -right-10 opacity-5">
+                                        <Sparkles size={120} className="text-amber-500" />
+                                    </div>
+
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
+                                                <Sparkles size={16} />
+                                            </div>
+                                            <h3 className="text-sm font-black text-amber-500 uppercase tracking-widest">The Golden Formula: Tu Receta del Éxito</h3>
+                                        </div>
+
+                                        <p className="text-xs text-slate-400 mb-6 leading-relaxed max-w-xl">
+                                            {report.goldenFormula.explanation}
+                                        </p>
+
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
+                                                <Zap size={20} className="text-blue-400 mb-2" />
+                                                <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Pasos Diarios</p>
+                                                <p className="text-lg font-black text-white">{report.goldenFormula.steps.toLocaleString()}</p>
+                                            </div>
+
+                                            <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
+                                                <Flame size={20} className="text-orange-400 mb-2" />
+                                                <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Calorías</p>
+                                                <p className="text-lg font-black text-white">{report.goldenFormula.calories} kcal</p>
+                                            </div>
+
+                                            <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
+                                                <Brain size={20} className="text-emerald-400 mb-2" />
+                                                <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Proteína</p>
+                                                <p className="text-lg font-black text-white">{report.goldenFormula.protein}g</p>
+                                            </div>
+
+                                            <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
+                                                <Moon size={20} className="text-indigo-400 mb-2" />
+                                                <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Sueño Ideal</p>
+                                                <p className="text-lg font-black text-white">{report.goldenFormula.sleep}h</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
 
                                 {/* Executive Summary */}
                                 <section className="space-y-3">
