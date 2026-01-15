@@ -143,7 +143,7 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                     {/* Badge for Mobile (Dynamic positioning) */}
                     {isAI && (
                         <div className="xs:hidden self-start px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-300 text-[10px] uppercase font-black tracking-widest rounded-full border border-purple-500/20">
-                            Powered by Gemini 3.0
+                            Powered by Gemini 3.0 Flash
                         </div>
                     )}
                 </div>
