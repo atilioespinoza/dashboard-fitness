@@ -1,31 +1,78 @@
 import { ResponsiveContainer, ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, Area } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { FitnessEntry } from '../../data/mockData';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, subDays, isAfter } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useState, useMemo } from 'react';
 
 interface WeightChartProps {
     data: FitnessEntry[];
 }
 
+type TimeRange = '7D' | '1M' | '3M' | 'ALL';
+
 export function WeightChart({ data }: WeightChartProps) {
-    // Sort data by date ascending just in case
-    const chartData = [...data].sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
+    const [range, setRange] = useState<TimeRange>('1M');
+
+    // Sort data by date ascending
+    const sortedData = useMemo(() =>
+        [...data].sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime()),
+        [data]
+    );
+
+    const filteredData = useMemo(() => {
+        const now = new Date();
+        let cutoffDate: Date | null = null;
+
+        if (range === '7D') cutoffDate = subDays(now, 7);
+        if (range === '1M') cutoffDate = subDays(now, 30);
+        if (range === '3M') cutoffDate = subDays(now, 90);
+
+        if (!cutoffDate) return sortedData;
+
+        return sortedData.filter(item => isAfter(parseISO(item.Date), cutoffDate!));
+    }, [sortedData, range]);
 
     // Calculate moving average for weight (7 day)
-    const dataWithTrend = chartData.map((day, index, arr) => {
-        if (index < 6) return { ...day, weightTrend: day.Weight }; // Not enough data
-        const last7 = arr.slice(index - 6, index + 1);
-        const avg = last7.reduce((sum, d) => sum + d.Weight, 0) / 7;
-        return { ...day, weightTrend: Number(avg.toFixed(2)) };
-    });
+    const dataWithTrend = useMemo(() => {
+        return filteredData.map((day, index, arr) => {
+            const windowSize = 7;
+            const start = Math.max(0, index - windowSize + 1);
+            const window = arr.slice(start, index + 1);
+            const avg = window.reduce((sum, d) => sum + d.Weight, 0) / window.length;
+            return { ...day, weightTrend: Number(avg.toFixed(2)) };
+        });
+    }, [filteredData]);
 
     return (
         <Card className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-xl overflow-hidden">
             <CardHeader className="p-6 md:p-8 pb-0">
-                <div className="flex flex-col gap-1">
-                    <CardTitle className="text-xl md:text-2xl font-black italic text-slate-900 dark:text-white uppercase tracking-tighter">Tendencias de Peso y Grasa</CardTitle>
-                    <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest px-1">Métricas de Composición Corporal</p>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex flex-col gap-1">
+                        <CardTitle className="text-xl md:text-2xl font-black italic text-slate-900 dark:text-white uppercase tracking-tighter leading-none">Análisis de Peso</CardTitle>
+                        <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest px-1">Composición Corporal</p>
+                    </div>
+
+                    {/* Time Range Selector */}
+                    <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900 rounded-xl space-x-1 self-stretch sm:self-auto overflow-x-auto no-scrollbar">
+                        {[
+                            { id: '7D', label: 'Diario' },
+                            { id: '1M', label: 'Semanal' },
+                            { id: '3M', label: 'Mensual' },
+                            { id: 'ALL', label: 'Anual' }
+                        ].map((btn) => (
+                            <button
+                                key={btn.id}
+                                onClick={() => setRange(btn.id as TimeRange)}
+                                className={`px-3 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-200 whitespace-nowrap ${range === btn.id
+                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                            >
+                                {btn.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </CardHeader>
             <CardContent className="h-[320px] md:h-[400px] p-2 md:p-6 pt-6">
@@ -48,7 +95,7 @@ export function WeightChart({ data }: WeightChartProps) {
                             tickLine={false}
                             axisLine={false}
                             dy={10}
-                            minTickGap={30}
+                            minTickGap={range === 'ALL' ? 50 : 30}
                         />
                         <YAxis
                             yAxisId="left"
