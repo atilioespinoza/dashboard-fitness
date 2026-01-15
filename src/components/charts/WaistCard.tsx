@@ -47,81 +47,77 @@ export function WaistCard({ currentWaist, data }: WaistCardProps) {
     }
 
     return (
-        <Card className="col-span-12 md:col-span-6 lg:col-span-4 flex flex-col justify-center">
-            <CardContent className="p-4 md:p-6">
-                <div className="flex justify-between items-start mb-3">
+        <Card className="col-span-12 md:col-span-6 lg:col-span-4 bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col justify-center">
+            <CardContent className="p-6 md:p-8">
+                <div className="flex justify-between items-start mb-6">
                     <div>
-                        <p className="text-[10px] md:text-sm font-medium text-slate-500 uppercase tracking-wider">Cintura Actual</p>
-                        <div className="flex items-baseline mt-0.5 space-x-1.5">
-                            <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">
+                        <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-1 px-1">Cintura Actual</p>
+                        <div className="flex items-baseline space-x-2">
+                            <span className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
                                 <Counter value={currentWaist} decimals={1} />
                             </span>
-                            <span className="text-slate-500 font-medium text-sm">cm</span>
+                            <span className="text-slate-500 dark:text-slate-400 font-bold text-base md:text-lg">cm</span>
                         </div>
                     </div>
                     <div className={cn(
-                        "px-2 py-1 rounded-lg text-[10px] font-bold flex flex-col items-end shadow-sm",
-                        isHit ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20" : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                        "px-3 py-2 rounded-2xl text-[10px] font-black flex flex-col items-center justify-center text-center shadow-lg backdrop-blur-md min-w-[100px]",
+                        isHit
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                            : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
                     )}>
-                        <span>{isHit ? "¡MÁXIMA META!" : `${(currentWaist - goal).toFixed(1)}cm para el fin`}</span>
-                        {!isHit && (
-                            <div className="flex flex-col items-end">
-                                <span className="text-[8px] opacity-60 mt-0.5">
-                                    Sig: {isIntermediateHit ? "83cm (Meta)" : "91cm (Inter)"}
-                                </span>
-                                {estimatedFinalDate && (
-                                    <span className="text-[8px] font-bold text-blue-500 mt-0.5">
-                                        Est: {estimatedFinalDate}
-                                    </span>
-                                )}
+                        <span className="uppercase tracking-tight leading-none mb-1">{isHit ? "¡OBJETIVO!" : `${(currentWaist - goal).toFixed(1)}cm`}</span>
+                        {!isHit && <span className="text-[8px] opacity-60 uppercase font-black tracking-tighter">para la meta</span>}
+                        {estimatedFinalDate && !isHit && (
+                            <div className="mt-1.5 pt-1.5 border-t border-blue-500/10 w-full text-[8px] font-black text-blue-500 uppercase tracking-widest">
+                                {estimatedFinalDate}
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="space-y-2.5">
-                    <div className="flex justify-between text-[9px] uppercase tracking-tighter text-slate-500 font-bold px-0.5">
-                        <div className="flex flex-col">
-                            <span className="text-slate-400 dark:text-slate-600 opacity-70">Inicio</span>
-                            <span className="text-slate-600 dark:text-slate-400">{start}cm</span>
+                {/* Progress Bar Labeling */}
+                <div className="space-y-4">
+                    <div className="flex justify-between items-end px-1">
+                        <div className="flex flex-col gap-0.5">
+                            <span className="text-[8px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest">Inicio</span>
+                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-400">{start}cm</span>
                         </div>
-                        <div className={cn("flex flex-col items-center transition-colors duration-500", isIntermediateHit ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-600")}>
-                            <span className="opacity-70">Intermedia</span>
-                            <span>{intermediateGoal}cm</span>
+                        <div className={cn("flex flex-col items-center gap-0.5 transition-colors duration-500", isIntermediateHit ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-600")}>
+                            <span className="text-[8px] font-black opacity-70 uppercase tracking-widest text-center">Intermedia<br />{intermediateGoal}cm</span>
                             {estimatedInterDate && !isIntermediateHit && (
-                                <span className="text-[7px] font-bold lowercase opacity-80">{estimatedInterDate}</span>
+                                <span className="text-[7px] font-black uppercase text-blue-500">{estimatedInterDate}</span>
                             )}
                         </div>
-                        <div className={cn("flex flex-col items-end transition-colors duration-500", isHit ? "text-green-600 dark:text-green-400" : "text-slate-400 dark:text-slate-600")}>
-                            <span className="opacity-70">Meta</span>
-                            <span>{goal}cm</span>
-                            {estimatedFinalDate && !isHit && (
-                                <span className="text-[7px] font-bold lowercase opacity-80">{estimatedFinalDate}</span>
-                            )}
+                        <div className={cn("flex flex-col items-end gap-0.5 transition-colors duration-500", isHit ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-600")}>
+                            <span className="text-[8px] font-black opacity-70 uppercase tracking-widest">Meta</span>
+                            <span className="text-[11px] font-black">{goal}cm</span>
                         </div>
                     </div>
-                    <div className="relative">
-                        <div className="h-3 w-full bg-slate-100 dark:bg-slate-800/40 rounded-full p-[1.5px] shadow-inner overflow-hidden border border-slate-200 dark:border-slate-800">
+
+                    {/* Visual Bar */}
+                    <div className="relative pt-1">
+                        <div className="h-4 w-full bg-slate-100 dark:bg-slate-900 rounded-full p-[2px] shadow-inner overflow-hidden border border-slate-200 dark:border-white/5">
                             <div
                                 className={cn(
-                                    "h-full transition-all duration-1000 rounded-full",
+                                    "h-full transition-all duration-1000 rounded-full relative group",
                                     isHit
                                         ? "bg-gradient-to-r from-blue-600 via-emerald-500 to-green-400 shadow-[0_0_12px_rgba(52,211,153,0.3)]"
                                         : isIntermediateHit
-                                            ? "bg-gradient-to-r from-blue-600 to-emerald-400 shadow-[0_0_10px_rgba(59,130,246,0.3)]"
-                                            : "bg-blue-600"
+                                            ? "bg-gradient-to-r from-blue-600 to-emerald-400 shadow-[0_0_10px_rgba(59,130,246,0.2)]"
+                                            : "bg-gradient-to-r from-blue-700 to-blue-500"
                                 )}
                                 style={{ width: `${progress}%` }}
-                            />
+                            >
+                                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
                         </div>
-                        {/* Intermediate Mark */}
+                        {/* Milestone Tick */}
                         <div
                             className={cn(
-                                "absolute top-0 bottom-0 w-0.5 rounded-full z-10 transition-colors duration-500",
-                                isIntermediateHit ? "bg-white/40" : "bg-slate-700"
+                                "absolute top-0 bottom-0 w-1 rounded-full z-20 transition-colors duration-500 shadow-sm",
+                                isIntermediateHit ? "bg-white/80" : "bg-slate-300 dark:bg-slate-700"
                             )}
-                            style={{ left: '50%', transform: 'translateX(-50%)' }}
+                            style={{ left: '50%', transform: 'translateX(-50%)', height: '1.5rem', top: '-0.25rem' }}
                         />
                     </div>
                 </div>

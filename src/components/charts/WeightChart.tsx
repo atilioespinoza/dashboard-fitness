@@ -21,29 +21,34 @@ export function WeightChart({ data }: WeightChartProps) {
     });
 
     return (
-        <Card className="col-span-12 lg:col-span-8">
-            <CardHeader className="p-4 md:p-6 pb-2 md:pb-4">
-                <CardTitle className="text-lg md:text-xl font-bold italic">Tendencias de Peso y Grasa</CardTitle>
+        <Card className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-xl overflow-hidden">
+            <CardHeader className="p-6 md:p-8 pb-0">
+                <div className="flex flex-col gap-1">
+                    <CardTitle className="text-xl md:text-2xl font-black italic text-slate-900 dark:text-white uppercase tracking-tighter">Tendencias de Peso y Grasa</CardTitle>
+                    <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest px-1">Métricas de Composición Corporal</p>
+                </div>
             </CardHeader>
-            <CardContent className="h-[280px] md:h-[350px] p-2 md:p-6 text-slate-500">
+            <CardContent className="h-[320px] md:h-[400px] p-2 md:p-6 pt-6">
                 <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={dataWithTrend} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                    <ComposedChart data={dataWithTrend} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
+                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
                                 <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.5} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-200 dark:text-slate-800" vertical={false} opacity={0.3} />
                         <XAxis
                             dataKey="Date"
                             tickFormatter={(date) => format(parseISO(date), 'dd MMM', { locale: es })}
-                            stroke="var(--chart-text)"
-                            fontSize={10}
+                            stroke="currentColor"
+                            className="text-slate-400 dark:text-slate-500"
+                            fontSize={9}
+                            fontWeight="bold"
                             tickLine={false}
                             axisLine={false}
-                            dy={5}
-                            minTickGap={20}
+                            dy={10}
+                            minTickGap={30}
                         />
                         <YAxis
                             yAxisId="left"
@@ -52,9 +57,10 @@ export function WeightChart({ data }: WeightChartProps) {
                             domain={['dataMin - 1', 'dataMax + 1']}
                             tickLine={false}
                             axisLine={false}
-                            fontSize={10}
-                            width={35}
-                            tickFormatter={(val) => Math.round(val).toString()}
+                            fontSize={9}
+                            fontWeight="bold"
+                            width={45}
+                            tickFormatter={(val) => `${Math.round(val)}`}
                         />
                         <YAxis
                             yAxisId="right"
@@ -63,38 +69,60 @@ export function WeightChart({ data }: WeightChartProps) {
                             domain={[10, 25]}
                             tickLine={false}
                             axisLine={false}
-                            fontSize={10}
-                            width={25}
+                            fontSize={9}
+                            fontWeight="bold"
+                            width={35}
+                            tickFormatter={(val) => `${val}%`}
                         />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: 'var(--chart-tooltip-bg)',
-                                borderColor: 'var(--chart-tooltip-border)',
-                                borderRadius: '8px',
+                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderRadius: '16px',
                                 fontSize: '11px',
-                                color: 'var(--chart-text)'
+                                color: '#fff',
+                                backdropFilter: 'blur(8px)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)'
                             }}
-                            labelStyle={{ color: 'var(--chart-text)', fontWeight: 'bold' }}
+                            itemStyle={{ padding: '2px 0' }}
+                            labelStyle={{ color: '#94a3b8', fontWeight: '900', textTransform: 'uppercase', fontSize: '9px', marginBottom: '4px', letterSpacing: '0.1em' }}
                             labelFormatter={(label) => format(parseISO(label as string), 'dd MMM, yyyy', { locale: es })}
                         />
                         <Legend
                             verticalAlign="top"
                             align="center"
-                            height={30}
+                            height={60}
                             iconType="circle"
-                            wrapperStyle={{ fontSize: '10px', paddingTop: '0px' }}
+                            wrapperStyle={{ fontSize: '8px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', paddingTop: '10px' }}
                             payload={[
-                                { value: 'Peso', type: 'circle', id: 'ID00', color: '#60a5fa' },
+                                { value: 'Peso Actual', type: 'circle', id: 'ID00', color: '#60a5fa' },
                                 { value: 'Tendencia', type: 'line', id: 'ID01', color: '#2563eb' },
-                                { value: '% Grasa', type: 'line', id: 'ID02', color: '#10b981' }
+                                { value: '% Grasa', type: 'line', id: 'ID02', color: '#10b981' },
+                                { value: 'Meta (18%)', type: 'rect', id: 'ID03', color: '#3b82f6' },
+                                { value: 'Meta (13%)', type: 'rect', id: 'ID04', color: '#ef4444' }
                             ]}
                         />
 
                         {/* Goal Lines */}
-                        <ReferenceLine yAxisId="right" y={13} label={{ value: '13%', position: 'insideRight', fill: '#ef4444', fontSize: 8 }} stroke="#ef4444" strokeDasharray="3 3" />
-                        <ReferenceLine yAxisId="right" y={18} label={{ value: '18%', position: 'insideRight', fill: '#3b82f6', fontSize: 8 }} stroke="#3b82f6" strokeDasharray="3 3" />
+                        <ReferenceLine
+                            yAxisId="right"
+                            y={13}
+                            stroke="#ef4444"
+                            strokeDasharray="4 4"
+                            strokeWidth={2}
+                            label={{ value: 'META ABS', position: 'insideBottomRight', fill: '#ef4444', fontSize: 7, fontWeight: '900', offset: 10 }}
+                        />
+                        <ReferenceLine
+                            yAxisId="right"
+                            y={18}
+                            stroke="#3b82f6"
+                            strokeDasharray="4 4"
+                            strokeWidth={2}
+                            label={{ value: 'META INTER', position: 'insideTopRight', fill: '#3b82f6', fontSize: 7, fontWeight: '900', offset: 10 }}
+                        />
 
-                        {/* Daily Weight Area - Hidden from legend */}
+                        {/* Daily Weight Area */}
                         <Area
                             yAxisId="left"
                             type="monotone"
@@ -103,17 +131,18 @@ export function WeightChart({ data }: WeightChartProps) {
                             fill="url(#colorWeight)"
                             legendType="none"
                             name="weight_area"
+                            activeDot={false}
                         />
 
-                        {/* Daily dots - Visible as 'Peso' in legend via payload */}
+                        {/* Daily dots */}
                         <Line
                             yAxisId="left"
                             type="monotone"
                             dataKey="Weight"
                             stroke="#60a5fa"
                             strokeWidth={0}
-                            dot={{ r: 2, fill: "#60a5fa", strokeWidth: 0 }}
-                            activeDot={{ r: 4 }}
+                            dot={{ r: 2.5, fill: "#60a5fa", strokeWidth: 0, fillOpacity: 0.6 }}
+                            activeDot={{ r: 4, strokeWidth: 0 }}
                             name="Peso"
                             legendType="none"
                         />
@@ -124,9 +153,11 @@ export function WeightChart({ data }: WeightChartProps) {
                             type="monotone"
                             dataKey="weightTrend"
                             stroke="#2563eb"
-                            strokeWidth={3}
+                            strokeWidth={4}
+                            strokeLinecap="round"
                             dot={false}
                             name="Tendencia"
+                            animationDuration={1500}
                         />
 
                         {/* Body Fat Line */}
@@ -135,9 +166,10 @@ export function WeightChart({ data }: WeightChartProps) {
                             type="monotone"
                             dataKey="BodyFat"
                             stroke="#10b981"
-                            strokeWidth={2}
+                            strokeWidth={3}
                             dot={false}
                             name="% Grasa"
+                            animationDuration={2000}
                         />
 
                     </ComposedChart>

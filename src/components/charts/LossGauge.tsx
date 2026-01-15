@@ -30,59 +30,67 @@ export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss }: 
     const nextKiloProgress = (fatLoss % 1) * 100;
 
     return (
-        <Card className="col-span-12 md:col-span-6 lg:col-span-4">
-            <CardContent className="p-4 md:p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col items-center justify-center border-r border-slate-200 dark:border-slate-800 pr-2">
-                        <span className="text-[9px] md:text-[10px] uppercase font-bold text-slate-500 mb-1">Ritmo de Peso</span>
-                        <span className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-none">
-                            <Counter value={weeklyRate} decimals={1} />
-                        </span>
-                        <span className="text-[9px] md:text-[10px] text-slate-500 mt-1 uppercase">kg / semana</span>
-                        <span className="text-[9px] md:text-[10px] uppercase font-bold mt-1" style={{ color: rateColor }}>{rateText}</span>
+        <Card className="col-span-12 md:col-span-6 lg:col-span-4 bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col justify-center">
+            <CardContent className="p-6 md:p-8 space-y-6">
+                <div className="grid grid-cols-2">
+                    <div className="flex flex-col items-center justify-center border-r border-slate-200 dark:border-white/5 pr-4">
+                        <span className="text-[9px] md:text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 mb-2 tracking-widest text-center">Ritmo de Peso</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tighter tabular-nums">
+                                <Counter value={weeklyRate} decimals={1} />
+                            </span>
+                        </div>
+                        <span className="text-[8px] md:text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-tighter">kg / semana</span>
+                        <div className="mt-3 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm" style={{ backgroundColor: `${rateColor}20`, color: rateColor, border: `1px solid ${rateColor}30` }}>
+                            {rateText}
+                        </div>
                     </div>
 
-                    <div className="flex flex-col items-center justify-center pl-2">
-                        <span className="text-[9px] md:text-[10px] uppercase font-bold text-slate-500 mb-1">Déficit Promedio</span>
-                        <span className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-none">
-                            <Counter value={weeklyDeficit} />
-                        </span>
-                        <span className="text-[9px] md:text-[10px] text-slate-500 mt-1 uppercase">kcal / día</span>
-                        <div className="flex flex-col items-center mt-1">
-                            <span className="text-[9px] md:text-[10px] uppercase font-bold" style={{ color: deficitColor }}>
-                                {weeklyDeficit < 500 ? "Bajo" : weeklyDeficit > 700 ? "Alto" : "En Meta"}
+                    <div className="flex flex-col items-center justify-center pl-4">
+                        <span className="text-[9px] md:text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 mb-2 tracking-widest text-center">Déficit Diario</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tighter tabular-nums">
+                                <Counter value={weeklyDeficit} />
                             </span>
+                        </div>
+                        <span className="text-[8px] md:text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-tighter">kcal / día</span>
+                        <div className="mt-3 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm" style={{ backgroundColor: `${deficitColor}20`, color: deficitColor, border: `1px solid ${deficitColor}30` }}>
+                            {weeklyDeficit < 500 ? "Bajo" : weeklyDeficit > 700 ? "Alto" : "En Meta"}
                         </div>
                     </div>
                 </div>
 
                 {/* Cumulative Deficit Row */}
-                <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="pt-6 border-t border-slate-200 dark:border-white/5 space-y-4">
                     <div className="flex justify-between items-end">
-                        <div>
-                            <span className="text-[9px] md:text-[10px] uppercase font-bold text-slate-500 block">Déficit Acumulado</span>
-                            <span className="text-xl font-bold text-slate-900 dark:text-white">
-                                <Counter value={totalDeficit} />
-                                <span className="text-xs text-slate-500 font-medium tracking-normal lowercase"> kcal</span>
-                            </span>
+                        <div className="space-y-1">
+                            <span className="text-[9px] md:text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Déficit Acumulado</span>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                                    <Counter value={totalDeficit} />
+                                </span>
+                                <span className="text-[10px] font-black text-slate-500 uppercase">kcal</span>
+                            </div>
                         </div>
-                        <div className="text-right">
-                            <span className="text-[9px] md:text-[10px] uppercase font-black text-blue-500 dark:text-blue-500 block">Grasa Teórica</span>
-                            <span className="text-xl font-black text-blue-600 dark:text-blue-400">
-                                -<Counter value={Math.abs(fatLoss)} decimals={2} />
-                                <span className="text-xs font-bold lowercase"> kg</span>
-                            </span>
+                        <div className="text-right space-y-1">
+                            <span className="text-[9px] md:text-[10px] font-black uppercase text-blue-500 tracking-widest">Grasa Teórica</span>
+                            <div className="flex items-baseline justify-end gap-1.5">
+                                <span className="text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight">
+                                    -<Counter value={Math.abs(fatLoss)} decimals={2} />
+                                </span>
+                                <span className="text-[10px] font-black text-blue-500 uppercase">kg</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="space-y-1">
-                        <div className="flex justify-between text-[8px] uppercase font-bold text-slate-400 dark:text-slate-600">
-                            <span>Kilo Actual</span>
-                            <span>Próximo Kilo ({nextKiloProgress.toFixed(0)}%)</span>
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-[8px] font-black uppercase tracking-widest">
+                            <span className="text-slate-400 dark:text-slate-600">Kilo Actual</span>
+                            <span className="text-blue-500/80">Próximo Kilo • {nextKiloProgress.toFixed(0)}%</span>
                         </div>
-                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full p-[1px] overflow-hidden border border-slate-200 dark:border-white/5 shadow-inner">
                             <div
-                                className="h-full bg-blue-500 transition-all duration-1000 shadow-[0_0_8px_rgba(59,130,246,0.3)] dark:shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+                                className="h-full bg-gradient-to-r from-blue-700 to-blue-400 rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(59,130,246,0.2)]"
                                 style={{ width: `${nextKiloProgress}%` }}
                             />
                         </div>
