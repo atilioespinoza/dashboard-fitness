@@ -52,7 +52,7 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                     <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
                                     <Brain className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-500 animate-pulse" size={24} />
                                 </div>
-                                <p className="text-slate-400 font-medium animate-pulse">Gemini 2.0 procesando auditoría profunda...</p>
+                                <p className="text-slate-400 font-medium animate-pulse">Gemini 3.0 procesando auditoría profunda...</p>
                             </div>
                         ) : report ? (
                             <div className="space-y-8">
@@ -145,7 +145,7 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                 </section>
 
                                 <div className="pt-4 border-t border-slate-800 flex justify-center">
-                                    <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest">Generado por Gemini 2.0 Flash • Análisis de Alta Precisión</p>
+                                    <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest">Generado por Gemini 3.0 Flash • Análisis de Alta Precisión</p>
                                 </div>
                             </div>
                         ) : null}
