@@ -104,10 +104,19 @@ export const getFullReport = async (data: FitnessEntry[]) => {
         "calories": 0,
         "protein": 0,
         "sleep": 0
+      },
+      "metabolicRedAlert": {
+        "active": boolean,
+        "level": "warning" | "critical",
+        "title": "Título de la alerta",
+        "explanation": "Por qué se activa (ej: estancamiento de cintura detectado)",
+        "recommendation": "Acción inmediata (ej: Refeed Day, reducir cardio, aumentar sueño)"
       }
     }
 
     REGLAS ADICIONALES:
+    - RED ALERT: Actívala si detectas que la cintura o peso no han bajado en los últimos 7-10 días a pesar de un cumplimiento alto (>85%) de pasos y calorías. 
+    - RECOMENDACIÓN: Si hay alerta, sugiere acciones tácticas (ej: 'Re-feed de 48h', 'Deload de entrenamiento').
     - GOLDEN FORMULA: Identifica los valores promedio de las semanas donde el usuario tuvo el mayor progreso en cintura y mejores notas de energía.
     - METAS: Incluye al menos 2 metas intermedias (ej: bajar 2cm de cintura, bajar 2kg) y las metas finales (12% grasa y marcar abs). 
     - ARQUETIPOS: Identifica si el usuario es 'La Máquina de Consistencia', 'El Guerrero de Fin de Semana', 'El Estratega de Recomposición', 'El Velocista Metabólico' o 'El Maestro de la Recuperación'.

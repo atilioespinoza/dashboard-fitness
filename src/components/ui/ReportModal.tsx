@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Brain, Target, Search, TrendingUp, AlertTriangle, Sparkles, Zap, Flame, Moon } from 'lucide-react';
+import { X, Brain, Target, Search, TrendingUp, AlertTriangle, Sparkles, Zap, Flame, Moon, Siren } from 'lucide-react';
 
 interface FullReport {
     executiveSummary: string;
@@ -29,6 +29,13 @@ interface FullReport {
         calories: number;
         protein: number;
         sleep: number;
+    };
+    metabolicRedAlert?: {
+        active: boolean;
+        level: 'warning' | 'critical';
+        title: string;
+        explanation: string;
+        recommendation: string;
     };
 }
 
@@ -91,6 +98,38 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Metabolic Red-Alert */}
+                                {report.metabolicRedAlert?.active && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        className={`p-6 rounded-[2rem] border-2 flex flex-col md:flex-row gap-6 items-center overflow-hidden ${report.metabolicRedAlert.level === 'critical'
+                                                ? 'bg-red-500/10 border-red-500/30'
+                                                : 'bg-amber-500/10 border-amber-500/30'
+                                            }`}
+                                    >
+                                        <div className={`p-4 rounded-full ${report.metabolicRedAlert.level === 'critical' ? 'bg-red-500 text-white' : 'bg-amber-500 text-slate-900'
+                                            } animate-pulse`}>
+                                            <Siren size={32} />
+                                        </div>
+                                        <div className="flex-1 text-center md:text-left">
+                                            <h3 className={`text-xl font-black uppercase tracking-tight mb-2 ${report.metabolicRedAlert.level === 'critical' ? 'text-red-500' : 'text-amber-500'
+                                                }`}>
+                                                {report.metabolicRedAlert.title}
+                                            </h3>
+                                            <p className="text-sm text-slate-300 mb-4 italic">
+                                                "{report.metabolicRedAlert.explanation}"
+                                            </p>
+                                            <div className="p-3 bg-white/5 rounded-xl border border-white/5 flex items-center gap-3">
+                                                <Zap size={16} className="text-blue-400" />
+                                                <p className="text-sm font-bold text-white">
+                                                    Acción Sugerida: <span className="text-blue-400">{report.metabolicRedAlert.recommendation}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
 
                                 {/* Archetype Section */}
                                 <motion.section
