@@ -32,7 +32,7 @@ interface FullReport {
     };
     metabolicRedAlert?: {
         active: boolean;
-        level: 'warning' | 'critical';
+        level: 'warning' | 'critical' | 'healthy';
         title: string;
         explanation: string;
         recommendation: string;
@@ -99,37 +99,48 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                     </div>
                                 </div>
 
-                                {/* Metabolic Red-Alert */}
-                                {report.metabolicRedAlert?.active && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        className={`p-6 rounded-[2rem] border-2 flex flex-col md:flex-row gap-6 items-center overflow-hidden ${report.metabolicRedAlert.level === 'critical'
-                                                ? 'bg-red-500/10 border-red-500/30'
-                                                : 'bg-amber-500/10 border-amber-500/30'
-                                            }`}
-                                    >
-                                        <div className={`p-4 rounded-full ${report.metabolicRedAlert.level === 'critical' ? 'bg-red-500 text-white' : 'bg-amber-500 text-slate-900'
-                                            } animate-pulse`}>
-                                            <Siren size={32} />
-                                        </div>
-                                        <div className="flex-1 text-center md:text-left">
-                                            <h3 className={`text-xl font-black uppercase tracking-tight mb-2 ${report.metabolicRedAlert.level === 'critical' ? 'text-red-500' : 'text-amber-500'
+                                {/* Metabolic Health Monitor */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={`p-6 rounded-[2rem] border-2 flex flex-col md:flex-row gap-6 items-center overflow-hidden transition-colors ${report.metabolicRedAlert?.active
+                                        ? report.metabolicRedAlert.level === 'critical'
+                                            ? 'bg-red-500/10 border-red-500/30'
+                                            : 'bg-amber-500/10 border-amber-500/30'
+                                        : 'bg-emerald-500/5 border-emerald-500/20'
+                                        }`}
+                                >
+                                    <div className={`p-4 rounded-full ${report.metabolicRedAlert?.active
+                                        ? report.metabolicRedAlert.level === 'critical' ? 'bg-red-500 text-white' : 'bg-amber-500 text-slate-900'
+                                        : 'bg-emerald-500 text-white'
+                                        } ${report.metabolicRedAlert?.active ? 'animate-pulse' : ''}`}>
+                                        {report.metabolicRedAlert?.active ? <Siren size={30} /> : <TrendingUp size={30} />}
+                                    </div>
+                                    <div className="flex-1 text-center md:text-left">
+                                        <div className="flex items-center gap-2 justify-center md:justify-start mb-1">
+                                            <h3 className={`text-lg font-black uppercase tracking-tight ${report.metabolicRedAlert?.active
+                                                ? report.metabolicRedAlert.level === 'critical' ? 'text-red-500' : 'text-amber-500'
+                                                : 'text-emerald-500'
                                                 }`}>
-                                                {report.metabolicRedAlert.title}
+                                                {report.metabolicRedAlert?.active ? report.metabolicRedAlert.title : 'Flujo Metabólico Optimizado'}
                                             </h3>
-                                            <p className="text-sm text-slate-300 mb-4 italic">
-                                                "{report.metabolicRedAlert.explanation}"
-                                            </p>
-                                            <div className="p-3 bg-white/5 rounded-xl border border-white/5 flex items-center gap-3">
-                                                <Zap size={16} className="text-blue-400" />
-                                                <p className="text-sm font-bold text-white">
-                                                    Acción Sugerida: <span className="text-blue-400">{report.metabolicRedAlert.recommendation}</span>
-                                                </p>
-                                            </div>
+                                            {!report.metabolicRedAlert?.active && (
+                                                <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase rounded-lg border border-emerald-500/20">
+                                                    Saludable
+                                                </span>
+                                            )}
                                         </div>
-                                    </motion.div>
-                                )}
+                                        <p className="text-sm text-slate-400 mb-4 italic">
+                                            "{report.metabolicRedAlert?.explanation || 'No se han detectado bloqueos metabólicos. Tu cuerpo está respondiendo correctamente a la carga y nutrición.'}"
+                                        </p>
+                                        <div className="p-3 bg-white/5 rounded-xl border border-white/5 flex items-center gap-3">
+                                            <Zap size={16} className="text-blue-400" />
+                                            <p className="text-sm font-bold text-white">
+                                                Coach Insight: <span className="text-blue-400">{report.metabolicRedAlert?.recommendation || 'Mantén el ritmo actual para asegurar la pérdida de grasa constante.'}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </motion.div>
 
                                 {/* Archetype Section */}
                                 <motion.section

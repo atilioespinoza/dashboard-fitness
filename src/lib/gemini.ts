@@ -107,16 +107,17 @@ export const getFullReport = async (data: FitnessEntry[]) => {
       },
       "metabolicRedAlert": {
         "active": boolean,
-        "level": "warning" | "critical",
-        "title": "Título de la alerta",
-        "explanation": "Por qué se activa (ej: estancamiento de cintura detectado)",
-        "recommendation": "Acción inmediata (ej: Refeed Day, reducir cardio, aumentar sueño)"
+        "level": "warning" | "critical" | "healthy",
+        "title": "Título del estado",
+        "explanation": "Análisis del flujo metabólico",
+        "recommendation": "Sugerencia para mantener o mejorar"
       }
     }
 
     REGLAS ADICIONALES:
-    - RED ALERT: Actívala si detectas que la cintura o peso no han bajado en los últimos 7-10 días a pesar de un cumplimiento alto (>85%) de pasos y calorías. 
-    - RECOMENDACIÓN: Si hay alerta, sugiere acciones tácticas (ej: 'Re-feed de 48h', 'Deload de entrenamiento').
+    - RED ALERT: Evalúa SIEMPRE el estado metabólico. Si no hay estancamiento, pon "active": false y "level": "healthy".
+    - Si detectas que la cintura o peso no han bajado en los últimos 7-10 días a pesar de cumplimiento >85%, pon "active": true y "level": "critical" o "warning". 
+    - RECOMENDACIÓN: Si el estado es "healthy", felicita al usuario y dale un tip para optimizar (ej: 'Sigue así, el flujo es constante').
     - GOLDEN FORMULA: Identifica los valores promedio de las semanas donde el usuario tuvo el mayor progreso en cintura y mejores notas de energía.
     - METAS: Incluye al menos 2 metas intermedias (ej: bajar 2cm de cintura, bajar 2kg) y las metas finales (12% grasa y marcar abs). 
     - ARQUETIPOS: Identifica si el usuario es 'La Máquina de Consistencia', 'El Guerrero de Fin de Semana', 'El Estratega de Recomposición', 'El Velocista Metabólico' o 'El Maestro de la Recuperación'.
