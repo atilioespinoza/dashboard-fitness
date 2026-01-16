@@ -1,6 +1,6 @@
 import { useAICoach, Insight } from '../../hooks/useAICoach';
 import { FitnessEntry } from '../../data/mockData';
-import { Bot, Sparkles, AlertCircle, Info, ChevronRight, ChevronDown } from 'lucide-react';
+import { Bot, Sparkles, AlertCircle, Info, ChevronRight, ChevronDown, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { ReportModal } from '../ui/ReportModal';
@@ -87,7 +87,7 @@ const InsightCard = ({ insight }: { insight: Insight }) => {
 };
 
 export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
-    const { insights, loading, isAI } = useAICoach(data);
+    const { insights, loading, isAI, refreshAI } = useAICoach(data);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [fullReport, setFullReport] = useState<any>(null);
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
@@ -128,24 +128,23 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                                 <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
                                     AI Fitness Coach
                                 </h2>
-                                {isAI && (
-                                    <div className="hidden xs:flex px-2 py-0.5 bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[9px] uppercase font-black tracking-tighter rounded-full border border-purple-500/20 backdrop-blur-md">
-                                        Gemini 3.0 Flash
-                                    </div>
-                                )}
+                                <button
+                                    onClick={refreshAI}
+                                    disabled={loading}
+                                    className="flex items-center gap-1.5 px-2 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[9px] uppercase font-black tracking-tighter rounded-full border border-blue-500/20 backdrop-blur-md transition-all active:scale-95 disabled:opacity-50"
+                                >
+                                    <RefreshCw size={10} className={loading ? "animate-spin" : ""} />
+                                    {isAI ? "Actualizar con Gemini" : "Analizar con IA"}
+                                </button>
                             </div>
                             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                                {loading ? "Analizando patrones de 30 días..." : "Briefing de inteligencia diaria"}
+                                {loading ? "Procesando datos..." : isAI ? "Briefing de inteligencia diaria (IA)" : "Basado en reglas locales"}
                             </p>
                         </div>
                     </div>
 
                     {/* Badge for Mobile (Dynamic positioning) */}
-                    {isAI && (
-                        <div className="xs:hidden self-start px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-300 text-[10px] uppercase font-black tracking-widest rounded-full border border-purple-500/20">
-                            Powered by Gemini 3.0 Flash
-                        </div>
-                    )}
+                    {/* Badge for Mobile (Dynamic positioning) removed in favor of the button above */}
                 </div>
 
                 {/* Insights List */}

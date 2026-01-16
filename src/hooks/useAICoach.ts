@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { FitnessEntry } from '../data/mockData';
 import { getGeminiInsights } from '../lib/gemini';
 
@@ -12,10 +12,13 @@ export interface Insight {
 }
 
 export const useAICoach = (data: FitnessEntry[]) => {
-    const [geminiInsights, setGeminiInsights] = useState<Insight[] | null>(null);
+    const [geminiInsights, setGeminiInsights] = useState<Insight[] | null>(() => {
+        const cached = localStorage.getItem('gemini_insights_cache');
+        return cached ? JSON.parse(cached) : null;
+    });
     const [loading, setLoading] = useState(false);
 
-    // 1. Heuristic fallback logic (The previous "smart" logic)
+    // 1. Heuristic fallback logic
     const heuristicInsights = useMemo(() => {
         if (!data || data.length < 10) return [];
         const list: Insight[] = [];
@@ -23,7 +26,6 @@ export const useAICoach = (data: FitnessEntry[]) => {
         const last7Days = sortedData.slice(0, 7);
         const prev7Days = sortedData.slice(7, 14);
 
-        // Core Metabolic Logic
         const weightNow = last7Days.reduce((acc, d) => acc + d.Weight, 0) / 7;
         const weightPrev = prev7Days.reduce((acc, d) => acc + d.Weight, 0) / 7;
         const actualLoss = weightPrev - weightNow;
@@ -69,24 +71,27 @@ export const useAICoach = (data: FitnessEntry[]) => {
         return list.slice(0, 4);
     }, [data]);
 
-    // 2. Fetch Gemini Insights if API key is present
-    useEffect(() => {
-        const fetchGemini = async () => {
-            if (import.meta.env.VITE_GEMINI_API_KEY && data.length >= 7) {
-                setLoading(true);
+    const refreshAI = async () => {
+        if (import.meta.env.VITE_GEMINI_API_KEY && data.length >= 7) {
+            setLoading(true);
+            try {
                 const insights = await getGeminiInsights(data);
                 if (insights) {
                     setGeminiInsights(insights);
+                    localStorage.setItem('gemini_insights_cache', JSON.stringify(insights));
                 }
+            } catch (error) {
+                console.error("AI Refresh Error:", error);
+            } finally {
                 setLoading(false);
             }
-        };
-        fetchGemini();
-    }, [data]);
+        }
+    };
 
     return {
         insights: geminiInsights || heuristicInsights,
         loading,
-        isAI: !!geminiInsights
+        isAI: !!geminiInsights,
+        refreshAI
     };
 };
