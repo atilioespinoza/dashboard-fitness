@@ -226,9 +226,14 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                             animate={{ opacity: 1, y: 0 }}
                             className="bg-slate-50/50 dark:bg-slate-950/50 rounded-2xl p-4 border border-slate-100 dark:border-white/5"
                         >
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Progreso del Día</h4>
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Progreso del Día</h4>
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize">
+                                    {new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}
+                                </span>
                             </div>
 
                             <div className="grid grid-cols-2 xs:grid-cols-3 gap-2 mb-3">
