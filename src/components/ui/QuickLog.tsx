@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { parseFitnessEntry } from '../../lib/gemini';
-import { Brain, Send, Loader2, CheckCircle2, XCircle, Mic, Zap, TrendingDown, Target, X } from 'lucide-react';
+import { Brain, Send, Loader2, CheckCircle2, XCircle, Mic, Zap, TrendingDown, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DailySummary {
