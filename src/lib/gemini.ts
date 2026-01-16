@@ -145,3 +145,51 @@ export const getFullReport = async (data: FitnessEntry[]) => {
     return null;
   }
 };
+
+export const parseFitnessEntry = async (textInput: string) => {
+  if (!genAI) throw new Error("No Gemini API Key found");
+
+  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+
+  const prompt = `
+    Eres un extractor de datos de fitness. Tu misión es convertir lenguaje natural en un objeto JSON estructurado.
+    
+    TEXTO DEL USUARIO: "${textInput}"
+    
+    ESTRUCTURA DE RETORNO (JSON):
+    {
+      "weight": float | null,
+      "waist": float | null,
+      "body_fat": float | null,
+      "calories": int | null,
+      "protein": int | null,
+      "carbs": int | null,
+      "fat": int | null,
+      "steps": int | null,
+      "sleep": float | null,
+      "training": string | null,
+      "notes": string | null
+    }
+
+    REGLAS:
+    1. Si mencionan comida, estima las calorías y macros (proteína, carbos, grasas) basados en cantidades promedio si no se especifican.
+    2. Si mencionan entrenamiento, descríbelo brevemente en 'training'.
+    3. Si mencionan peso, cintura o grasa, extráelos.
+    4. Usa la unidad métrica (kg, cm).
+    5. No inventes datos que no se mencionen o no se puedan estimar lógicamente (ej: si no mencionan sueño, pon null).
+    6. Retorna UNICAMENTE el JSON.
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Error parsing fitness entry:", error);
+    return null;
+  }
+};
+

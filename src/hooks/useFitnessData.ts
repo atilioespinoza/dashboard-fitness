@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import { MOCK_DATA, FitnessEntry } from '../data/mockData';
-// No unnecessary imports here
+import { supabase } from '../lib/supabase';
 
 // Configuration
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRk6d9GUWbA6s8aXgW-TP3A0IBRUYVxMDtheCYTHFQpsZos9ddvBMHOxFz7F5_Ce-BOBPSDvSa08cRz/pub?output=csv";
-const USE_MOCK = false; // Toggle this to false to try fetching real data
+const USE_MOCK = false;
 
-export const useFitnessData = () => {
+export const useFitnessData = (userId?: string) => {
     const [data, setData] = useState<FitnessEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
+
             if (USE_MOCK) {
                 setTimeout(() => {
                     setData(MOCK_DATA);
@@ -22,10 +24,47 @@ export const useFitnessData = () => {
                 return;
             }
 
+            // 1. Try Supabase first if userId is present
+            if (userId) {
+                try {
+                    const { data: supabaseData, error: supabaseError } = await supabase
+                        .from('fitness_logs')
+                        .select('*')
+                        .eq('user_id', userId)
+                        .order('date', { ascending: true });
+
+                    if (supabaseError) throw supabaseError;
+
+                    if (supabaseData && supabaseData.length > 0) {
+                        const mappedData: FitnessEntry[] = supabaseData.map(row => ({
+                            Date: row.date,
+                            Weight: row.weight,
+                            Waist: row.waist,
+                            BodyFat: row.body_fat,
+                            Calories: row.calories,
+                            Protein: row.protein,
+                            Carbs: row.carbs,
+                            Fat: row.fat,
+                            Steps: row.steps,
+                            TDEE: row.tdee,
+                            Sleep: row.sleep,
+                            Notes: row.notes || '',
+                            Training: row.training || undefined
+                        }));
+                        setData(mappedData);
+                        setLoading(false);
+                        return;
+                    }
+                } catch (err: any) {
+                    console.error("Supabase fetch error:", err);
+                    // Fallback to sheets if supabase fails or is empty
+                }
+            }
+
+            // 2. Fallback to Google Sheets
             try {
                 const response = await fetch(SHEET_URL);
                 if (!response.ok) {
-                    console.warn("Failed to fetch live data, falling back to mock data.");
                     setData(MOCK_DATA);
                     setLoading(false);
                     return;
@@ -42,7 +81,6 @@ export const useFitnessData = () => {
                             const parsedData: FitnessEntry[] = results.data
                                 .filter((row: any) => row['Fecha'] && row['Peso (kg)'])
                                 .map((row: any) => {
-                                    // Convert DD-MM-YYYY to YYYY-MM-DD for standard parsing
                                     const parts = String(row['Fecha']).split('-');
                                     if (parts.length !== 3) return null;
 
@@ -68,11 +106,9 @@ export const useFitnessData = () => {
                                 })
                                 .filter((item): item is FitnessEntry => item !== null);
 
-                            console.log("Parsed Data:", parsedData);
                             setData(parsedData);
                             setLoading(false);
                         } catch (e) {
-                            console.error("Error parsing data:", e);
                             setError("Error processing data format");
                             setLoading(false);
                         }
@@ -83,14 +119,14 @@ export const useFitnessData = () => {
                     }
                 });
             } catch (err) {
-                console.warn("Network error fetching data, using mock.", err);
                 setData(MOCK_DATA);
                 setLoading(false);
             }
         };
 
         fetchData();
-    }, []);
+    }, [userId]);
 
-    return { data, loading, error };
+    return { data, loading, error, refresh: () => { } }; // refresh logic needs adjustment if exported
 };
+

@@ -15,12 +15,22 @@ import { AchievementsGallery } from './components/charts/AchievementsGallery';
 import { BodyHeatmap } from './components/charts/BodyHeatmap';
 import { AICoachInsights } from './components/charts/AICoachInsights';
 import { PersonalInfo } from './components/ui/PersonalInfo';
-import { Activity, Sun, Moon } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { QuickLog } from './components/ui/QuickLog';
+import { Auth } from './components/auth/Auth';
+import { useAuth } from './hooks/useAuth';
+import { useMigration } from './hooks/useMigration';
+import { supabase } from './lib/supabase';
+import { Activity, Sun, Moon, LogOut, Database, CloudUpload, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 import { FadeIn, FadeInStagger } from './components/ui/FadeIn';
+import { differenceInYears, parseISO } from 'date-fns';
 
 function App() {
-    const { data, loading, error } = useFitnessData();
+    const { user, loading: authLoading } = useAuth();
+    const { data, loading: dataLoading } = useFitnessData(user?.id);
+    const { migrate, migrating, progress, error: migrationError } = useMigration();
+    const [migrationSuccess, setMigrationSuccess] = useState(false);
+
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
             return (localStorage.getItem('theme') as 'light' | 'dark') || 'dark';
@@ -38,64 +48,62 @@ function App() {
     }, [theme]);
 
     const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
+    const handleLogout = () => supabase.auth.signOut();
 
-    if (loading) {
+    const handleMigrate = async () => {
+        if (!user) return;
+        try {
+            await migrate(user.id);
+            setMigrationSuccess(true);
+            setTimeout(() => setMigrationSuccess(false), 5000);
+            window.location.reload(); // Quick way to refresh everything
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    // Age calculation
+    const birthDate = "1984-01-14";
+    const age = useMemo(() => differenceInYears(new Date(), parseISO(birthDate)), [birthDate]);
+
+    if (authLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex items-center justify-center transition-colors duration-300">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
         );
     }
 
-    if (error && data.length === 0) {
+    if (!user) {
+        return <Auth />;
+    }
+
+    if (dataLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex items-center justify-center p-4 transition-colors duration-300">
-                <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-lg max-w-md">
-                    <h2 className="text-lg font-bold mb-2">Error al Cargar Datos</h2>
-                    <p>{error}</p>
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex items-center justify-center transition-colors duration-300">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 animate-pulse">Sincronizando Biometría...</p>
                 </div>
             </div>
         );
     }
 
-    // Calculate top-level metrics for Streaks
-    // Simple logic for streak: consecutive days meeting criteria working backwards from latest
-    let calorieStreak = 0;
-    let proteinStreak = 0;
-    let stepsStreak = 0;
-
-    // Sort descending for streak calc
     const sortedData = [...data].sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime());
-
-    for (const day of sortedData) {
-        if (day.Calories <= day.TDEE) calorieStreak++;
-        else break;
-    }
-
-    for (const day of sortedData) {
-        if (day.Protein >= 140) proteinStreak++;
-        else break;
-    }
-
-    for (const day of sortedData) {
-        if (day.Steps >= 12000) stepsStreak++;
-        else break;
-    }
-
-    // Weekly Rate for Gauge (Last 7 days avg loss or simple diff)
     const latest = sortedData[0];
     const weekAgo = sortedData[6] || sortedData[sortedData.length - 1];
     const weeklyRate = latest && weekAgo ? Number((latest.Weight - weekAgo.Weight).toFixed(1)) : 0;
-
-    // Weekly Average Deficit
     const last7Days = sortedData.slice(0, 7);
-    const weeklyAvgDeficit = last7Days.length > 0
-        ? Math.round(last7Days.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0) / last7Days.length)
-        : 0;
-
-    // Cumulative Deficit and Theoretical Fat Loss (7700 kcal = 1kg fat)
+    const weeklyAvgDeficit = last7Days.length > 0 ? Math.round(last7Days.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0) / last7Days.length) : 0;
     const cumulativeDeficit = data.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0);
     const theoreticalFatLoss = Number((cumulativeDeficit / 7700).toFixed(2));
+
+    let calorieStreak = 0;
+    let proteinStreak = 0;
+    let stepsStreak = 0;
+    for (const day of sortedData) { if (day.Calories <= day.TDEE) calorieStreak++; else break; }
+    for (const day of sortedData) { if (day.Protein >= 140) proteinStreak++; else break; }
+    for (const day of sortedData) { if (day.Steps >= 12000) stepsStreak++; else break; }
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-3 md:p-8 font-sans pb-20 md:pb-8 transition-colors duration-300">
@@ -104,39 +112,95 @@ function App() {
                 {/* Header */}
                 <FadeIn>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-4 px-1">
-                        <div>
-                            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                                <Activity className="text-blue-500" size={24} />
-                                Registro Fitness Pro
-                            </h1>
-                            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5 md:mt-1">Panel de Tendencias y Análisis</p>
-                        </div>
-                        <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto justify-between md:justify-end">
-                            <button
-                                onClick={toggleTheme}
-                                className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-sm"
-                                aria-label="Toggle theme"
-                            >
-                                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-                            </button>
-                            <div className="px-3 py-1 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 text-[10px] md:text-xs text-slate-500 dark:text-slate-500 font-mono shadow-sm">
-                                Última Actualización: {latest?.Date}
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-600/20 text-white">
+                                <Activity size={24} />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-slate-900 dark:text-white uppercase italic leading-none">
+                                    Fitness Pro <span className="text-blue-600 not-italic">Dashboard</span>
+                                </h1>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                                        <Database size={10} className="text-emerald-500" />
+                                        <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest leading-none">Supabase Active</span>
+                                    </div>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Beta v2.0</p>
+                                </div>
                             </div>
                         </div>
+
+                        <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
+                            <button
+                                onClick={handleMigrate}
+                                disabled={migrating}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest ${migrating
+                                    ? "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                                    : "bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20"
+                                    }`}
+                                title="Migrar datos desde Sheets"
+                            >
+                                {migrating ? (
+                                    <div className="flex items-center gap-2">
+                                        <Database className="animate-bounce" size={16} />
+                                        <span>{progress}%</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <CloudUpload size={16} />
+                                        <span className="hidden sm:inline">Migrar Historial</span>
+                                    </>
+                                )}
+                            </button>
+
+                            <button
+                                onClick={toggleTheme}
+                                className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-sm"
+                                aria-label="Toggle theme"
+                            >
+                                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                            </button>
+
+                            <button
+                                onClick={handleLogout}
+                                className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-red-500 hover:bg-red-500/10 transition-colors shadow-sm"
+                                title="Salir"
+                            >
+                                <LogOut size={18} />
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Migration Status Notifications */}
+                    {migrationSuccess && (
+                        <FadeIn className="mt-4 px-4 py-3 bg-emerald-500 text-white rounded-2xl flex items-center gap-3 shadow-lg shadow-emerald-500/20">
+                            <CheckCircle2 size={20} />
+                            <span className="text-sm font-black uppercase tracking-widest">Migración completa. Datos sincronizados.</span>
+                        </FadeIn>
+                    )}
+                    {migrationError && (
+                        <FadeIn className="mt-4 px-4 py-3 bg-red-500 text-white rounded-2xl flex items-center gap-3 shadow-lg shadow-red-500/20">
+                            <AlertCircle size={20} />
+                            <span className="text-sm font-black uppercase tracking-widest">Error: {migrationError}</span>
+                        </FadeIn>
+                    )}
                 </FadeIn>
 
-                {/* AI Briefing */}
+                {/* AI Briefing & Quick Log */}
+                <div className="grid grid-cols-12 gap-4 md:gap-6">
+                    <FadeIn className="col-span-12 lg:col-span-8">
+                        <AICoachInsights data={data} />
+                    </FadeIn>
+                    <FadeIn className="col-span-12 lg:col-span-4">
+                        <QuickLog userId={user.id} onUpdate={() => window.location.reload()} />
+                    </FadeIn>
+                </div>
+
+
                 <FadeIn>
-                    <AICoachInsights data={data} />
+                    <PersonalInfo age={age} height={179} sex="Masculino" />
                 </FadeIn>
 
-                {/* Personal Info Bar */}
-                <FadeIn>
-                    <PersonalInfo age={42} height={179} sex="Masculino" />
-                </FadeIn>
-
-                {/* Row 1: Health Trends */}
                 <div className="grid grid-cols-12 gap-4 md:gap-6">
                     <FadeIn className="col-span-12 lg:col-span-8">
                         <WeightChart data={data} />
@@ -156,7 +220,6 @@ function App() {
                     </FadeInStagger>
                 </div>
 
-                {/* Row 1.5: Projections & Achievements */}
                 <div className="grid grid-cols-12 gap-6">
                     <FadeIn className="col-span-12 lg:col-span-12">
                         <GoalProjections data={data} />
@@ -166,7 +229,6 @@ function App() {
                     </FadeIn>
                 </div>
 
-                {/* Row 2: Nutrition & Activity Consistency */}
                 <div className="grid grid-cols-12 gap-4 md:gap-6">
                     <FadeIn className="col-span-12 lg:col-span-6">
                         <BalanceChart data={data} />
@@ -189,17 +251,14 @@ function App() {
                     </div>
                 </div>
 
-                {/* Row 3: Macro Insights (Full Width) */}
                 <FadeIn className="grid grid-cols-12 gap-6">
                     <MacroDonut data={data} />
                 </FadeIn>
 
-                {/* Row 4: Activity Analysis (Steps) */}
                 <FadeIn className="grid grid-cols-12 gap-6">
                     <StepsChart data={data} />
                 </FadeIn>
 
-                {/* Row 5: Training Activity & Map */}
                 <div className="grid grid-cols-12 gap-6">
                     <FadeIn className="col-span-12 lg:col-span-4">
                         <BodyHeatmap data={data} />
@@ -209,7 +268,6 @@ function App() {
                     </FadeIn>
                 </div>
 
-                {/* Row 5: Trends & Analysis */}
                 <div className="grid grid-cols-12 gap-6">
                     <FadeIn className="col-span-12 lg:col-span-8">
                         <CorrelationChart data={data} />
