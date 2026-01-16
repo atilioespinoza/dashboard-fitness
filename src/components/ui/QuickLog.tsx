@@ -76,8 +76,8 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
             console.log(`Supabase fetch for userId: ${userId}, date: ${today}. Found existing: ${!!existing}`);
             if (fetchError) throw fetchError;
 
-            const getExistingExKcal = (notes: string = '') => {
-                const match = notes.match(/\[ExKcal:\s*(\d+)\]/);
+            const getExistingExKcal = (notes: string | null) => {
+                const match = (notes || '').match(/\[ExKcal:\s*(\d+)\]/);
                 return match ? parseInt(match[1]) : 0;
             };
 
@@ -142,8 +142,8 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 ? (aiData.steps || 0)
                 : (existing?.steps || 0) + (aiData.steps || 0);
 
-            const getExistingExKcal = (notes: string = '') => {
-                const match = notes.match(/\[ExKcal:\s*(\d+)\]/);
+            const getExistingExKcal = (notes: string | null) => {
+                const match = (notes || '').match(/\[ExKcal:\s*(\d+)\]/);
                 return match ? parseInt(match[1]) : 0;
             };
             const totalExKcal = aiData.training_mode === 'set'
