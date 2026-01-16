@@ -32,12 +32,14 @@ export function QuickLog({ userId, onUpdate }: { userId: string, onUpdate: () =>
             if (!aiData) throw new Error("No pudimos procesar el registro. Intenta ser más específico.");
 
             const today = new Date().toISOString().split('T')[0];
-            const { data: existing } = await supabase
+            const { data: existing, error: fetchError } = await supabase
                 .from('fitness_logs')
                 .select('*')
                 .eq('user_id', userId)
                 .eq('date', today)
-                .single();
+                .maybeSingle();
+
+            if (fetchError) console.error("Error fetching existing log:", fetchError);
 
             const payload = {
                 user_id: userId,
