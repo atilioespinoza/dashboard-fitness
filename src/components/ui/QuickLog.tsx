@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { parseFitnessEntry } from '../../lib/gemini';
 import { Brain, Send, Loader2, CheckCircle2, XCircle, Mic, Zap, TrendingDown, X } from 'lucide-react';
@@ -20,6 +20,52 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
     const [loading, setLoading] = useState(false);
     const [summary, setSummary] = useState<DailySummary | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    const fetchTodaySummary = useCallback(async () => {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const { data: existing, error: fetchError } = await supabase
+                .from('fitness_logs')
+                .select('*')
+                .eq('user_id', userId)
+                .eq('date', today)
+                .maybeSingle();
+
+            if (fetchError) throw fetchError;
+
+            if (existing) {
+                setSummary({
+                    calories: existing.calories || 0,
+                    protein: existing.protein || 0,
+                    carbs: existing.carbs || 0,
+                    fat: existing.fat || 0,
+                    tdee: existing.tdee || 2000,
+                    steps: existing.steps || 0
+                });
+            } else if (profile) {
+                // Initial baseline if no log today
+                const birthDate = new Date(profile.birth_date);
+                const todayDate = new Date();
+                let age = todayDate.getFullYear() - birthDate.getFullYear();
+                if (todayDate.getMonth() < birthDate.getMonth() || (todayDate.getMonth() === birthDate.getMonth() && todayDate.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                let bmr = (10 * 80) + (6.25 * profile.height) - (5 * age); // Fallback weight 80
+                bmr += profile.gender === 'Masculino' ? 5 : -161;
+                setSummary({
+                    calories: 0, protein: 0, carbs: 0, fat: 0,
+                    tdee: Math.round(bmr * 1.1),
+                    steps: 0
+                });
+            }
+        } catch (err) {
+            console.error("Error fetching today's summary:", err);
+        }
+    }, [userId, profile]);
+
+    useEffect(() => {
+        fetchTodaySummary();
+    }, [fetchTodaySummary]);
 
     const handleLog = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -144,84 +190,67 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Registro Inteligente (IA)</h3>
             </div>
 
-            <div className="flex-1 relative">
-                <AnimatePresence mode="wait">
-                    {!summary ? (
-                        <motion.form
-                            key="form"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onSubmit={handleLog}
-                            className="h-full flex flex-col"
+            <div className="flex-1 space-y-4">
+                {/* Always visible form */}
+                <form
+                    onSubmit={handleLog}
+                    className="relative flex flex-col"
+                >
+                    <textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="Ej: 'Comí un tazón de avena con proteína'..."
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl p-4 pr-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all min-h-[100px] resize-none font-medium"
+                    />
+
+                    <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                        <button
+                            type="button"
+                            className="p-2 text-slate-400 hover:text-blue-500 transition-colors"
                         >
-                            <textarea
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Ej: 'Comí un tazón de avena con proteína'..."
-                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl p-4 pr-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all flex-1 resize-none font-medium"
-                            />
+                            <Mic size={20} />
+                        </button>
 
-                            <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    className="p-2 text-slate-400 hover:text-blue-500 transition-colors"
-                                >
-                                    <Mic size={20} />
-                                </button>
+                        <button
+                            disabled={loading || !input.trim()}
+                            className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-90 disabled:opacity-50 disabled:grayscale"
+                        >
+                            {loading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+                        </button>
+                    </div>
+                </form>
 
-                                <button
-                                    disabled={loading || !input.trim()}
-                                    className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-90 disabled:opacity-50 disabled:grayscale"
-                                >
-                                    {loading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
-                                </button>
-                            </div>
-                        </motion.form>
-                    ) : (
+                {/* Always visible or at least decoupled summary */}
+                <AnimatePresence>
+                    {summary && (
                         <motion.div
                             key="summary"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="h-full flex flex-col bg-slate-50/50 dark:bg-slate-950/50 rounded-2xl p-4 border border-slate-100 dark:border-white/5"
+                            className="bg-slate-50/50 dark:bg-slate-950/50 rounded-2xl p-4 border border-slate-100 dark:border-white/5"
                         >
-                            <div className="flex justify-between items-center mb-4">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Resumen del Día</h4>
-                                </div>
-                                <button
-                                    onClick={() => setSummary(null)}
-                                    className="p-1.5 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-all border border-transparent hover:border-slate-200 dark:hover:border-white/10 shadow-sm"
-                                >
-                                    <X size={14} className="text-slate-500" />
-                                </button>
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Progreso del Día</h4>
                             </div>
 
-                            <div className="space-y-3 overflow-y-auto pr-1 scrollbar-hide">
-                                <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-2 xs:grid-cols-4 gap-2">
                                     <MetricRow label="Calorías" value={summary.calories} goal={2000} unit="kcal" type="max" />
                                     <MetricRow label="Proteína" value={summary.protein} goal={140} unit="g" type="min" />
-                                    <MetricRow label="Grasas" value={summary.fat} goal={75} unit="g" type="max" />
-                                    <MetricRow label="Carbos" value={summary.carbs} goal={170} unit="g" type="range" />
+                                    <MetricRow label="Pasos" value={summary.steps} goal={12000} unit="pts" type="min" />
+                                    <MetricRow label="Balance" value={summary.calories - summary.tdee} goal={0} unit="kcal" type="range" />
                                 </div>
 
-                                <div className="mt-2 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Zap size={14} className="text-amber-500" />
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Balance Energético</span>
-                                    </div>
+                                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
                                     <div className="flex justify-between items-end">
                                         <div className="space-y-0.5">
-                                            <p className="text-[8px] text-slate-400 font-bold uppercase">TDEE: {summary.tdee} kcal</p>
-                                            <p className="text-[8px] text-slate-400 font-bold uppercase">Ingerido: {summary.calories} kcal</p>
+                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">TDEE: {summary.tdee} kcal | Ingerido: {summary.calories} kcal</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className={`text-sm font-black italic ${summary.calories < summary.tdee ? 'text-emerald-500' : 'text-red-500'}`}>
+                                            <p className={`text-xs font-black italic ${summary.calories <= summary.tdee ? 'text-emerald-500' : 'text-rose-500'}`}>
                                                 {summary.calories - summary.tdee > 0 ? '+' : ''}{Math.round(summary.calories - summary.tdee)} kcal
                                             </p>
-                                            <p className="text-[7px] font-black uppercase tracking-tighter text-slate-500">Estado Actual</p>
                                         </div>
                                     </div>
                                 </div>
