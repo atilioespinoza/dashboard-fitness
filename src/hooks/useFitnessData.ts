@@ -15,7 +15,7 @@ export const useFitnessData = (userId?: string) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true);
+            if (data.length === 0) setLoading(true);
 
             if (USE_MOCK) {
                 setTimeout(() => {
