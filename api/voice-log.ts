@@ -16,15 +16,16 @@ export default async function handler(req: any, res: any) {
 
         // 2. Check Environment Variables (The most common crash point)
         const supabaseUrl = process.env.VITE_SUPABASE_URL;
-        const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
         const geminiKey = process.env.VITE_GEMINI_API_KEY;
 
         if (!supabaseUrl || !supabaseKey || !geminiKey) {
             return res.status(200).json({
                 success: false,
-                error: "Faltan variables de entorno en Vercel. Debes agregar VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY y VITE_GEMINI_API_KEY en el panel de Vercel."
+                error: "Faltan variables de entorno en Vercel. Asegúrate de tener VITE_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (la secreta) y VITE_GEMINI_API_KEY."
             });
         }
+
 
         if (!userId || !text) {
             return res.status(200).json({ success: false, error: "Falta userId o texto en la solicitud." });
