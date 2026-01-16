@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase';
-import { parseFitnessEntry } from '../lib/gemini';
+import { supabase } from './supabase';
+import { parseFitnessEntry } from './gemini';
 
 // Helper for date (centralized for Chile timezone)
 const getLocalToday = () => {

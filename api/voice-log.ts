@@ -1,5 +1,5 @@
 
-import { processVoiceLog } from '../src/lib/voiceService';
+import { processVoiceLog } from '../src/lib/voiceService.js';
 
 export default async function handler(req: any, res: any) {
     // CORS policy
@@ -34,7 +34,11 @@ export default async function handler(req: any, res: any) {
         if (result.success) {
             return res.status(200).json(result);
         } else {
-            return res.status(500).json(result);
+            return res.status(500).json({
+                success: false,
+                error: result.error || 'Unknown error in processVoiceLog',
+                details: result
+            });
         }
     } catch (error: any) {
         console.error('API Error:', error);
