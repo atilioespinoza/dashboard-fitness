@@ -42,11 +42,12 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
 
             if (fetchError) console.error("Error fetching existing log:", fetchError);
 
-            // 1. Calculate weight first
+            // 1. Calculate weight and steps first
             const currentWeight = aiData.weight ?? existing?.weight ?? 80;
+            const totalSteps = (existing?.steps || 0) + (aiData.steps || 0);
 
-            // 2. Calculate TDEE using current weight
-            const calculateTDEE = (weight: number): number => {
+            // 2. Calculate TDEE using current weight + Step Bonus
+            const calculateDynamicTDEE = (weight: number, steps: number): number => {
                 if (!profile) return 2600;
 
                 const height = profile.height;
@@ -58,16 +59,19 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
 
                 const activityFactors: { [key: string]: number } = {
                     sedentary: 1.2,
-                    lightly_active: 1.375,
-                    moderately_active: 1.55,
-                    very_active: 1.725,
-                    extra_active: 1.9
+                    lightly_active: 1.3,
+                    moderately_active: 1.4,
+                    very_active: 1.5,
+                    extra_active: 1.6
                 };
 
-                return Math.round(bmr * activityFactors[profile.activity_level]);
+                const baseTdee = bmr * activityFactors[profile.activity_level];
+                const stepBonus = steps * 0.045; // ~45 kcal per 1000 steps
+
+                return Math.round(baseTdee + stepBonus);
             };
 
-            const dayTDEE = existing?.tdee || calculateTDEE(currentWeight);
+            const dayTDEE = calculateDynamicTDEE(currentWeight, totalSteps);
 
             // 3. Construct payload
             const payload = {
@@ -80,7 +84,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 protein: (existing?.protein || 0) + (aiData.protein || 0),
                 carbs: (existing?.carbs || 0) + (aiData.carbs || 0),
                 fat: (existing?.fat || 0) + (aiData.fat || 0),
-                steps: aiData.steps ?? existing?.steps,
+                steps: totalSteps,
                 sleep: aiData.sleep ?? existing?.sleep,
                 training: aiData.training || existing?.training,
                 tdee: dayTDEE,
