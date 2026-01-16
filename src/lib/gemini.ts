@@ -166,6 +166,7 @@ export const parseFitnessEntry = async (textInput: string) => {
       "carbs": int | null,
       "fat": int | null,
       "steps": int | null,
+      "steps_mode": "add" | "set",
       "sleep": float | null,
       "training": string | null,
       "notes": string | null
@@ -177,7 +178,11 @@ export const parseFitnessEntry = async (textInput: string) => {
     3. Si mencionan peso, cintura o grasa, extráelos.
     4. Usa la unidad métrica (kg, cm).
     5. No inventes datos que no se mencionen o no se puedan estimar lógicamente (ej: si no mencionan sueño, pon null).
-    6. Retorna UNICAMENTE el JSON.
+    6. STEPS_MODE: 
+       - Usa "set" si el usuario indica un total absoluto o una corrección (ej: "mis pasos son 5000", "corrige pasos a 8000", "tengo 10k pasos"). 
+       - Usa "add" si indica una actividad incremental (ej: "caminé 1000 pasos", "agrega 500 pasos").
+       - Por defecto usa "add" si no está claro.
+    7. Retorna UNICAMENTE el JSON.
   `;
 
   try {

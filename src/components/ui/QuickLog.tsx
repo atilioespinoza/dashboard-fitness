@@ -42,9 +42,11 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
 
             if (fetchError) console.error("Error fetching existing log:", fetchError);
 
-            // 1. Calculate weight and steps first
+            // 1. Calculate weight and steps first (Handle "add" vs "set")
             const currentWeight = aiData.weight ?? existing?.weight ?? 80;
-            const totalSteps = (existing?.steps || 0) + (aiData.steps || 0);
+            const totalSteps = aiData.steps_mode === 'set'
+                ? (aiData.steps || 0)
+                : (existing?.steps || 0) + (aiData.steps || 0);
 
             // 2. Real Mifflin-St Jeor TDEE Calculation
             const calculateDynamicTDEE = (weight: number, steps: number): number => {
