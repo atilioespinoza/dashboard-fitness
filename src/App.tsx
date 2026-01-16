@@ -19,9 +19,8 @@ import { QuickLog } from './components/ui/QuickLog';
 import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
-import { useMigration } from './hooks/useMigration';
 import { supabase } from './lib/supabase';
-import { Activity, Sun, Moon, LogOut, Database, CloudUpload, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Activity, Sun, Moon, LogOut, Database, Download } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { FadeIn, FadeInStagger } from './components/ui/FadeIn';
 import { differenceInYears } from 'date-fns';
@@ -31,8 +30,6 @@ function App() {
     const { user, loading: authLoading } = useAuth();
     const { profile, loading: profileLoading } = useProfile(user?.id);
     const { data, loading: dataLoading, refresh: dataRefresh } = useFitnessData(user?.id);
-    const { migrate, migrating, progress, error: migrationError } = useMigration();
-    const [migrationSuccess, setMigrationSuccess] = useState(false);
 
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
@@ -53,16 +50,35 @@ function App() {
     const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
     const handleLogout = () => supabase.auth.signOut();
 
-    const handleMigrate = async () => {
-        if (!user) return;
-        try {
-            await migrate(user.id);
-            setMigrationSuccess(true);
-            setTimeout(() => setMigrationSuccess(false), 5000);
-            window.location.reload(); // Quick way to refresh everything
-        } catch (e) {
-            console.error(e);
-        }
+    const handleExport = () => {
+        if (!data || data.length === 0) return;
+
+        const headers = ["Fecha", "Peso", "Cintura", "Grasa", "Calorias", "Proteinas", "Carbos", "Grasas", "Pasos", "TDEE", "Sueño", "Notas", "Entrenamiento"];
+        const rows = [...data].sort((a, b) => b.Date.localeCompare(a.Date)).map(d => [
+            d.Date,
+            d.Weight,
+            d.Waist,
+            d.BodyFat,
+            d.Calories,
+            d.Protein,
+            d.Carbs,
+            d.Fat,
+            d.Steps,
+            d.TDEE,
+            d.Sleep,
+            `"${(d.Notes || '').replace(/"/g, '""')}"`,
+            d.Training || ""
+        ]);
+
+        const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `fitness_history_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     // Age calculation
@@ -138,25 +154,12 @@ function App() {
 
                         <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
                             <button
-                                onClick={handleMigrate}
-                                disabled={migrating}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest ${migrating
-                                    ? "bg-slate-100 dark:bg-slate-800 text-slate-400"
-                                    : "bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20"
-                                    }`}
-                                title="Migrar datos desde Sheets"
+                                onClick={handleExport}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-all font-black text-[10px] uppercase tracking-widest"
+                                title="Exportar historial a CSV"
                             >
-                                {migrating ? (
-                                    <div className="flex items-center gap-2">
-                                        <Database className="animate-bounce" size={16} />
-                                        <span>{progress}%</span>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <CloudUpload size={16} />
-                                        <span className="hidden sm:inline">Migrar Historial</span>
-                                    </>
-                                )}
+                                <Download size={16} />
+                                <span className="hidden sm:inline">Exportar Datos</span>
                             </button>
 
                             <button
@@ -177,19 +180,6 @@ function App() {
                         </div>
                     </div>
 
-                    {/* Migration Status Notifications */}
-                    {migrationSuccess && (
-                        <FadeIn className="mt-4 px-4 py-3 bg-emerald-500 text-white rounded-2xl flex items-center gap-3 shadow-lg shadow-emerald-500/20">
-                            <CheckCircle2 size={20} />
-                            <span className="text-sm font-black uppercase tracking-widest">Migración completa. Datos sincronizados.</span>
-                        </FadeIn>
-                    )}
-                    {migrationError && (
-                        <FadeIn className="mt-4 px-4 py-3 bg-red-500 text-white rounded-2xl flex items-center gap-3 shadow-lg shadow-red-500/20">
-                            <AlertCircle size={20} />
-                            <span className="text-sm font-black uppercase tracking-widest">Error: {migrationError}</span>
-                        </FadeIn>
-                    )}
                 </FadeIn>
 
                 {/* AI Briefing & Quick Log */}
