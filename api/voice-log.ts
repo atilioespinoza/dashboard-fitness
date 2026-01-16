@@ -1,6 +1,7 @@
-
+// Last updated: 2026-01-16 19:16
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+
 
 export default async function handler(req: any, res: any) {
     // 1. CORS & Setup
