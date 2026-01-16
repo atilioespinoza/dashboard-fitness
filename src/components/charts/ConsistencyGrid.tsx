@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { FitnessEntry } from '../../data/mockData';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { cn } from '../../lib/utils';
+import { cn, parseLocalDate } from '../../lib/utils';
 import { Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -30,7 +30,7 @@ export function ConsistencyGrid({ data }: ConsistencyGridProps) {
                             <th className="text-left py-2 px-1">Métrica</th>
                             {last7.map((day, i) => (
                                 <th key={i} className="text-center py-2 px-0.5">
-                                    {format(parseISO(day.Date), 'EEE', { locale: es }).slice(0, 2)}
+                                    {format(parseLocalDate(day.Date), 'EEE', { locale: es }).slice(0, 2)}
                                 </th>
                             ))}
                         </tr>

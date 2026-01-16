@@ -1,8 +1,9 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { FitnessEntry } from '../../data/mockData';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { parseLocalDate } from '../../lib/utils';
 import { Footprints, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import Counter from '../ui/Counter';
@@ -60,7 +61,7 @@ export function StepsChart({ data }: StepsChartProps) {
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.3} />
                         <XAxis
                             dataKey="Date"
-                            tickFormatter={(date) => format(parseISO(date), 'dd MMM', { locale: es })}
+                            tickFormatter={(date) => format(parseLocalDate(date), 'dd MMM', { locale: es })}
                             stroke="var(--chart-text)"
                             fontSize={10}
                             tickLine={false}
@@ -82,7 +83,7 @@ export function StepsChart({ data }: StepsChartProps) {
                                 fontSize: '12px',
                                 color: 'var(--chart-text)'
                             }}
-                            labelFormatter={(label) => format(parseISO(label as string), 'dd MMM, yyyy', { locale: es })}
+                            labelFormatter={(label) => format(parseLocalDate(label as string), 'dd MMM, yyyy', { locale: es })}
                         />
 
                         <ReferenceLine

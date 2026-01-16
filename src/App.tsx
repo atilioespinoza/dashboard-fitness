@@ -24,7 +24,8 @@ import { supabase } from './lib/supabase';
 import { Activity, Sun, Moon, LogOut, Database, CloudUpload, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { FadeIn, FadeInStagger } from './components/ui/FadeIn';
-import { differenceInYears, parseISO } from 'date-fns';
+import { differenceInYears } from 'date-fns';
+import { parseLocalDate } from './lib/utils';
 
 function App() {
     const { user, loading: authLoading } = useAuth();
@@ -66,7 +67,7 @@ function App() {
 
     // Age calculation
     const birthDate = profile?.birth_date || "1984-01-14";
-    const age = useMemo(() => differenceInYears(new Date(), parseISO(birthDate)), [birthDate]);
+    const age = useMemo(() => differenceInYears(new Date(), parseLocalDate(birthDate)), [birthDate]);
 
     if (authLoading || profileLoading) {
         return (
@@ -91,11 +92,14 @@ function App() {
         );
     }
 
-    const sortedData = [...data].sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime());
+    console.log("[App] Data rows:", data.length);
+    const sortedData = [...data].sort((a, b) => b.Date.localeCompare(a.Date));
+    console.log("[App] Latest row:", sortedData[0]);
     const latest = sortedData[0];
     const weekAgo = sortedData[6] || sortedData[sortedData.length - 1];
     const weeklyRate = latest && weekAgo ? Number((latest.Weight - weekAgo.Weight).toFixed(1)) : 0;
     const last7Days = sortedData.slice(0, 7);
+    console.log("[App] Last 7 days deficits:", last7Days.map(d => `${d.Date}: ${d.TDEE - d.Calories}`));
     const weeklyAvgDeficit = last7Days.length > 0 ? Math.round(last7Days.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0) / last7Days.length) : 0;
     const cumulativeDeficit = data.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0);
     const theoreticalFatLoss = Number((cumulativeDeficit / 7700).toFixed(2));

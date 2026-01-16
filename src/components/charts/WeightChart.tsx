@@ -1,9 +1,10 @@
 import { ResponsiveContainer, ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, Area } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { FitnessEntry } from '../../data/mockData';
-import { format, parseISO, subDays, isAfter } from 'date-fns';
+import { format, subDays, isAfter } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState, useMemo } from 'react';
+import { parseLocalDate } from '../../lib/utils';
 
 interface WeightChartProps {
     data: FitnessEntry[];
@@ -16,7 +17,7 @@ export function WeightChart({ data }: WeightChartProps) {
 
     // Sort data by date ascending
     const sortedData = useMemo(() =>
-        [...data].sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime()),
+        [...data].sort((a, b) => a.Date.localeCompare(b.Date)),
         [data]
     );
 
@@ -30,7 +31,7 @@ export function WeightChart({ data }: WeightChartProps) {
 
         if (!cutoffDate) return sortedData;
 
-        return sortedData.filter(item => isAfter(parseISO(item.Date), cutoffDate!));
+        return sortedData.filter(item => isAfter(parseLocalDate(item.Date), cutoffDate!));
     }, [sortedData, range]);
 
     // Calculate moving average for weight (7 day)
@@ -65,8 +66,8 @@ export function WeightChart({ data }: WeightChartProps) {
                                 key={btn.id}
                                 onClick={() => setRange(btn.id as TimeRange)}
                                 className={`px-3 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-200 whitespace-nowrap ${range === btn.id
-                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-                                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                                     }`}
                             >
                                 {btn.label}
@@ -87,7 +88,7 @@ export function WeightChart({ data }: WeightChartProps) {
                         <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-200 dark:text-slate-800" vertical={false} opacity={0.3} />
                         <XAxis
                             dataKey="Date"
-                            tickFormatter={(date) => format(parseISO(date), 'dd MMM', { locale: es })}
+                            tickFormatter={(date) => format(parseLocalDate(date), 'dd MMM', { locale: es })}
                             stroke="currentColor"
                             className="text-slate-400 dark:text-slate-500"
                             fontSize={9}
@@ -134,7 +135,7 @@ export function WeightChart({ data }: WeightChartProps) {
                             }}
                             itemStyle={{ padding: '2px 0' }}
                             labelStyle={{ color: '#94a3b8', fontWeight: '900', textTransform: 'uppercase', fontSize: '9px', marginBottom: '4px', letterSpacing: '0.1em' }}
-                            labelFormatter={(label) => format(parseISO(label as string), 'dd MMM, yyyy', { locale: es })}
+                            labelFormatter={(label) => format(parseLocalDate(label as string), 'dd MMM, yyyy', { locale: es })}
                         />
                         <Legend
                             verticalAlign="top"

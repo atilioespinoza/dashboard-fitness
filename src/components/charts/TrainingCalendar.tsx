@@ -6,11 +6,11 @@ import {
     ChevronLeft, ChevronRight, Info, Calendar as CalendarIcon
 } from 'lucide-react';
 import {
-    format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval,
+    format, startOfMonth, endOfMonth, eachDayOfInterval,
     isSameDay, startOfWeek, endOfWeek, addMonths, subMonths, isToday
 } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { cn } from '../../lib/utils';
+import { cn, parseLocalDate } from '../../lib/utils';
 
 interface TrainingCalendarProps {
     data: FitnessEntry[];
@@ -30,7 +30,7 @@ export function TrainingCalendar({ data }: TrainingCalendarProps) {
     });
 
     const getTrainingForDay = (day: Date) => {
-        return data.find(d => isSameDay(parseISO(d.Date), day));
+        return data.find(d => isSameDay(parseLocalDate(d.Date), day));
     };
 
     const getWorkoutIcon = (training: string, size = 16) => {

@@ -20,7 +20,7 @@ export const BodyHeatmap = ({ data }: BodyHeatmapProps) => {
     const intensityData = useMemo(() => {
         // Look at the last 14 days for intensity
         const last14Days = [...data]
-            .sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime())
+            .sort((a, b) => b.Date.localeCompare(a.Date))
             .slice(0, 14);
 
         const counts: Record<string, number> = {};

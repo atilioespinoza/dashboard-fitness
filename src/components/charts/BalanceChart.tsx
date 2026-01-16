@@ -1,8 +1,9 @@
 import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { FitnessEntry } from '../../data/mockData';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { parseLocalDate } from '../../lib/utils';
 
 interface BalanceChartProps {
     data: FitnessEntry[];
@@ -23,7 +24,7 @@ export function BalanceChart({ data }: BalanceChartProps) {
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} opacity={0.3} />
                         <XAxis
                             dataKey="Date"
-                            tickFormatter={(date) => format(parseISO(date), 'EEE', { locale: es })}
+                            tickFormatter={(date) => format(parseLocalDate(date), 'EEE', { locale: es })}
                             stroke="var(--chart-text)"
                             fontSize={10}
                             axisLine={false}
@@ -46,7 +47,7 @@ export function BalanceChart({ data }: BalanceChartProps) {
                                 fontSize: '11px',
                                 color: 'var(--chart-text)'
                             }}
-                            labelFormatter={(label) => format(parseISO(label as string), 'dd MMM', { locale: es })}
+                            labelFormatter={(label) => format(parseLocalDate(label as string), 'dd MMM', { locale: es })}
                         />
                         <Legend
                             verticalAlign="bottom"
