@@ -167,6 +167,7 @@ export const parseFitnessEntry = async (textInput: string) => {
       "fat": int | null,
       "steps": int | null,
       "steps_mode": "add" | "set",
+      "burned_calories": int | null,
       "sleep": float | null,
       "training": string | null,
       "notes": string | null
@@ -174,7 +175,7 @@ export const parseFitnessEntry = async (textInput: string) => {
 
     REGLAS:
     1. Si mencionan comida, estima las calorías y macros (proteína, carbos, grasas) basados en cantidades promedio si no se especifican.
-    2. Si mencionan entrenamiento, descríbelo brevemente en 'training'.
+    2. Si mencionan entrenamiento, descríbelo brevemente en 'training' y ESTIMA las calorías quemadas en 'burned_calories' basándote en el peso actual del usuario y tipo de ejercicio (ej: 45 min calistenia = ~300-400 kcal).
     3. Si mencionan peso, cintura o grasa, extráelos.
     4. Usa la unidad métrica (kg, cm).
     5. No inventes datos que no se mencionen o no se puedan estimar lógicamente (ej: si no mencionan sueño, pon null).

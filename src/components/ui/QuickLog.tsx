@@ -42,14 +42,20 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
 
             if (fetchError) console.error("Error fetching existing log:", fetchError);
 
-            // 1. Calculate weight and steps first (Handle "add" vs "set")
+            // 1. Calculate cumulative data
             const currentWeight = aiData.weight ?? existing?.weight ?? 80;
             const totalSteps = aiData.steps_mode === 'set'
                 ? (aiData.steps || 0)
                 : (existing?.steps || 0) + (aiData.steps || 0);
 
+            const getExistingExKcal = (notes: string = '') => {
+                const match = notes.match(/\[ExKcal:\s*(\d+)\]/);
+                return match ? parseInt(match[1]) : 0;
+            };
+            const totalExKcal = getExistingExKcal(existing?.notes) + (aiData.burned_calories || 0);
+
             // 2. Real Mifflin-St Jeor TDEE Calculation
-            const calculateDynamicTDEE = (weight: number, steps: number): number => {
+            const calculateDynamicTDEE = (weight: number, steps: number, exKcal: number): number => {
                 if (!profile) return 2000;
 
                 const height = profile.height;
@@ -69,19 +75,19 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                     bmr -= 161;
                 }
 
-                // Base survival factor (1.1) - Basic life functions + minimal movement
                 const baseTdee = bmr * 1.1;
-
-                // Dynamic step bonus: proportional to weight (heavier = more calories per step)
                 const caloriePerStep = weight * 0.0005;
-                const activityBonus = steps * caloriePerStep;
+                const activityBonus = (steps * caloriePerStep) + exKcal;
 
                 return Math.round(baseTdee + activityBonus);
             };
 
-            const dayTDEE = calculateDynamicTDEE(currentWeight, totalSteps);
+            const dayTDEE = calculateDynamicTDEE(currentWeight, totalSteps, totalExKcal);
 
             // 3. Construct payload
+            const cleanNotes = (existing?.notes || '').replace(/\[ExKcal:\s*\d+\]/g, '').trim();
+            const newNotes = `${cleanNotes}\n${input}\n[ExKcal: ${totalExKcal}]`.trim();
+
             const payload = {
                 user_id: userId,
                 date: today,
@@ -96,7 +102,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 sleep: aiData.sleep ?? existing?.sleep,
                 training: aiData.training || existing?.training,
                 tdee: dayTDEE,
-                notes: existing?.notes ? `${existing.notes}\n${input}` : input,
+                notes: newNotes,
             };
 
             const { error: insertError } = await supabase
