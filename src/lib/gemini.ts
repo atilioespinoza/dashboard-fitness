@@ -168,6 +168,7 @@ export const parseFitnessEntry = async (textInput: string) => {
       "steps": int | null,
       "steps_mode": "add" | "set",
       "burned_calories": int | null,
+      "training_mode": "add" | "set",
       "sleep": float | null,
       "training": string | null,
       "notes": string | null
@@ -175,14 +176,14 @@ export const parseFitnessEntry = async (textInput: string) => {
 
     REGLAS:
     1. Si mencionan comida, estima las calorías y macros (proteína, carbos, grasas) basados en cantidades promedio si no se especifican.
-    2. Si mencionan entrenamiento, descríbelo brevemente en 'training' y ESTIMA las calorías quemadas en 'burned_calories' basándote en el peso actual del usuario y tipo de ejercicio (ej: 45 min calistenia = ~300-400 kcal).
+    2. Si mencionan entrenamiento, descríbelo brevemente en 'training' y ESTIMA las calorías quemadas en 'burned_calories' basándote en el peso actual del usuario y tipo de ejercicio.
     3. Si mencionan peso, cintura o grasa, extráelos.
     4. Usa la unidad métrica (kg, cm).
-    5. No inventes datos que no se mencionen o no se puedan estimar lógicamente (ej: si no mencionan sueño, pon null).
-    6. STEPS_MODE: 
-       - Usa "set" si el usuario indica un total absoluto o una corrección (ej: "mis pasos son 5000", "corrige pasos a 8000", "tengo 10k pasos"). 
-       - Usa "add" si indica una actividad incremental (ej: "caminé 1000 pasos", "agrega 500 pasos").
-       - Por defecto usa "add" si no está claro.
+    5. No inventes datos que no se mencionen o no se puedan estimar lógicamente.
+    6. STEPS_MODE / TRAINING_MODE: 
+       - Usa "set" si el usuario indica una CORRECCIÓN de un error previo o un total absoluto (ej: "no fueron 45 min de calistenia, fueron 30", "corrige mis pasos a 5000", "total de pasos hoy: 8000").
+       - Usa "add" si indica una nueva actividad incremental (ej: "caminé 1000 pasos", "entrené 1 hora").
+       - Por defecto usa "add".
     7. Retorna UNICAMENTE el JSON.
   `;
 

@@ -52,7 +52,9 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 const match = notes.match(/\[ExKcal:\s*(\d+)\]/);
                 return match ? parseInt(match[1]) : 0;
             };
-            const totalExKcal = getExistingExKcal(existing?.notes) + (aiData.burned_calories || 0);
+            const totalExKcal = aiData.training_mode === 'set'
+                ? (aiData.burned_calories || 0)
+                : getExistingExKcal(existing?.notes) + (aiData.burned_calories || 0);
 
             // 2. Real Mifflin-St Jeor TDEE Calculation
             const calculateDynamicTDEE = (weight: number, steps: number, exKcal: number): number => {
