@@ -1,12 +1,16 @@
 import { supabase } from '../lib/supabase';
 import { parseFitnessEntry } from '../lib/gemini';
 
-// Helper for date (centralized)
+// Helper for date (centralized for Chile timezone)
 const getLocalToday = () => {
-    const d = new Date();
-    // Adjust to YOUR timezone (-03:00) if needed, but standard YYYY-MM-DD is safest
-    return d.toISOString().split('T')[0];
+    return new Intl.DateTimeFormat('fr-CA', {
+        timeZone: 'America/Santiago',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(new Date());
 };
+
 
 export const processVoiceLog = async (userId: string, text: string) => {
     try {

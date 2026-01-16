@@ -1,8 +1,19 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { FitnessEntry } from "../data/mockData";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const getEnv = (key: string) => {
+  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
+    return import.meta.env[key];
+  }
+  if (typeof process !== 'undefined' && process.env && process.env[key]) {
+    return process.env[key];
+  }
+  return undefined;
+};
+
+const API_KEY = getEnv('VITE_GEMINI_API_KEY');
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
+
 
 export const getGeminiInsights = async (data: FitnessEntry[]) => {
   if (!genAI) {
