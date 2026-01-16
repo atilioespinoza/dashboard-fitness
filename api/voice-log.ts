@@ -33,7 +33,7 @@ export default async function handler(req: any, res: any) {
         // 3. Initialize Clients
         const supabase = createClient(supabaseUrl, supabaseKey);
         const genAI = new GoogleGenerativeAI(geminiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         // 4. Gemini Parse with Mode detection
         const prompt = `
@@ -57,7 +57,8 @@ export default async function handler(req: any, res: any) {
               "notes": string|null
             }
 
-            Reglas para los MODOS:
+            REGLAS CRÍTICAS:
+            - Si mencionan una actividad física (ej: "salto cuerda", "pesas", "correr"), ESTIMA DE FORMA REALISTA las calorías quemadas en 'burned_calories' si no las especifican.
             - Usa "set" si el usuario indica una CORRECCIÓN, un TOTAL, o una frase de arrepentimiento (ej: "mi total de pasos hoy son 5000", "corrige mis calorías a 1200", "en realidad hice 8000 pasos", "mi peso real es 82kg").
             - Usa "add" si indica algo nuevo que se suma (ej: "camina 1000 pasos más", "comí una manzana", "entrené 1 hora de pesas").
             - Por defecto usa "add".
@@ -70,15 +71,16 @@ export default async function handler(req: any, res: any) {
         if (!jsonMatch) throw new Error("No se pudo procesar el JSON de la IA.");
         const aiData = JSON.parse(jsonMatch[0]);
 
-        // 5. Fetch Today's Log
+        // 5. Fetch Today's Log & Profile
         const today = new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Santiago' }).format(new Date());
 
-        const { data: existing } = await supabase
-            .from('fitness_logs')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('date', today)
-            .maybeSingle();
+        const [logRes, profileRes] = await Promise.all([
+            supabase.from('fitness_logs').select('*').eq('user_id', userId).eq('date', today).maybeSingle(),
+            supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+        ]);
+
+        const existing = logRes.data;
+        const profile = profileRes.data;
 
         // 6. Merge Logic (Handling ADD vs SET for all metrics)
 
@@ -102,6 +104,22 @@ export default async function handler(req: any, res: any) {
         const currentExKcal = getExistingExKcal(existing?.notes);
         const finalExKcal = trainingMode === 'set' ? (aiData.burned_calories || 0) : currentExKcal + (aiData.burned_calories || 0);
 
+        // 7. Calculate TDEE dynamically
+        const currentWeight = aiData.weight ?? existing?.weight ?? 80;
+        const caloriePerStep = currentWeight * 0.0005;
+        const stepsBonus = finalSteps * caloriePerStep;
+
+        const h = profile?.height || 170;
+        const a = profile?.birth_date ? (new Date().getFullYear() - new Date(profile.birth_date).getFullYear()) : 35;
+        const g = profile?.gender || 'Masculino';
+
+        let bmrValue = (10 * currentWeight) + (6.25 * h) - (5 * a);
+        bmrValue += g === 'Masculino' ? 5 : -161;
+
+        const baseTdee = bmrValue * 1.1;
+        const totalActive = (baseTdee - bmrValue) + stepsBonus + finalExKcal;
+        const finalTdee = Math.round(bmrValue + totalActive);
+
         // Notes Update
         const cleanNotes = (existing?.notes || '').replace(/\[ExKcal:\s*\d+\]/g, '').trim();
         const modeFlag = (nutritionMode === 'set' || stepsMode === 'set' || trainingMode === 'set') ? '[CORRECCIÓN]' : '[VOZ]';
@@ -110,7 +128,7 @@ export default async function handler(req: any, res: any) {
         const payload = {
             user_id: userId,
             date: today,
-            weight: aiData.weight ?? existing?.weight ?? 80,
+            weight: currentWeight,
             waist: aiData.waist ?? existing?.waist,
             body_fat: aiData.body_fat ?? existing?.body_fat,
             calories: finalCalories,
@@ -120,7 +138,7 @@ export default async function handler(req: any, res: any) {
             steps: finalSteps,
             sleep: aiData.sleep ?? existing?.sleep,
             training: aiData.training || existing?.training,
-            tdee: existing?.tdee || 2500,
+            tdee: finalTdee,
             notes: newNotes,
         };
 
@@ -132,8 +150,9 @@ export default async function handler(req: any, res: any) {
 
         return res.status(200).json({
             success: true,
-            message: "Datos procesados correctamente",
-            action: modeFlag.includes('CORRECCIÓN') ? "set" : "add",
+            message: "Datos procesados correctamente con actualización de TDEE",
+            burned_calories: aiData.burned_calories,
+            new_tdee: finalTdee,
             data: aiData
         });
 
