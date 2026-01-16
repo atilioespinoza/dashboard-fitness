@@ -73,6 +73,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 .eq('date', today)
                 .maybeSingle();
 
+            console.log(`Supabase fetch for userId: ${userId}, date: ${today}. Found existing: ${!!existing}`);
             if (fetchError) throw fetchError;
 
             const getExistingExKcal = (notes: string = '') => {
@@ -81,6 +82,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
             };
 
             if (existing) {
+                console.log("Found existing record for today:", existing);
                 const metrics = getDailyMetrics(existing.weight || 80, existing.steps || 0, getExistingExKcal(existing.notes));
                 setSummary({
                     calories: existing.calories || 0,

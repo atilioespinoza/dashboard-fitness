@@ -35,7 +35,7 @@ export const useFitnessData = (userId?: string) => {
                         .order('date', { ascending: true });
 
                     if (supabaseError) throw supabaseError;
-
+                    console.log(`[useFitnessData] userId: ${userId}, rows found: ${supabaseData?.length || 0}`);
                     if (supabaseData && supabaseData.length > 0) {
                         const mappedData: FitnessEntry[] = supabaseData.map(row => ({
                             Date: row.date,
