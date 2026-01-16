@@ -12,6 +12,7 @@ export const useFitnessData = (userId?: string) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [refreshTick, setRefreshTick] = useState(0);
+    const [dataSource, setDataSource] = useState<'supabase' | 'sheets' | 'mock' | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -28,6 +29,7 @@ export const useFitnessData = (userId?: string) => {
             // 1. Try Supabase first if userId is present
             if (userId) {
                 try {
+                    console.log(`[useFitnessData] Starting fetch for userId: ${userId}`);
                     const { data: supabaseData, error: supabaseError } = await supabase
                         .from('fitness_logs')
                         .select('*')
@@ -35,8 +37,10 @@ export const useFitnessData = (userId?: string) => {
                         .order('date', { ascending: true });
 
                     if (supabaseError) throw supabaseError;
-                    console.log(`[useFitnessData] userId: ${userId}, rows found: ${supabaseData?.length || 0}`);
-                    if (supabaseData && supabaseData.length > 0) {
+
+                    console.log(`[useFitnessData] Supabase Response - Rows: ${supabaseData?.length || 0}`);
+
+                    if (supabaseData) {
                         const mappedData: FitnessEntry[] = supabaseData.map(row => ({
                             Date: row.date,
                             Weight: row.weight,
@@ -53,12 +57,15 @@ export const useFitnessData = (userId?: string) => {
                             Training: row.training || undefined
                         }));
                         setData(mappedData);
+                        setDataSource('supabase');
                         setLoading(false);
-                        return;
+                        return; // EXIT - We have a userId, we DO NOT fall back to sheets
                     }
                 } catch (err: any) {
-                    console.error("Supabase fetch error:", err);
-                    // Fallback to sheets if supabase fails or is empty
+                    console.error("[useFitnessData] Supabase critical error:", err);
+                    setError("Error conectando con la base de datos");
+                    setLoading(false);
+                    return; // EXIT - Even on error, don't show stale sheet data if logged in
                 }
             }
 
@@ -108,6 +115,7 @@ export const useFitnessData = (userId?: string) => {
                                 .filter((item): item is FitnessEntry => item !== null);
 
                             setData(parsedData);
+                            setDataSource('sheets');
                             setLoading(false);
                         } catch (e) {
                             setError("Error processing data format");
@@ -128,5 +136,5 @@ export const useFitnessData = (userId?: string) => {
         fetchData();
     }, [userId, refreshTick]);
 
-    return { data, loading, error, refresh: () => setRefreshTick(t => t + 1) };
+    return { data, loading, error, dataSource, refresh: () => setRefreshTick(t => t + 1) };
 };
