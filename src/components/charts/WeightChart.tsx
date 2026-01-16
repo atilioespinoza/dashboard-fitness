@@ -1,7 +1,7 @@
 import { ResponsiveContainer, ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, Area } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { FitnessEntry } from '../../data/mockData';
-import { format, subDays, isAfter } from 'date-fns';
+import { format, subDays, isAfter, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState, useMemo } from 'react';
 import { parseLocalDate } from '../../lib/utils';
@@ -22,16 +22,19 @@ export function WeightChart({ data }: WeightChartProps) {
     );
 
     const filteredData = useMemo(() => {
-        const now = new Date();
         let cutoffDate: Date | null = null;
-
-        if (range === '7D') cutoffDate = subDays(now, 7);
-        if (range === '1M') cutoffDate = subDays(now, 30);
-        if (range === '3M') cutoffDate = subDays(now, 90);
+        const now = new Date();
+        if (range === '7D') cutoffDate = startOfDay(subDays(now, 7));
+        if (range === '1M') cutoffDate = startOfDay(subDays(now, 30));
+        if (range === '3M') cutoffDate = startOfDay(subDays(now, 90));
 
         if (!cutoffDate) return sortedData;
 
-        return sortedData.filter(item => isAfter(parseLocalDate(item.Date), cutoffDate!));
+        const todayStr = format(now, 'yyyy-MM-dd');
+        return sortedData.filter(item => {
+            const itemDate = parseLocalDate(item.Date);
+            return isAfter(itemDate, cutoffDate!) || item.Date === todayStr;
+        });
     }, [sortedData, range]);
 
     // Calculate moving average for weight (7 day)
