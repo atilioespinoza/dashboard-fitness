@@ -2,12 +2,13 @@ import { User, Ruler, Calendar } from 'lucide-react';
 import Counter from './Counter';
 
 interface PersonalInfoProps {
+    fullName: string;
     age: number;
     height: number;
     sex: 'Masculino' | 'Femenino' | 'Otro';
 }
 
-export function PersonalInfo({ age, height, sex }: PersonalInfoProps) {
+export function PersonalInfo({ fullName, age, height, sex }: PersonalInfoProps) {
     return (
         <div className="w-full px-1">
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-6 text-slate-600 dark:text-slate-400">
@@ -17,7 +18,7 @@ export function PersonalInfo({ age, height, sex }: PersonalInfoProps) {
                     </div>
                     <div className="flex flex-col">
                         <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Perfil</span>
-                        <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">Atilio Espinoza</span>
+                        <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">{fullName}</span>
                     </div>
                 </div>
 

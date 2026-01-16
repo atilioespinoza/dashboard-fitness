@@ -4,6 +4,8 @@ import { parseFitnessEntry } from '../../lib/gemini';
 import { Brain, Send, Loader2, CheckCircle2, XCircle, Mic, Zap, TrendingDown, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { UserProfile } from '../../hooks/useProfile';
+
 interface DailySummary {
     calories: number;
     protein: number;
@@ -13,7 +15,7 @@ interface DailySummary {
     steps: number;
 }
 
-export function QuickLog({ userId, onUpdate }: { userId: string, onUpdate: () => void }) {
+export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpdate: () => void, profile: UserProfile | null }) {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [summary, setSummary] = useState<DailySummary | null>(null);
@@ -40,10 +42,38 @@ export function QuickLog({ userId, onUpdate }: { userId: string, onUpdate: () =>
 
             if (fetchError) console.error("Error fetching existing log:", fetchError);
 
+            // 1. Calculate weight first
+            const currentWeight = aiData.weight ?? existing?.weight ?? 80;
+
+            // 2. Calculate TDEE using current weight
+            const calculateTDEE = (weight: number): number => {
+                if (!profile) return 2600;
+
+                const height = profile.height;
+                const age = new Date().getFullYear() - new Date(profile.birth_date).getFullYear();
+
+                // Mifflin-St Jeor Equation
+                let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+                bmr += profile.gender === 'Masculino' ? 5 : -161;
+
+                const activityFactors: { [key: string]: number } = {
+                    sedentary: 1.2,
+                    lightly_active: 1.375,
+                    moderately_active: 1.55,
+                    very_active: 1.725,
+                    extra_active: 1.9
+                };
+
+                return Math.round(bmr * activityFactors[profile.activity_level]);
+            };
+
+            const dayTDEE = existing?.tdee || calculateTDEE(currentWeight);
+
+            // 3. Construct payload
             const payload = {
                 user_id: userId,
                 date: today,
-                weight: aiData.weight ?? existing?.weight,
+                weight: currentWeight,
                 waist: aiData.waist ?? existing?.waist,
                 body_fat: aiData.body_fat ?? existing?.body_fat,
                 calories: (existing?.calories || 0) + (aiData.calories || 0),
@@ -53,6 +83,7 @@ export function QuickLog({ userId, onUpdate }: { userId: string, onUpdate: () =>
                 steps: aiData.steps ?? existing?.steps,
                 sleep: aiData.sleep ?? existing?.sleep,
                 training: aiData.training || existing?.training,
+                tdee: dayTDEE,
                 notes: existing?.notes ? `${existing.notes}\n${input}` : input,
             };
 
@@ -67,7 +98,7 @@ export function QuickLog({ userId, onUpdate }: { userId: string, onUpdate: () =>
                 protein: payload.protein,
                 carbs: payload.carbs,
                 fat: payload.fat,
-                tdee: existing?.tdee || 2600,
+                tdee: dayTDEE,
                 steps: payload.steps || 0
             });
 

@@ -18,6 +18,7 @@ import { PersonalInfo } from './components/ui/PersonalInfo';
 import { QuickLog } from './components/ui/QuickLog';
 import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
+import { useProfile } from './hooks/useProfile';
 import { useMigration } from './hooks/useMigration';
 import { supabase } from './lib/supabase';
 import { Activity, Sun, Moon, LogOut, Database, CloudUpload, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -27,6 +28,7 @@ import { differenceInYears, parseISO } from 'date-fns';
 
 function App() {
     const { user, loading: authLoading } = useAuth();
+    const { profile, loading: profileLoading } = useProfile(user?.id);
     const { data, loading: dataLoading, refresh: dataRefresh } = useFitnessData(user?.id);
     const { migrate, migrating, progress, error: migrationError } = useMigration();
     const [migrationSuccess, setMigrationSuccess] = useState(false);
@@ -63,10 +65,10 @@ function App() {
     };
 
     // Age calculation
-    const birthDate = "1984-01-14";
+    const birthDate = profile?.birth_date || "1984-01-14";
     const age = useMemo(() => differenceInYears(new Date(), parseISO(birthDate)), [birthDate]);
 
-    if (authLoading) {
+    if (authLoading || profileLoading) {
         return (
             <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -192,13 +194,17 @@ function App() {
                         <AICoachInsights data={data} />
                     </FadeIn>
                     <FadeIn className="col-span-12 lg:col-span-4">
-                        <QuickLog userId={user.id} onUpdate={dataRefresh} />
+                        <QuickLog userId={user.id} onUpdate={dataRefresh} profile={profile} />
                     </FadeIn>
                 </div>
 
-
                 <FadeIn>
-                    <PersonalInfo age={age} height={179} sex="Masculino" />
+                    <PersonalInfo
+                        fullName={profile?.full_name || "Usuario Fitness"}
+                        age={age}
+                        height={profile?.height || 170}
+                        sex={profile?.gender || 'Masculino'}
+                    />
                 </FadeIn>
 
                 <div className="grid grid-cols-12 gap-4 md:gap-6">
