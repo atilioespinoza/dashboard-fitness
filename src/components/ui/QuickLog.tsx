@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { parseFitnessEntry } from '../../lib/gemini';
-import { Brain, Send, Loader2, CheckCircle2, XCircle, Mic, Zap, TrendingDown, X } from 'lucide-react';
+import { Brain, Send, Loader2, CheckCircle2, XCircle, Mic, TrendingDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { UserProfile } from '../../hooks/useProfile';
