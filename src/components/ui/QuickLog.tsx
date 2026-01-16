@@ -16,7 +16,6 @@ interface DailySummary {
 export function QuickLog({ userId, onUpdate }: { userId: string, onUpdate: () => void }) {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
     const [summary, setSummary] = useState<DailySummary | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -72,12 +71,10 @@ export function QuickLog({ userId, onUpdate }: { userId: string, onUpdate: () =>
                 steps: payload.steps || 0
             });
 
-            setSuccess(true);
             setInput('');
 
             setTimeout(() => {
                 onUpdate();
-                setSuccess(false);
             }, 500);
 
         } catch (err: any) {
