@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { parseFitnessEntry } from '../../lib/gemini';
-import { Brain, Send, Loader2, CheckCircle2, XCircle, Mic, TrendingDown } from 'lucide-react';
+import { Brain, Send, Loader2, XCircle, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { UserProfile } from '../../hooks/useProfile';
@@ -13,6 +13,8 @@ interface DailySummary {
     fat: number;
     tdee: number;
     steps: number;
+    bmr: number;
+    activeKcal: number;
 }
 
 export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpdate: () => void, profile: UserProfile | null }) {
@@ -20,6 +22,38 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
     const [loading, setLoading] = useState(false);
     const [summary, setSummary] = useState<DailySummary | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    const getDailyMetrics = useCallback((weight: number, steps: number, exKcal: number) => {
+        if (!profile) return { bmr: 1600, tdee: 2000, activeKcal: 400 };
+
+        const height = profile.height;
+        const birthDate = new Date(profile.birth_date);
+        const todayDate = new Date();
+        let age = todayDate.getFullYear() - birthDate.getFullYear();
+        if (todayDate.getMonth() < birthDate.getMonth() || (todayDate.getMonth() === birthDate.getMonth() && todayDate.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        // Basal Metabolism
+        let bmrValue = (10 * weight) + (6.25 * height) - (5 * age);
+        bmrValue += profile.gender === 'Masculino' ? 5 : -161;
+
+        // Survival (1.1)
+        const baseTdee = bmrValue * 1.1;
+
+        // Steps/Training
+        const caloriePerStep = weight * 0.0005;
+        const stepsBonus = steps * caloriePerStep;
+
+        const totalActive = (baseTdee - bmrValue) + stepsBonus + exKcal;
+        const finalTdee = bmrValue + totalActive;
+
+        return {
+            bmr: Math.round(bmrValue),
+            activeKcal: Math.round(totalActive),
+            tdee: Math.round(finalTdee)
+        };
+    }, [profile]);
 
     const fetchTodaySummary = useCallback(async () => {
         try {
@@ -33,35 +67,37 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
 
             if (fetchError) throw fetchError;
 
+            const getExistingExKcal = (notes: string = '') => {
+                const match = notes.match(/\[ExKcal:\s*(\d+)\]/);
+                return match ? parseInt(match[1]) : 0;
+            };
+
             if (existing) {
+                const metrics = getDailyMetrics(existing.weight || 80, existing.steps || 0, getExistingExKcal(existing.notes));
                 setSummary({
                     calories: existing.calories || 0,
                     protein: existing.protein || 0,
                     carbs: existing.carbs || 0,
                     fat: existing.fat || 0,
-                    tdee: existing.tdee || 2000,
-                    steps: existing.steps || 0
+                    tdee: metrics.tdee,
+                    steps: existing.steps || 0,
+                    bmr: metrics.bmr,
+                    activeKcal: metrics.activeKcal
                 });
             } else if (profile) {
-                // Initial baseline if no log today
-                const birthDate = new Date(profile.birth_date);
-                const todayDate = new Date();
-                let age = todayDate.getFullYear() - birthDate.getFullYear();
-                if (todayDate.getMonth() < birthDate.getMonth() || (todayDate.getMonth() === birthDate.getMonth() && todayDate.getDate() < birthDate.getDate())) {
-                    age--;
-                }
-                let bmr = (10 * 80) + (6.25 * profile.height) - (5 * age); // Fallback weight 80
-                bmr += profile.gender === 'Masculino' ? 5 : -161;
+                const metrics = getDailyMetrics(80, 0, 0);
                 setSummary({
                     calories: 0, protein: 0, carbs: 0, fat: 0,
-                    tdee: Math.round(bmr * 1.1),
-                    steps: 0
+                    tdee: metrics.tdee,
+                    steps: 0,
+                    bmr: metrics.bmr,
+                    activeKcal: metrics.activeKcal
                 });
             }
         } catch (err) {
             console.error("Error fetching today's summary:", err);
         }
-    }, [userId, profile]);
+    }, [userId, profile, getDailyMetrics]);
 
     useEffect(() => {
         fetchTodaySummary();
@@ -76,7 +112,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
 
         try {
             const aiData = await parseFitnessEntry(input);
-            if (!aiData) throw new Error("No pudimos procesar el registro. Intenta ser más específico.");
+            if (!aiData) throw new Error("No pudimos procesar el registro.");
 
             const today = new Date().toISOString().split('T')[0];
             const { data: existing, error: fetchError } = await supabase
@@ -88,7 +124,6 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
 
             if (fetchError) console.error("Error fetching existing log:", fetchError);
 
-            // 1. Calculate cumulative data
             const currentWeight = aiData.weight ?? existing?.weight ?? 80;
             const totalSteps = aiData.steps_mode === 'set'
                 ? (aiData.steps || 0)
@@ -102,37 +137,8 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 ? (aiData.burned_calories || 0)
                 : getExistingExKcal(existing?.notes) + (aiData.burned_calories || 0);
 
-            // 2. Real Mifflin-St Jeor TDEE Calculation
-            const calculateDynamicTDEE = (weight: number, steps: number, exKcal: number): number => {
-                if (!profile) return 2000;
+            const metrics = getDailyMetrics(currentWeight, totalSteps, totalExKcal);
 
-                const height = profile.height;
-                const birthDate = new Date(profile.birth_date);
-                const todayDate = new Date();
-                let age = todayDate.getFullYear() - birthDate.getFullYear();
-                const m = todayDate.getMonth() - birthDate.getMonth();
-                if (m < 0 || (m === 0 && todayDate.getDate() < birthDate.getDate())) {
-                    age--;
-                }
-
-                // Mifflin-St Jeor Equation (Base BMR)
-                let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-                if (profile.gender === 'Masculino') {
-                    bmr += 5;
-                } else {
-                    bmr -= 161;
-                }
-
-                const baseTdee = bmr * 1.1;
-                const caloriePerStep = weight * 0.0005;
-                const activityBonus = (steps * caloriePerStep) + exKcal;
-
-                return Math.round(baseTdee + activityBonus);
-            };
-
-            const dayTDEE = calculateDynamicTDEE(currentWeight, totalSteps, totalExKcal);
-
-            // 3. Construct payload
             const cleanNotes = (existing?.notes || '').replace(/\[ExKcal:\s*\d+\]/g, '').trim();
             const newNotes = `${cleanNotes}\n${input}\n[ExKcal: ${totalExKcal}]`.trim();
 
@@ -149,7 +155,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 steps: totalSteps,
                 sleep: aiData.sleep ?? existing?.sleep,
                 training: aiData.training || existing?.training,
-                tdee: dayTDEE,
+                tdee: metrics.tdee,
                 notes: newNotes,
             };
 
@@ -164,15 +170,14 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 protein: payload.protein,
                 carbs: payload.carbs,
                 fat: payload.fat,
-                tdee: dayTDEE,
-                steps: payload.steps || 0
+                tdee: metrics.tdee,
+                steps: payload.steps || 0,
+                bmr: metrics.bmr,
+                activeKcal: metrics.activeKcal
             });
 
             setInput('');
-
-            setTimeout(() => {
-                onUpdate();
-            }, 500);
+            setTimeout(() => onUpdate(), 500);
 
         } catch (err: any) {
             setError(err.message);
@@ -182,7 +187,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
     };
 
     return (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden group min-h-[260px] flex flex-col">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden group min-h-[300px] flex flex-col transition-all duration-300">
             <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-blue-600/10 rounded-xl text-blue-600">
                     <Brain size={20} />
@@ -191,23 +196,16 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
             </div>
 
             <div className="flex-1 space-y-4">
-                {/* Always visible form */}
-                <form
-                    onSubmit={handleLog}
-                    className="relative flex flex-col"
-                >
+                <form onSubmit={handleLog} className="relative flex flex-col">
                     <textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Ej: 'Comí un tazón de avena con proteína'..."
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl p-4 pr-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all min-h-[100px] resize-none font-medium"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl p-4 pr-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all min-h-[80px] resize-none font-medium"
                     />
 
                     <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                        <button
-                            type="button"
-                            className="p-2 text-slate-400 hover:text-blue-500 transition-colors"
-                        >
+                        <button type="button" className="p-2 text-slate-400 hover:text-blue-500 transition-colors">
                             <Mic size={20} />
                         </button>
 
@@ -220,7 +218,6 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                     </div>
                 </form>
 
-                {/* Always visible or at least decoupled summary */}
                 <AnimatePresence>
                     {summary && (
                         <motion.div
@@ -230,28 +227,39 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                             className="bg-slate-50/50 dark:bg-slate-950/50 rounded-2xl p-4 border border-slate-100 dark:border-white/5"
                         >
                             <div className="flex items-center gap-2 mb-4">
-                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Progreso del Día</h4>
                             </div>
 
-                            <div className="space-y-3">
-                                <div className="grid grid-cols-2 xs:grid-cols-4 gap-2">
-                                    <MetricRow label="Calorías" value={summary.calories} goal={2000} unit="kcal" type="max" />
-                                    <MetricRow label="Proteína" value={summary.protein} goal={140} unit="g" type="min" />
-                                    <MetricRow label="Pasos" value={summary.steps} goal={12000} unit="pts" type="min" />
-                                    <MetricRow label="Balance" value={summary.calories - summary.tdee} goal={0} unit="kcal" type="range" />
-                                </div>
+                            <div className="grid grid-cols-2 xs:grid-cols-3 gap-2 mb-3">
+                                <MetricRow label="Calorías" value={summary.calories} goal={2000} unit="kcal" type="max" />
+                                <MetricRow label="Proteína" value={summary.protein} goal={140} unit="g" type="min" />
+                                <MetricRow label="Pasos" value={summary.steps} goal={12000} unit="pts" type="min" />
+                                <MetricRow label="Grasas" value={summary.fat} goal={75} unit="g" type="max" />
+                                <MetricRow label="Carbos" value={summary.carbs} goal={170} unit="g" type="max" />
+                                <MetricRow label="Gasto Act." value={summary.activeKcal} unit="kcal" />
+                            </div>
 
-                                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
-                                    <div className="flex justify-between items-end">
-                                        <div className="space-y-0.5">
-                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">TDEE: {summary.tdee} kcal | Ingerido: {summary.calories} kcal</p>
+                            <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+                                <div className="flex justify-between items-center">
+                                    <div className="space-y-1">
+                                        <div className="flex gap-2 text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                                            <span>BMR: {summary.bmr}</span>
+                                            <span>+</span>
+                                            <span className="text-blue-500">ACT: {summary.activeKcal}</span>
+                                            <span>=</span>
+                                            <span className="text-slate-600 dark:text-slate-200">TDEE: {summary.tdee}</span>
                                         </div>
-                                        <div className="text-right">
-                                            <p className={`text-xs font-black italic ${summary.calories <= summary.tdee ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                                {summary.calories - summary.tdee > 0 ? '+' : ''}{Math.round(summary.calories - summary.tdee)} kcal
-                                            </p>
-                                        </div>
+                                        <p className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">
+                                            Ingerido: <span className="text-slate-700 dark:text-white">{summary.calories} kcal</span>
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className={`text-base font-black italic tracking-tighter leading-none ${summary.calories <= summary.tdee ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                            {summary.calories - summary.tdee > 0 ? '+' : ''}{Math.round(summary.calories - summary.tdee)}
+                                            <span className="text-[10px] ml-0.5 font-black not-italic uppercase opacity-70">kcal</span>
+                                        </p>
+                                        <p className="text-[7px] font-black uppercase tracking-tighter text-slate-400">Balance Neto</p>
                                     </div>
                                 </div>
                             </div>
@@ -263,7 +271,6 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
                         className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-[10px] font-bold flex items-center gap-2"
                     >
                         <XCircle size={14} />
@@ -275,21 +282,18 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
     );
 }
 
-function MetricRow({ label, value, goal, unit, type }: { label: string, value: number, goal: number, unit: string, type: 'max' | 'min' | 'range' }) {
-    const isOk = type === 'max' ? value <= goal : value >= goal;
+function MetricRow({ label, value, goal, unit }: { label: string, value: number, goal?: number, unit: string, type?: 'max' | 'min' | 'range' }) {
+    const isOk = goal ? (value <= goal) : true;
 
     return (
-        <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
-            <div className="flex justify-between items-start mb-1">
-                <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">{label}</span>
-                {isOk ? <CheckCircle2 size={10} className="text-emerald-500" /> : <TrendingDown size={10} className="text-amber-500" />}
+        <div className="p-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+            <div className="flex justify-between items-start mb-0.5">
+                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">{label}</span>
+                {goal && (isOk ? <div className="w-1 h-1 rounded-full bg-emerald-500" /> : <div className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />)}
             </div>
-            <div className="flex items-baseline gap-1">
-                <span className="text-xs font-black text-slate-900 dark:text-white leading-none">{Math.round(value)}</span>
-                <span className="text-[7px] font-bold text-slate-400 uppercase">{unit}</span>
-            </div>
-            <div className="mt-1">
-                <span className="text-[7px] font-bold text-slate-400 uppercase italic">Meta: {goal}{unit}</span>
+            <div className="flex items-baseline gap-0.5">
+                <span className="text-[11px] font-black text-slate-900 dark:text-white leading-none whitespace-nowrap">{Math.round(value)}</span>
+                <span className="text-[6px] font-bold text-slate-400 uppercase">{unit}</span>
             </div>
         </div>
     );
