@@ -35,27 +35,24 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
     }, []);
 
     const getDailyMetrics = useCallback((weight: number, steps: number, exKcal: number) => {
-        if (!profile) return { bmr: 1600, tdee: 2000, activeKcal: 400 };
-
-        const height = profile.height;
-        const birthDate = new Date(profile.birth_date);
-        const todayDate = new Date();
-        let age = todayDate.getFullYear() - birthDate.getFullYear();
-        if (todayDate.getMonth() < birthDate.getMonth() || (todayDate.getMonth() === birthDate.getMonth() && todayDate.getDate() < birthDate.getDate())) {
-            age--;
-        }
-
-        // Basal Metabolism
-        let bmrValue = (10 * weight) + (6.25 * height) - (5 * age);
-        bmrValue += profile.gender === 'Masculino' ? 5 : -161;
-
-        // Survival (1.1)
-        const baseTdee = bmrValue * 1.1;
-
-        // Steps/Training
         const caloriePerStep = weight * 0.0005;
         const stepsBonus = steps * caloriePerStep;
 
+        // Better defaults if no profile (using the weighted formulas but with standard height/age)
+        const h = profile?.height || 170;
+        const a = profile ? (() => {
+            const birth = new Date(profile.birth_date);
+            const now = new Date();
+            let age = now.getFullYear() - birth.getFullYear();
+            if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
+            return age;
+        })() : 35;
+        const g = profile?.gender || 'Masculino';
+
+        let bmrValue = (10 * weight) + (6.25 * h) - (5 * a);
+        bmrValue += g === 'Masculino' ? 5 : -161;
+
+        const baseTdee = bmrValue * 1.1;
         const totalActive = (baseTdee - bmrValue) + stepsBonus + exKcal;
         const finalTdee = bmrValue + totalActive;
 
@@ -90,12 +87,12 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                     protein: existing.protein || 0,
                     carbs: existing.carbs || 0,
                     fat: existing.fat || 0,
-                    tdee: metrics.tdee,
+                    tdee: existing.tdee || metrics.tdee,
                     steps: existing.steps || 0,
                     bmr: metrics.bmr,
                     activeKcal: metrics.activeKcal
                 });
-            } else if (profile) {
+            } else {
                 const metrics = getDailyMetrics(80, 0, 0);
                 setSummary({
                     calories: 0, protein: 0, carbs: 0, fat: 0,
