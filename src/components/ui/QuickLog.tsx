@@ -46,29 +46,35 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
             const currentWeight = aiData.weight ?? existing?.weight ?? 80;
             const totalSteps = (existing?.steps || 0) + (aiData.steps || 0);
 
-            // 2. Calculate TDEE using current weight + Step Bonus
+            // 2. Real Mifflin-St Jeor TDEE Calculation
             const calculateDynamicTDEE = (weight: number, steps: number): number => {
-                if (!profile) return 2600;
+                if (!profile) return 2000;
 
                 const height = profile.height;
-                const age = new Date().getFullYear() - new Date(profile.birth_date).getFullYear();
+                const birthDate = new Date(profile.birth_date);
+                const todayDate = new Date();
+                let age = todayDate.getFullYear() - birthDate.getFullYear();
+                const m = todayDate.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && todayDate.getDate() < birthDate.getDate())) {
+                    age--;
+                }
 
-                // Mifflin-St Jeor Equation
+                // Mifflin-St Jeor Equation (Base BMR)
                 let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-                bmr += profile.gender === 'Masculino' ? 5 : -161;
+                if (profile.gender === 'Masculino') {
+                    bmr += 5;
+                } else {
+                    bmr -= 161;
+                }
 
-                const activityFactors: { [key: string]: number } = {
-                    sedentary: 1.2,
-                    lightly_active: 1.3,
-                    moderately_active: 1.4,
-                    very_active: 1.5,
-                    extra_active: 1.6
-                };
+                // Base survival factor (1.1) - Basic life functions + minimal movement
+                const baseTdee = bmr * 1.1;
 
-                const baseTdee = bmr * activityFactors[profile.activity_level];
-                const stepBonus = steps * 0.045; // ~45 kcal per 1000 steps
+                // Dynamic step bonus: proportional to weight (heavier = more calories per step)
+                const caloriePerStep = weight * 0.0005;
+                const activityBonus = steps * caloriePerStep;
 
-                return Math.round(baseTdee + stepBonus);
+                return Math.round(baseTdee + activityBonus);
             };
 
             const dayTDEE = calculateDynamicTDEE(currentWeight, totalSteps);
