@@ -27,7 +27,7 @@ import { differenceInYears, parseISO } from 'date-fns';
 
 function App() {
     const { user, loading: authLoading } = useAuth();
-    const { data, loading: dataLoading } = useFitnessData(user?.id);
+    const { data, loading: dataLoading, refresh: dataRefresh } = useFitnessData(user?.id);
     const { migrate, migrating, progress, error: migrationError } = useMigration();
     const [migrationSuccess, setMigrationSuccess] = useState(false);
 
@@ -192,7 +192,7 @@ function App() {
                         <AICoachInsights data={data} />
                     </FadeIn>
                     <FadeIn className="col-span-12 lg:col-span-4">
-                        <QuickLog userId={user.id} onUpdate={() => window.location.reload()} />
+                        <QuickLog userId={user.id} onUpdate={dataRefresh} />
                     </FadeIn>
                 </div>
 

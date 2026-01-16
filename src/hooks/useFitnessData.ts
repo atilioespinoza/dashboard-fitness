@@ -11,6 +11,7 @@ export const useFitnessData = (userId?: string) => {
     const [data, setData] = useState<FitnessEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [refreshTick, setRefreshTick] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -125,8 +126,7 @@ export const useFitnessData = (userId?: string) => {
         };
 
         fetchData();
-    }, [userId]);
+    }, [userId, refreshTick]);
 
-    return { data, loading, error, refresh: () => { } }; // refresh logic needs adjustment if exported
+    return { data, loading, error, refresh: () => setRefreshTick(t => t + 1) };
 };
-
