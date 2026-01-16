@@ -145,7 +145,7 @@ export function TrainingCalendar({ data }: TrainingCalendarProps) {
                                 </div>
                                 <div>
                                     <h4 className="text-slate-900 dark:text-white font-bold text-lg leading-tight">Sesión de Entrenamiento</h4>
-                                    <p className="text-blue-600 dark:text-blue-400 text-xs font-mono mt-0.5">{format(parseISO(selectedDay.Date), 'dd MMMM, yyyy', { locale: es })}</p>
+                                    <p className="text-blue-600 dark:text-blue-400 text-xs font-mono mt-0.5">{format(parseLocalDate(selectedDay.Date), 'dd MMMM, yyyy', { locale: es })}</p>
                                 </div>
                             </div>
                             <button onClick={() => setSelectedDay(null)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-slate-400 transition-colors">
