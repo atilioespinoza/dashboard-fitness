@@ -34,7 +34,8 @@ export default async function handler(req: any, res: any) {
         // 3. Initialize Clients
         const supabase = createClient(supabaseUrl, supabaseKey);
         const genAI = new GoogleGenerativeAI(geminiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+
 
         // 4. Gemini Parse with Mode detection
         const prompt = `
