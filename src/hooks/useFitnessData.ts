@@ -71,5 +71,32 @@ export const useFitnessData = (userId?: string) => {
         fetchData();
     }, [userId, refreshTick]);
 
+    useEffect(() => {
+        if (!userId) return;
+
+        console.log(`[useFitnessData] Suscribiendo a cambios en tiempo real para: ${userId}`);
+
+        const channel = supabase
+            .channel('schema-db-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'fitness_logs',
+                    filter: `user_id=eq.${userId}`
+                },
+                (payload) => {
+                    console.log('[useFitnessData] Cambio detectado en base de datos:', payload);
+                    setRefreshTick(t => t + 1);
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [userId]);
+
     return { data, loading, error, dataSource, refresh: () => setRefreshTick(t => t + 1) };
 };
