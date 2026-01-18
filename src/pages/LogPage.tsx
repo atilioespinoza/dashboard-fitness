@@ -63,7 +63,7 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
                 const filteredLines = lines.filter((l: string) => !l.includes(event.raw_text) && !l.includes(`[ExKcal: ${currentExKcal}]`));
                 const newNotes = filteredLines.join('\n') + (newExKcal > 0 ? `\n[ExKcal: ${newExKcal}]` : '');
 
-                const updatedPayload = {
+                const updatedPayload: any = {
                     calories: Math.max(0, (summary.calories || 0) - (p.calories || 0)),
                     protein: Math.max(0, (summary.protein || 0) - (p.protein || 0)),
                     carbs: Math.max(0, (summary.carbs || 0) - (p.carbs || 0)),
@@ -72,6 +72,11 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
                     tdee: newTdee,
                     notes: newNotes.trim()
                 };
+
+                // Si el evento que borramos tenía entrenamiento, lo limpiamos del resumen
+                if (p.training || p.burned_calories > 0) {
+                    updatedPayload.training = null;
+                }
 
                 await supabase.from('fitness_logs').update(updatedPayload).eq('user_id', userId).eq('date', event.date);
             }
