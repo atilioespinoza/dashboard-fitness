@@ -176,7 +176,17 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
                                                     )}
                                                     {event.parsed_data?.protein && (
                                                         <span className="px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-md uppercase">
-                                                            {event.parsed_data.protein}g prot
+                                                            P: {event.parsed_data.protein}g
+                                                        </span>
+                                                    )}
+                                                    {event.parsed_data?.carbs && (
+                                                        <span className="px-2 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-black rounded-md uppercase">
+                                                            C: {event.parsed_data.carbs}g
+                                                        </span>
+                                                    )}
+                                                    {event.parsed_data?.fat && (
+                                                        <span className="px-2 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-black rounded-md uppercase">
+                                                            G: {event.parsed_data.fat}g
                                                         </span>
                                                     )}
                                                     {event.parsed_data?.steps && (
