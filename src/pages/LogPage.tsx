@@ -95,10 +95,14 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
                                                         {new Date(event.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                     <button
-                                                        onClick={() => deleteEvent(event.id)}
-                                                        className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-all"
+                                                        onClick={() => {
+                                                            if (window.confirm('¿Estás seguro de que quieres eliminar este registro?')) {
+                                                                deleteEvent(event.id);
+                                                            }
+                                                        }}
+                                                        className="p-2 text-slate-400 hover:text-red-500 transition-all md:opacity-0 md:group-hover:opacity-100"
                                                     >
-                                                        <Trash2 size={14} />
+                                                        <Trash2 size={16} />
                                                     </button>
                                                 </div>
                                                 <p className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
