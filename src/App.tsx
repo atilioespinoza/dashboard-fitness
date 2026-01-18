@@ -104,47 +104,52 @@ function AppContent() {
                                 to="/"
                                 className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${location.pathname === '/' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             >
-                                Dashboard
+                                Registro
                             </Link>
                             <Link
-                                to="/registro"
-                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${location.pathname === '/registro' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                to="/dashboard"
+                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${location.pathname === '/dashboard' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             >
-                                Registro
+                                Dashboard
                             </Link>
                         </div>
 
-                        <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
-                            <button
-                                onClick={handleExport}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-all font-black text-[10px] uppercase tracking-widest"
-                                title="Exportar historial a CSV"
-                            >
-                                <Download size={16} />
-                                <span className="hidden sm:inline">Exportar</span>
-                            </button>
+                        <div className="flex flex-col items-end gap-1">
+                            <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">
+                                {new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}
+                            </span>
+                            <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
+                                <button
+                                    onClick={handleExport}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-all font-black text-[10px] uppercase tracking-widest"
+                                    title="Exportar historial a CSV"
+                                >
+                                    <Download size={16} />
+                                    <span className="hidden sm:inline">Exportar</span>
+                                </button>
 
-                            <button
-                                onClick={toggleTheme}
-                                className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-sm"
-                            >
-                                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-                            </button>
+                                <button
+                                    onClick={toggleTheme}
+                                    className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-sm"
+                                >
+                                    {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                                </button>
 
-                            <button
-                                onClick={handleLogout}
-                                className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-red-500 hover:bg-red-500/10 transition-colors shadow-sm"
-                            >
-                                <LogOut size={18} />
-                            </button>
+                                <button
+                                    onClick={handleLogout}
+                                    className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-red-500 hover:bg-red-500/10 transition-colors shadow-sm"
+                                >
+                                    <LogOut size={18} />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </FadeIn>
 
                 <main>
                     <Routes>
-                        <Route path="/" element={<DashboardPage data={data} profile={profile} />} />
-                        <Route path="/registro" element={<LogPage userId={user.id} profile={profile} onUpdate={dataRefresh} />} />
+                        <Route path="/" element={<LogPage userId={user.id} profile={profile} onUpdate={dataRefresh} />} />
+                        <Route path="/dashboard" element={<DashboardPage data={data} profile={profile} />} />
                     </Routes>
                 </main>
             </div>
@@ -156,15 +161,15 @@ function AppContent() {
                         to="/"
                         className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all ${location.pathname === '/' ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/30' : 'text-slate-400'}`}
                     >
-                        <Activity size={20} />
-                        <span className="text-[7px] font-black uppercase mt-1">Status</span>
-                    </Link>
-                    <Link
-                        to="/registro"
-                        className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all ${location.pathname === '/registro' ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/30' : 'text-slate-400'}`}
-                    >
                         <Brain size={20} />
                         <span className="text-[7px] font-black uppercase mt-1">Log</span>
+                    </Link>
+                    <Link
+                        to="/dashboard"
+                        className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all ${location.pathname === '/dashboard' ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/30' : 'text-slate-400'}`}
+                    >
+                        <Activity size={20} />
+                        <span className="text-[7px] font-black uppercase mt-1">Status</span>
                     </Link>
                 </div>
             </div>
