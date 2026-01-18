@@ -1,35 +1,20 @@
 import { useFitnessData } from './hooks/useFitnessData';
-import { WeightChart } from './components/charts/WeightChart';
-import { WaistCard } from './components/charts/WaistCard';
-import { LossGauge } from './components/charts/LossGauge';
-import { BalanceChart } from './components/charts/BalanceChart';
-import { ConsistencyGrid } from './components/charts/ConsistencyGrid';
-import { StreakCounter } from './components/charts/StreakCounter';
-import { MacroDonut } from './components/charts/MacroDonut';
-import { CorrelationChart } from './components/charts/CorrelationChart';
-import { NotesList } from './components/charts/NotesList';
-import { TrainingCalendar } from './components/charts/TrainingCalendar';
-import { StepsChart } from './components/charts/StepsChart';
-import { GoalProjections } from './components/charts/GoalProjections';
-import { AchievementsGallery } from './components/charts/AchievementsGallery';
-import { BodyHeatmap } from './components/charts/BodyHeatmap';
-import { AICoachInsights } from './components/charts/AICoachInsights';
-import { PersonalInfo } from './components/ui/PersonalInfo';
-import { QuickLog } from './components/ui/QuickLog';
 import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
 import { supabase } from './lib/supabase';
-import { Activity, Sun, Moon, LogOut, Database, Download } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
-import { FadeIn, FadeInStagger } from './components/ui/FadeIn';
-import { differenceInYears } from 'date-fns';
-import { parseLocalDate } from './lib/utils';
+import { Activity, Sun, Moon, LogOut, Database, Download, Brain } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { FadeIn } from './components/ui/FadeIn';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { DashboardPage } from './pages/DashboardPage';
+import { LogPage } from './pages/LogPage';
 
-function App() {
+function AppContent() {
     const { user, loading: authLoading } = useAuth();
     const { profile, loading: profileLoading } = useProfile(user?.id);
     const { data, loading: dataLoading, refresh: dataRefresh } = useFitnessData(user?.id);
+    const location = useLocation();
 
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
@@ -52,24 +37,11 @@ function App() {
 
     const handleExport = () => {
         if (!data || data.length === 0) return;
-
         const headers = ["Fecha", "Peso", "Cintura", "Grasa", "Calorias", "Proteinas", "Carbos", "Grasas", "Pasos", "TDEE", "Sueño", "Notas", "Entrenamiento"];
         const rows = [...data].sort((a, b) => b.Date.localeCompare(a.Date)).map(d => [
-            d.Date,
-            d.Weight,
-            d.Waist,
-            d.BodyFat,
-            d.Calories,
-            d.Protein,
-            d.Carbs,
-            d.Fat,
-            d.Steps,
-            d.TDEE,
-            d.Sleep,
-            `"${(d.Notes || '').replace(/"/g, '""')}"`,
-            d.Training || ""
+            d.Date, d.Weight, d.Waist, d.BodyFat, d.Calories, d.Protein, d.Carbs, d.Fat, d.Steps, d.TDEE, d.Sleep,
+            `"${(d.Notes || '').replace(/"/g, '""')}"`, d.Training || ""
         ]);
-
         const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
@@ -81,10 +53,6 @@ function App() {
         document.body.removeChild(link);
     };
 
-    // Age calculation
-    const birthDate = profile?.birth_date || "1984-01-14";
-    const age = useMemo(() => differenceInYears(new Date(), parseLocalDate(birthDate)), [birthDate]);
-
     if (authLoading || profileLoading) {
         return (
             <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
@@ -93,9 +61,7 @@ function App() {
         );
     }
 
-    if (!user) {
-        return <Auth />;
-    }
+    if (!user) return <Auth />;
 
     if (dataLoading) {
         return (
@@ -108,29 +74,9 @@ function App() {
         );
     }
 
-    console.log("[App] Data rows:", data.length);
-    const sortedData = [...data].sort((a, b) => b.Date.localeCompare(a.Date));
-    console.log("[App] Latest row:", sortedData[0]);
-    const latest = sortedData[0];
-    const weekAgo = sortedData[6] || sortedData[sortedData.length - 1];
-    const weeklyRate = latest && weekAgo ? Number((latest.Weight - weekAgo.Weight).toFixed(1)) : 0;
-    const last7Days = sortedData.slice(0, 7);
-    console.log("[App] Last 7 days deficits:", last7Days.map(d => `${d.Date}: ${d.TDEE - d.Calories}`));
-    const weeklyAvgDeficit = last7Days.length > 0 ? Math.round(last7Days.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0) / last7Days.length) : 0;
-    const cumulativeDeficit = data.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0);
-    const theoreticalFatLoss = Number((cumulativeDeficit / 7700).toFixed(2));
-
-    let calorieStreak = 0;
-    let proteinStreak = 0;
-    let stepsStreak = 0;
-    for (const day of sortedData) { if (day.Calories <= day.TDEE) calorieStreak++; else break; }
-    for (const day of sortedData) { if (day.Protein >= 140) proteinStreak++; else break; }
-    for (const day of sortedData) { if (day.Steps >= 12000) stepsStreak++; else break; }
-
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-3 md:p-8 font-sans pb-20 md:pb-8 transition-colors duration-300">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-3 md:p-8 font-sans pb-24 md:pb-8 transition-colors duration-300">
             <div className="max-w-7xl mx-auto space-y-4 md:space-y-8">
-
                 {/* Header */}
                 <FadeIn>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-4 px-1">
@@ -152,6 +98,22 @@ function App() {
                             </div>
                         </div>
 
+                        {/* Navigation Desktop */}
+                        <div className="hidden md:flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 p-1.5 rounded-2xl gap-1 shadow-sm">
+                            <Link
+                                to="/"
+                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${location.pathname === '/' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            >
+                                Dashboard
+                            </Link>
+                            <Link
+                                to="/registro"
+                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${location.pathname === '/registro' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            >
+                                Registro
+                            </Link>
+                        </div>
+
                         <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
                             <button
                                 onClick={handleExport}
@@ -159,13 +121,12 @@ function App() {
                                 title="Exportar historial a CSV"
                             >
                                 <Download size={16} />
-                                <span className="hidden sm:inline">Exportar Datos</span>
+                                <span className="hidden sm:inline">Exportar</span>
                             </button>
 
                             <button
                                 onClick={toggleTheme}
                                 className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-sm"
-                                aria-label="Toggle theme"
                             >
                                 {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
                             </button>
@@ -173,113 +134,50 @@ function App() {
                             <button
                                 onClick={handleLogout}
                                 className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-red-500 hover:bg-red-500/10 transition-colors shadow-sm"
-                                title="Salir"
                             >
                                 <LogOut size={18} />
                             </button>
                         </div>
                     </div>
-
                 </FadeIn>
 
-                {/* AI Briefing & Quick Log */}
-                <div className="grid grid-cols-12 gap-4 md:gap-6">
-                    <FadeIn className="col-span-12 lg:col-span-8">
-                        <AICoachInsights data={data} />
-                    </FadeIn>
-                    <FadeIn className="col-span-12 lg:col-span-4">
-                        <QuickLog userId={user.id} onUpdate={dataRefresh} profile={profile} />
-                    </FadeIn>
+                <main>
+                    <Routes>
+                        <Route path="/" element={<DashboardPage data={data} profile={profile} />} />
+                        <Route path="/registro" element={<LogPage userId={user.id} profile={profile} onUpdate={dataRefresh} />} />
+                    </Routes>
+                </main>
+            </div>
+
+            {/* Mobile Navigation Bar */}
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:hidden z-50">
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-2 rounded-3xl flex items-center gap-2 shadow-2xl">
+                    <Link
+                        to="/"
+                        className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all ${location.pathname === '/' ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/30' : 'text-slate-400'}`}
+                    >
+                        <Activity size={20} />
+                        <span className="text-[7px] font-black uppercase mt-1">Status</span>
+                    </Link>
+                    <Link
+                        to="/registro"
+                        className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all ${location.pathname === '/registro' ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/30' : 'text-slate-400'}`}
+                    >
+                        <Brain size={20} />
+                        <span className="text-[7px] font-black uppercase mt-1">Log</span>
+                    </Link>
                 </div>
-
-                <FadeIn>
-                    <PersonalInfo
-                        fullName={profile?.full_name || "Usuario Fitness"}
-                        age={age}
-                        height={profile?.height || 170}
-                        sex={profile?.gender || 'Masculino'}
-                    />
-                </FadeIn>
-
-                <div className="grid grid-cols-12 gap-4 md:gap-6">
-                    <FadeIn className="col-span-12 lg:col-span-8">
-                        <WeightChart data={data} />
-                    </FadeIn>
-                    <FadeInStagger className="col-span-12 lg:col-span-4 flex flex-col gap-4 md:gap-6">
-                        <FadeIn>
-                            <WaistCard currentWaist={latest?.Waist || 0} data={data} />
-                        </FadeIn>
-                        <FadeIn delay={0.1}>
-                            <LossGauge
-                                weeklyRate={weeklyRate}
-                                weeklyDeficit={weeklyAvgDeficit}
-                                totalDeficit={cumulativeDeficit}
-                                fatLoss={theoreticalFatLoss}
-                            />
-                        </FadeIn>
-                    </FadeInStagger>
-                </div>
-
-                <div className="grid grid-cols-12 gap-6">
-                    <FadeIn className="col-span-12 lg:col-span-12">
-                        <GoalProjections data={data} />
-                    </FadeIn>
-                    <FadeIn className="col-span-12 lg:col-span-12">
-                        <AchievementsGallery data={data} />
-                    </FadeIn>
-                </div>
-
-                <div className="grid grid-cols-12 gap-4 md:gap-6">
-                    <FadeIn className="col-span-12 lg:col-span-6">
-                        <BalanceChart data={data} />
-                    </FadeIn>
-                    <div className="col-span-12 lg:col-span-6 flex flex-col gap-4 md:gap-6">
-                        <FadeIn>
-                            <ConsistencyGrid data={data} />
-                        </FadeIn>
-                        <FadeInStagger className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                            <FadeIn>
-                                <StreakCounter label="Calorías" count={calorieStreak} goal="Bajo TDEE" />
-                            </FadeIn>
-                            <FadeIn>
-                                <StreakCounter label="Proteínas" count={proteinStreak} goal="Min 140g" />
-                            </FadeIn>
-                            <FadeIn>
-                                <StreakCounter label="Pasos" count={stepsStreak} goal="Min 12k" />
-                            </FadeIn>
-                        </FadeInStagger>
-                    </div>
-                </div>
-
-                <FadeIn className="grid grid-cols-12 gap-6">
-                    <MacroDonut data={data} />
-                </FadeIn>
-
-                <FadeIn className="grid grid-cols-12 gap-6">
-                    <StepsChart data={data} />
-                </FadeIn>
-
-                <div className="grid grid-cols-12 gap-6">
-                    <FadeIn className="col-span-12 lg:col-span-4">
-                        <BodyHeatmap data={data} />
-                    </FadeIn>
-                    <FadeIn className="col-span-12 lg:col-span-8">
-                        <TrainingCalendar data={data} />
-                    </FadeIn>
-                </div>
-
-                <div className="grid grid-cols-12 gap-6">
-                    <FadeIn className="col-span-12 lg:col-span-8">
-                        <CorrelationChart data={data} />
-                    </FadeIn>
-                    <FadeIn className="col-span-12 lg:col-span-4">
-                        <NotesList data={data} />
-                    </FadeIn>
-                </div>
-
             </div>
         </div>
-    )
+    );
+}
+
+function App() {
+    return (
+        <Router>
+            <AppContent />
+        </Router>
+    );
 }
 
 export default App;

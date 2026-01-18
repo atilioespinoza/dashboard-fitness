@@ -72,6 +72,15 @@ export const processVoiceLog = async (userId: string, text: string) => {
 
         if (insertError) throw insertError;
 
+        // 4. Save individual event for history
+        await supabase.from('log_events').insert({
+            user_id: userId,
+            date: today,
+            raw_text: text,
+            parsed_data: aiData,
+            type: 'voice'
+        });
+
         return { success: true, calories: aiData.calories, steps: aiData.steps, raw: aiData };
     } catch (error: any) {
         console.error("Voice Log Error:", error);

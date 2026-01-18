@@ -178,6 +178,15 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
 
             if (insertError) throw insertError;
 
+            // 4. Save individual event for history
+            await supabase.from('log_events').insert({
+                user_id: userId,
+                date: today,
+                raw_text: input,
+                parsed_data: aiData,
+                type: 'text'
+            });
+
             setSummary({
                 calories: payload.calories,
                 protein: payload.protein,
