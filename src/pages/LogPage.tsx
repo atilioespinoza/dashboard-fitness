@@ -22,12 +22,71 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
 
     const { events } = useLogEvents(userId, today);
 
-    const deleteEvent = async (id: string) => {
-        // Here we would ideally also revert the daily summary, 
-        // but for now let's just delete the history event.
-        // Reverting the summary is complex because we merge data.
-        const { error } = await supabase.from('log_events').delete().eq('id', id);
-        if (error) console.error('Error deleting event:', error);
+    const deleteEvent = async (event: any) => {
+        try {
+            // 1. Obtener el resumen actual de hoy
+            const { data: summary } = await supabase
+                .from('fitness_logs')
+                .select('*')
+                .eq('user_id', userId)
+                .eq('date', event.date)
+                .maybeSingle();
+
+            if (summary) {
+                const p = event.parsed_data;
+                const stepsRestantes = Math.max(0, (summary.steps || 0) - (p.steps || 0));
+
+                // Extraer ExKcal de las notas (un poco hacky pero necesario por ahora)
+                const getExKcal = (notes: string) => {
+                    const match = notes.match(/\[ExKcal:\s*(\d+)\]/);
+                    return match ? parseInt(match[1]) : 0;
+                };
+
+                const currentExKcal = getExKcal(summary.notes || '');
+                const eventExKcal = p.burned_calories || 0;
+                const newExKcal = Math.max(0, currentExKcal - eventExKcal);
+
+                // Recalcular TDEE (usando la fórmula de QuickLog)
+                const weight = summary.weight || 80;
+                const h = profile?.height || 170;
+                const birth = profile ? new Date(profile.birth_date) : new Date('1990-01-01');
+                const now = new Date();
+                let age = now.getFullYear() - birth.getFullYear();
+                const g = profile?.gender || 'Masculino';
+                let bmrValue = (10 * weight) + (6.25 * h) - (5 * age) + (g === 'Masculino' ? 5 : -161);
+
+                const stepsBonus = stepsRestantes * (weight * 0.0005);
+                const newTdee = Math.round((bmrValue * 1.1) + stepsBonus + newExKcal);
+
+                // 2. Limpiar las notas: quitar la línea que corresponde a este registro
+                const lines = (summary.notes || '').split('\n');
+                const filteredLines = lines.filter((l: string) => !l.includes(event.raw_text) && !l.includes(`[ExKcal: ${currentExKcal}]`));
+                const newNotes = filteredLines.join('\n') + (newExKcal > 0 ? `\n[ExKcal: ${newExKcal}]` : '');
+
+                const updatedPayload = {
+                    calories: Math.max(0, (summary.calories || 0) - (p.calories || 0)),
+                    protein: Math.max(0, (summary.protein || 0) - (p.protein || 0)),
+                    carbs: Math.max(0, (summary.carbs || 0) - (p.carbs || 0)),
+                    fat: Math.max(0, (summary.fat || 0) - (p.fat || 0)),
+                    steps: stepsRestantes,
+                    tdee: newTdee,
+                    notes: newNotes.trim()
+                };
+
+                await supabase.from('fitness_logs').update(updatedPayload).eq('user_id', userId).eq('date', event.date);
+            }
+
+            // 3. Borrar el evento físicamente
+            const { error: deleteError } = await supabase.from('log_events').delete().eq('id', event.id);
+            if (deleteError) throw deleteError;
+
+            // 4. Refrescar datos
+            onUpdate();
+
+        } catch (err) {
+            console.error('Error al sincronizar borrado:', err);
+            alert('Hubo un error al actualizar los totales del dashboard.');
+        }
     };
 
     return (
@@ -97,7 +156,7 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
                                                     <button
                                                         onClick={() => {
                                                             if (window.confirm('¿Estás seguro de que quieres eliminar este registro?')) {
-                                                                deleteEvent(event.id);
+                                                                deleteEvent(event);
                                                             }
                                                         }}
                                                         className="p-2 text-slate-400 hover:text-red-500 transition-all md:opacity-0 md:group-hover:opacity-100"
