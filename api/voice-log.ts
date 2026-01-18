@@ -150,6 +150,15 @@ export default async function handler(req: any, res: any) {
 
         if (dbError) throw dbError;
 
+        // 8. Save individual event for history
+        await supabase.from('log_events').insert({
+            user_id: userId,
+            date: today,
+            raw_text: text,
+            parsed_data: aiData,
+            type: 'voice'
+        });
+
         return res.status(200).json({
             success: true,
             message: "Datos procesados correctamente con actualización de TDEE",
