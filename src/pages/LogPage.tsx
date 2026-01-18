@@ -190,10 +190,20 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
                                                             G: {event.parsed_data.fat}g
                                                         </span>
                                                     )}
-                                                    {(event.parsed_data?.steps > 0) && (
-                                                        <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-md uppercase">
-                                                            +{event.parsed_data.steps} pasos
+                                                    {(event.parsed_data?.burned_calories > 0) && (
+                                                        <span className="px-2 py-0.5 bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[10px] font-black rounded-md uppercase">
+                                                            🔥 {event.parsed_data.burned_calories} kcal activas
                                                         </span>
+                                                    )}
+                                                    {(event.parsed_data?.steps > 0) && (
+                                                        <>
+                                                            <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-md uppercase">
+                                                                👣 +{event.parsed_data.steps} pasos
+                                                            </span>
+                                                            <span className="px-2 py-0.5 bg-slate-500/10 text-slate-500 text-[10px] font-black rounded-md uppercase">
+                                                                ~{Math.round(event.parsed_data.steps * 80 * 0.0005)} kcal
+                                                            </span>
+                                                        </>
                                                     )}
                                                 </div>
                                             </div>
