@@ -169,27 +169,27 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
                                                 </p>
 
                                                 <div className="flex flex-wrap gap-2">
-                                                    {event.parsed_data?.calories && (
+                                                    {(event.parsed_data?.calories > 0) && (
                                                         <span className="px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-md uppercase">
                                                             {event.parsed_data.calories} kcal
                                                         </span>
                                                     )}
-                                                    {event.parsed_data?.protein && (
+                                                    {(event.parsed_data?.protein > 0) && (
                                                         <span className="px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-md uppercase">
                                                             P: {event.parsed_data.protein}g
                                                         </span>
                                                     )}
-                                                    {event.parsed_data?.carbs && (
+                                                    {(event.parsed_data?.carbs > 0) && (
                                                         <span className="px-2 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-black rounded-md uppercase">
                                                             C: {event.parsed_data.carbs}g
                                                         </span>
                                                     )}
-                                                    {event.parsed_data?.fat && (
+                                                    {(event.parsed_data?.fat > 0) && (
                                                         <span className="px-2 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-black rounded-md uppercase">
                                                             G: {event.parsed_data.fat}g
                                                         </span>
                                                     )}
-                                                    {event.parsed_data?.steps && (
+                                                    {(event.parsed_data?.steps > 0) && (
                                                         <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-md uppercase">
                                                             +{event.parsed_data.steps} pasos
                                                         </span>

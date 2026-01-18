@@ -116,6 +116,32 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
         fetchTodaySummary();
     }, [fetchTodaySummary]);
 
+    // Add Realtime subscription to update Progress card when external changes (like Siri) occur
+    useEffect(() => {
+        if (!userId) return;
+
+        const channel = supabase
+            .channel('quick-log-realtime')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'fitness_logs',
+                    filter: `user_id=eq.${userId}`
+                },
+                (payload) => {
+                    console.log('[QuickLog] Cambio detectado en DB:', payload);
+                    fetchTodaySummary();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [userId, fetchTodaySummary]);
+
     const handleLog = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim() || loading) return;
