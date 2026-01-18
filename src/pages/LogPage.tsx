@@ -20,7 +20,7 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
         day: '2-digit'
     }).format(new Date());
 
-    const { events } = useLogEvents(userId, today);
+    const { events, refresh: refreshHistory } = useLogEvents(userId, today);
 
     const deleteEvent = async (event: any) => {
         try {
@@ -82,6 +82,7 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
 
             // 4. Refrescar datos
             onUpdate();
+            refreshHistory();
 
         } catch (err) {
             console.error('Error al sincronizar borrado:', err);
