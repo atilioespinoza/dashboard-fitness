@@ -107,6 +107,18 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
         }
     };
 
+    if (!loading && (!data || data.length === 0)) {
+        return (
+            <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] p-8 border border-slate-200 dark:border-white/10 shadow-xl overflow-hidden flex flex-col items-center justify-center text-center min-h-[220px]">
+                <div className="p-4 bg-blue-500/10 rounded-full text-blue-500 mb-4 animate-pulse">
+                    <Sparkles size={32} />
+                </div>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Esperando tus primeros datos...</h3>
+                <p className="text-sm text-slate-500 mt-2 max-w-md font-medium">Empieza a registrar tus comidas o entrenamientos. Al completar tu primer día, el Coach AI podrá analizar tu progreso y darte recomendaciones personalizadas.</p>
+            </div>
+        );
+    }
+
     if (!loading && insights.length === 0) return null;
 
     return (
