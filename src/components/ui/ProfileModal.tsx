@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Ruler, Calendar, Activity, Save } from 'lucide-react';
+import { X, User, Ruler, Calendar, Activity, Save, Target } from 'lucide-react';
 import { UserProfile } from '../../hooks/useProfile';
 
 interface ProfileModalProps {
@@ -15,7 +15,10 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
         full_name: profile?.full_name || '',
         height: profile?.height || 170,
         gender: profile?.gender || 'Masculino',
-        birth_date: profile?.birth_date || '1990-01-01'
+        birth_date: profile?.birth_date || '1990-01-01',
+        target_weight: profile?.target_weight || 85,
+        target_waist: profile?.target_waist || 83,
+        target_body_fat: profile?.target_body_fat || 13
     });
     const [loading, setLoading] = useState(false);
 
@@ -26,7 +29,10 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
                 full_name: profile.full_name || '',
                 height: profile.height || 170,
                 gender: profile.gender || 'Masculino',
-                birth_date: profile.birth_date || '1990-01-01'
+                birth_date: profile.birth_date || '1990-01-01',
+                target_weight: profile.target_weight || 85,
+                target_waist: profile.target_waist || 83,
+                target_body_fat: profile.target_body_fat || 13
             });
         }
     }, [profile, isOpen]);
@@ -37,8 +43,9 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
         try {
             await onUpdate(formData);
             onClose();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating profile:', error);
+            alert('Error al guardar: ' + (error.message || 'Error desconocido'));
         } finally {
             setLoading(false);
         }
@@ -139,6 +146,50 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
                                             onChange={e => setFormData({ ...formData, birth_date: e.target.value })}
                                             className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                                         />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Goals Section */}
+                            <div className="pt-4 border-t border-slate-100 dark:border-white/5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-4 block">Objetivos y Metas</label>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Peso Meta (kg)</label>
+                                        <div className="relative">
+                                            <Target className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
+                                            <input
+                                                type="number"
+                                                step="0.1"
+                                                value={formData.target_weight}
+                                                onChange={e => setFormData({ ...formData, target_weight: parseFloat(e.target.value) })}
+                                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Cintura Meta (cm)</label>
+                                        <div className="relative">
+                                            <Target className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
+                                            <input
+                                                type="number"
+                                                value={formData.target_waist}
+                                                onChange={e => setFormData({ ...formData, target_waist: parseInt(e.target.value) })}
+                                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Grasa Meta (%)</label>
+                                        <div className="relative">
+                                            <Target className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
+                                            <input
+                                                type="number"
+                                                value={formData.target_body_fat}
+                                                onChange={e => setFormData({ ...formData, target_body_fat: parseInt(e.target.value) })}
+                                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
