@@ -16,8 +16,14 @@ interface WeightChartProps {
 type TimeRange = '7D' | '1M' | '3M' | 'ALL';
 
 export function WeightChart({ data, profile }: WeightChartProps) {
+    const sortedForStart = [...data].sort((a, b) => a.Date.localeCompare(b.Date));
+    const fatEntries = sortedForStart.filter(d => d.BodyFat > 0);
+    const initialFat = fatEntries.length > 0 ? fatEntries[0].BodyFat : (fatEntries[0]?.BodyFat || 25);
+
     const finalFatGoal = profile?.target_body_fat || 13;
-    const interFatGoal = finalFatGoal + 5;
+    const interFatGoal = initialFat > finalFatGoal
+        ? Number((initialFat - ((initialFat - finalFatGoal) / 2)).toFixed(1))
+        : finalFatGoal + 2;
     const [range, setRange] = useState<TimeRange>('1M');
 
     // Sort data by date ascending

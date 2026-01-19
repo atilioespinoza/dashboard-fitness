@@ -21,13 +21,23 @@ export function GoalProjections({ data, profile }: GoalProjectionsProps) {
 
     const daysDiff = differenceInDays(parseISO(latest.Date), parseISO(first.Date)) || 1;
 
+    const waistEntries = sortedData.filter(d => d.Waist > 0);
+    const initialWaist = waistEntries.length > 0 ? waistEntries[0].Waist : latest.Waist;
+
     // Goals from Profile
     const waistGoals = {
-        inter: profile?.target_waist ? Math.round(100 - ((100 - profile.target_waist) / 2)) : 91,
+        inter: profile?.target_waist && initialWaist > profile.target_waist
+            ? Math.round(initialWaist - ((initialWaist - profile.target_waist) / 2))
+            : 91,
         final: profile?.target_waist || 83
     };
+    const fatEntries = sortedData.filter(d => d.BodyFat > 0);
+    const initialFat = fatEntries.length > 0 ? fatEntries[0].BodyFat : latest.BodyFat;
+
     const fatGoals = {
-        inter: profile?.target_body_fat ? profile.target_body_fat + 5 : 18,
+        inter: profile?.target_body_fat && initialFat > profile.target_body_fat
+            ? Number((initialFat - ((initialFat - profile.target_body_fat) / 2)).toFixed(1))
+            : 18,
         final: profile?.target_body_fat || 13
     };
 

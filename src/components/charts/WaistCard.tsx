@@ -15,20 +15,32 @@ interface WaistCardProps {
 import { UserProfile } from '../../hooks/useProfile';
 
 export function WaistCard({ currentWaist, data, profile }: WaistCardProps) {
-    const goal = profile?.target_waist || 83;
-    const start = 100;
-    const intermediateGoal = Math.round(start - ((start - goal) / 2));
+    // Projection - Global Average
+    const sortedData = [...data].sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
+    const waistEntries = sortedData.filter(d => d.Waist > 0);
 
-    // Calculate progress as a percentage from start (100) to goal (80)
-    const progress = currentWaist > 0 ? Math.min(100, Math.max(0, ((start - currentWaist) / (start - goal)) * 100)) : 0;
+    // Starting reference should be the first measurement recorded, or current if it's the only one
+    const start = waistEntries.length > 0 ? waistEntries[0].Waist : currentWaist || 0;
+    const goal = profile?.target_waist || 83;
+
+    // Intermediate goal is halfway between start and final target, 
+    // but only if start is greater than goal. Use a default fallback if not.
+    const intermediateGoal = start > goal
+        ? Math.round(start - ((start - goal) / 2))
+        : goal + 5;
+
+    // Calculate progress as a percentage from start to goal
+    let progress = 0;
+    if (start > goal && currentWaist > 0) {
+        progress = Math.min(100, Math.max(0, ((start - currentWaist) / (start - goal)) * 100));
+    }
 
     const isHit = currentWaist > 0 && currentWaist <= goal;
     const isIntermediateHit = currentWaist > 0 && currentWaist <= intermediateGoal;
 
     // Projection - Global Average
-    const sortedData = [...data].sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
-    const first = sortedData[0];
-    const latest = sortedData[sortedData.length - 1];
+    const first = waistEntries[0];
+    const latest = waistEntries[waistEntries.length - 1];
 
     let waistRate = 0;
     if (first && latest && first.Date !== latest.Date) {
@@ -39,7 +51,6 @@ export function WaistCard({ currentWaist, data, profile }: WaistCardProps) {
     let estimatedFinalDate = "";
     let estimatedInterDate = "";
 
-    const waistEntries = sortedData.filter(d => d.Waist > 0);
     const prevWaistEntry = waistEntries.length > 1 ? waistEntries[waistEntries.length - 2] : null;
 
     if (waistRate < 0) {
@@ -106,7 +117,7 @@ export function WaistCard({ currentWaist, data, profile }: WaistCardProps) {
                     <div className="flex justify-between items-end px-1">
                         <div className="flex flex-col gap-0.5">
                             <span className="text-[8px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest">Inicio</span>
-                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-400">{start}cm</span>
+                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-400">{start > 0 ? `${start.toFixed(1)}cm` : '--'}</span>
                         </div>
                         <div className={cn("flex flex-col items-center gap-0.5 transition-colors duration-500", isIntermediateHit ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-600")}>
                             <span className="text-[8px] font-black opacity-70 uppercase tracking-widest text-center">Intermedia<br />{intermediateGoal}cm</span>
