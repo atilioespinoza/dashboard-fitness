@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Ruler, Calendar, Activity, ChevronRight, Save } from 'lucide-react';
+import { X, User, Ruler, Calendar, Activity, Save } from 'lucide-react';
 import { UserProfile } from '../../hooks/useProfile';
 
 interface ProfileModalProps {
@@ -15,8 +15,7 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
         full_name: profile?.full_name || '',
         height: profile?.height || 170,
         gender: profile?.gender || 'Masculino',
-        birth_date: profile?.birth_date || '1990-01-01',
-        activity_level: profile?.activity_level || 'moderately_active'
+        birth_date: profile?.birth_date || '1990-01-01'
     });
     const [loading, setLoading] = useState(false);
 
@@ -27,8 +26,7 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
                 full_name: profile.full_name || '',
                 height: profile.height || 170,
                 gender: profile.gender || 'Masculino',
-                birth_date: profile.birth_date || '1990-01-01',
-                activity_level: profile.activity_level || 'moderately_active'
+                birth_date: profile.birth_date || '1990-01-01'
             });
         }
     }, [profile, isOpen]);
@@ -142,34 +140,6 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
                                             className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                                         />
                                     </div>
-                                </div>
-                            </div>
-
-                            {/* Activity Level */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Nivel de Actividad</label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {[
-                                        { id: 'sedentary', label: 'Sedentario', desc: 'Poco o nada' },
-                                        { id: 'lightly_active', label: 'Ligero', desc: '1-3 días/semana' },
-                                        { id: 'moderately_active', label: 'Moderado', desc: '3-5 días/semana' },
-                                        { id: 'very_active', label: 'Activo', desc: '6-7 días/semana' }
-                                    ].map((level) => (
-                                        <button
-                                            key={level.id}
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, activity_level: level.id as any })}
-                                            className={`flex items-center justify-between p-3 rounded-2xl border transition-all text-left ${formData.activity_level === level.id
-                                                ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                                : 'bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-white/5 text-slate-600 dark:text-slate-400 hover:border-blue-500/30'}`}
-                                        >
-                                            <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest">{level.label}</p>
-                                                <p className="text-[8px] font-bold opacity-70">{level.desc}</p>
-                                            </div>
-                                            {formData.activity_level === level.id && <ChevronRight size={14} />}
-                                        </button>
-                                    ))}
                                 </div>
                             </div>
 

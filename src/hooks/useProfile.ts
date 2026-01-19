@@ -7,7 +7,6 @@ export interface UserProfile {
     birth_date: string;
     height: number;
     gender: 'Masculino' | 'Femenino' | 'Otro';
-    activity_level: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extra_active';
 }
 
 export const useProfile = (userId?: string) => {
@@ -25,14 +24,12 @@ export const useProfile = (userId?: string) => {
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('*')
+                    .select('id, full_name, birth_date, height, gender')
                     .eq('id', userId)
                     .single();
 
                 if (error) {
                     if (error.code === 'PGRST116') {
-                        // Profile doesn't exist yet, we might want to create a default one
-                        // or just leave it null
                         console.log("No profile found for user");
                     } else {
                         throw error;
@@ -45,8 +42,7 @@ export const useProfile = (userId?: string) => {
                         full_name: data.full_name || '',
                         birth_date: data.birth_date || '1990-01-01',
                         height: data.height || 170,
-                        gender: data.gender || 'Masculino',
-                        activity_level: data.activity_level || 'moderately_active'
+                        gender: data.gender || 'Masculino'
                     });
                 }
             } catch (err: any) {
@@ -81,8 +77,7 @@ export const useProfile = (userId?: string) => {
                     full_name: '',
                     birth_date: '1990-01-01',
                     height: 170,
-                    gender: 'Masculino',
-                    activity_level: 'moderately_active'
+                    gender: 'Masculino'
                 }),
                 ...updates
             } as UserProfile));
