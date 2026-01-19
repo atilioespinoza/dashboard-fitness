@@ -5,11 +5,14 @@ import { addDays, format, parseISO, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Target, Calendar, TrendingDown } from 'lucide-react';
 
+import { UserProfile } from '../../hooks/useProfile';
+
 interface GoalProjectionsProps {
     data: FitnessEntry[];
+    profile: UserProfile | null;
 }
 
-export function GoalProjections({ data }: GoalProjectionsProps) {
+export function GoalProjections({ data, profile }: GoalProjectionsProps) {
     if (data.length < 2) return null;
 
     const sortedData = [...data].sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
@@ -18,9 +21,15 @@ export function GoalProjections({ data }: GoalProjectionsProps) {
 
     const daysDiff = differenceInDays(parseISO(latest.Date), parseISO(first.Date)) || 1;
 
-    // Goals
-    const waistGoals = { inter: 91, final: 83 };
-    const fatGoals = { inter: 18, final: 13 };
+    // Goals from Profile
+    const waistGoals = {
+        inter: profile?.target_waist ? Math.round(100 - ((100 - profile.target_waist) / 2)) : 91,
+        final: profile?.target_waist || 83
+    };
+    const fatGoals = {
+        inter: profile?.target_body_fat ? profile.target_body_fat + 5 : 18,
+        final: profile?.target_body_fat || 13
+    };
 
     // Rates (Units per day) - Global Average
     const waistRate = (latest.Waist - first.Waist) / daysDiff;

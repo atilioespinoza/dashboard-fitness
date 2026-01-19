@@ -6,13 +6,18 @@ import { es } from 'date-fns/locale';
 import { useState, useMemo } from 'react';
 import { parseLocalDate } from '../../lib/utils';
 
+import { UserProfile } from '../../hooks/useProfile';
+
 interface WeightChartProps {
     data: FitnessEntry[];
+    profile: UserProfile | null;
 }
 
 type TimeRange = '7D' | '1M' | '3M' | 'ALL';
 
-export function WeightChart({ data }: WeightChartProps) {
+export function WeightChart({ data, profile }: WeightChartProps) {
+    const finalFatGoal = profile?.target_body_fat || 13;
+    const interFatGoal = finalFatGoal + 5;
     const [range, setRange] = useState<TimeRange>('1M');
 
     // Sort data by date ascending
@@ -150,15 +155,15 @@ export function WeightChart({ data }: WeightChartProps) {
                                 { value: 'Peso Actual', type: 'circle', id: 'ID00', color: '#60a5fa' },
                                 { value: 'Tendencia', type: 'line', id: 'ID01', color: '#2563eb' },
                                 { value: '% Grasa', type: 'line', id: 'ID02', color: '#10b981' },
-                                { value: 'Meta (18%)', type: 'rect', id: 'ID03', color: '#3b82f6' },
-                                { value: 'Meta (13%)', type: 'rect', id: 'ID04', color: '#ef4444' }
+                                { value: `Meta (${interFatGoal}%)`, type: 'rect', id: 'ID03', color: '#3b82f6' },
+                                { value: `Meta (${finalFatGoal}%)`, type: 'rect', id: 'ID04', color: '#ef4444' }
                             ]}
                         />
 
                         {/* Goal Lines */}
                         <ReferenceLine
                             yAxisId="right"
-                            y={13}
+                            y={finalFatGoal}
                             stroke="#ef4444"
                             strokeDasharray="4 4"
                             strokeWidth={2}
@@ -166,7 +171,7 @@ export function WeightChart({ data }: WeightChartProps) {
                         />
                         <ReferenceLine
                             yAxisId="right"
-                            y={18}
+                            y={interFatGoal}
                             stroke="#3b82f6"
                             strokeDasharray="4 4"
                             strokeWidth={2}

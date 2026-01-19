@@ -65,11 +65,11 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
 
             <div className="grid grid-cols-12 gap-4 md:gap-6">
                 <FadeIn className="col-span-12 lg:col-span-8">
-                    <WeightChart data={data} />
+                    <WeightChart data={data} profile={profile} />
                 </FadeIn>
                 <FadeInStagger className="col-span-12 lg:col-span-4 flex flex-col gap-4 md:gap-6">
                     <FadeIn>
-                        <WaistCard currentWaist={latest?.Waist || 0} data={data} />
+                        <WaistCard currentWaist={latest?.Waist || 0} data={data} profile={profile} />
                     </FadeIn>
                     <FadeIn delay={0.1}>
                         <LossGauge
@@ -84,7 +84,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
 
             <div className="grid grid-cols-12 gap-6">
                 <FadeIn className="col-span-12 lg:col-span-12">
-                    <GoalProjections data={data} />
+                    <GoalProjections data={data} profile={profile} />
                 </FadeIn>
                 <FadeIn className="col-span-12 lg:col-span-12">
                     <AchievementsGallery data={data} />

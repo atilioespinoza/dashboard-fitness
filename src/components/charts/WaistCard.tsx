@@ -9,12 +9,15 @@ import Counter from '../ui/Counter';
 interface WaistCardProps {
     currentWaist: number;
     data: FitnessEntry[];
+    profile: UserProfile | null;
 }
 
-export function WaistCard({ currentWaist, data }: WaistCardProps) {
-    const goal = 83;
-    const intermediateGoal = 91;
+import { UserProfile } from '../../hooks/useProfile';
+
+export function WaistCard({ currentWaist, data, profile }: WaistCardProps) {
+    const goal = profile?.target_waist || 83;
     const start = 100;
+    const intermediateGoal = Math.round(start - ((start - goal) / 2));
 
     // Calculate progress as a percentage from start (100) to goal (80)
     const progress = currentWaist > 0 ? Math.min(100, Math.max(0, ((start - currentWaist) / (start - goal)) * 100)) : 0;
