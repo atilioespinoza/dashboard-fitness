@@ -41,6 +41,7 @@ export const useProfile = (userId?: string) => {
                 }
 
                 if (data) {
+                    console.log("Profile fetched successfully for:", userId);
                     setProfile({
                         id: data.id,
                         full_name: data.full_name || '',
@@ -52,8 +53,11 @@ export const useProfile = (userId?: string) => {
                         target_body_fat: data.target_body_fat,
                         target_steps: data.target_steps || 8000
                     });
+                } else {
+                    console.log("No profile record exists in DB for:", userId);
                 }
             } catch (err: any) {
+                console.error("Error fetching profile from DB:", err);
                 setError(err.message);
             } finally {
                 setLoading(false);

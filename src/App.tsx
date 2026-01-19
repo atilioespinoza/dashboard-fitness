@@ -97,10 +97,20 @@ function AppContent() {
                 onClose={() => setIsProfileOpen(false)}
                 profile={profile}
                 onUpdate={async (updates) => {
-                    await updateProfile(updates);
-                    if (showOnboarding) {
-                        setShowOnboarding(false);
-                        setShowTour(true);
+                    try {
+                        await updateProfile(updates);
+                        const hasSeenTour = localStorage.getItem('has_seen_tour_v2');
+                        if (showOnboarding && !hasSeenTour) {
+                            setShowOnboarding(false);
+                            setTourStep(0);
+                            setShowTour(true);
+                            localStorage.setItem('has_seen_tour_v2', 'true');
+                        } else if (showOnboarding) {
+                            setShowOnboarding(false);
+                        }
+                    } catch (err: any) {
+                        console.error("Critical Profile Update Error:", err);
+                        alert("Error al guardar perfil. ¿Ejecutaste el comando SQL en Supabase? " + (err.message || ""));
                     }
                 }}
             />
@@ -272,7 +282,10 @@ function AppContent() {
                                     <button
                                         onClick={() => {
                                             if (tourStep < 2) setTourStep(prev => prev + 1);
-                                            else setShowTour(false);
+                                            else {
+                                                setShowTour(false);
+                                                localStorage.setItem('has_seen_tour_v2', 'true');
+                                            }
                                         }}
                                         className="flex-1 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-white/5 transition-all active:scale-95 flex items-center justify-center gap-2 group"
                                     >
