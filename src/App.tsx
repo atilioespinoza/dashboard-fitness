@@ -22,12 +22,13 @@ function AppContent() {
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [showTour, setShowTour] = useState(false);
     const [tourStep, setTourStep] = useState(0);
+    const [hasDismissedOnboarding, setHasDismissedOnboarding] = useState(() => localStorage.getItem('has_dismissed_onboarding') === 'true');
 
     useEffect(() => {
-        if (!profileLoading && !profile && !profileError && user) {
+        if (!profileLoading && !profile && !profileError && user && !hasDismissedOnboarding) {
             setShowOnboarding(true);
         }
-    }, [profile, profileLoading, profileError, user]);
+    }, [profile, profileLoading, profileError, user, hasDismissedOnboarding]);
 
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
@@ -153,7 +154,11 @@ function AppContent() {
                                         Comenzar Configuración
                                     </button>
                                     <button
-                                        onClick={() => setShowOnboarding(false)}
+                                        onClick={() => {
+                                            setShowOnboarding(false);
+                                            setHasDismissedOnboarding(true);
+                                            localStorage.setItem('has_dismissed_onboarding', 'true');
+                                        }}
                                         className="w-full py-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-[10px] font-bold uppercase tracking-widest transition-colors"
                                     >
                                         Configurar más tarde
