@@ -3,7 +3,7 @@ import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
 import { supabase } from './lib/supabase';
-import { Activity, Sun, Moon, LogOut, Database, Download, Brain, User, Sparkles } from 'lucide-react';
+import { Activity, Sun, Moon, LogOut, Database, Download, Brain, User, Sparkles, Mic, ChevronRight, Bot } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { FadeIn } from './components/ui/FadeIn';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
@@ -21,6 +21,7 @@ function AppContent() {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [showTour, setShowTour] = useState(false);
+    const [tourStep, setTourStep] = useState(0);
 
     useEffect(() => {
         if (!profileLoading && !profile && user) {
@@ -146,47 +147,140 @@ function AppContent() {
                 )}
 
                 {showTour && (
-                    <div className="fixed inset-0 z-[110] flex items-center justify-center pointer-events-none">
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm pointer-events-auto"
+                            className="absolute inset-0 bg-slate-950/60 backdrop-blur-md pointer-events-auto"
                             onClick={() => setShowTour(false)}
                         />
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className="relative bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl pointer-events-auto"
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2.5rem] overflow-hidden max-w-xl w-full shadow-2xl pointer-events-auto"
                         >
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-500">
-                                        <Sparkles size={24} />
-                                    </div>
-                                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Mini Tour</h3>
+                            <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100 dark:bg-white/5 flex">
+                                <motion.div
+                                    className="h-full bg-blue-600"
+                                    initial={{ width: "33.33%" }}
+                                    animate={{ width: tourStep === 0 ? "33.33%" : tourStep === 1 ? "66.66%" : "100%" }}
+                                />
+                            </div>
+
+                            <div className="p-8 md:p-12">
+                                <AnimatePresence mode="wait">
+                                    {tourStep === 0 && (
+                                        <motion.div
+                                            key="tour-0"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            className="space-y-6"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-4 bg-blue-600/10 rounded-2xl text-blue-600">
+                                                    <Mic size={32} strokeWidth={2.5} />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Log Inteligente</h3>
+                                                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em]">Paso 01 de 03</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4 text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                                                <p>Olvida las aplicaciones complicadas. Aquí puedes simplemente <span className="text-slate-900 dark:text-white font-bold italic">hablarle al micrófono</span> como si fuera un mensaje de WhatsApp.</p>
+                                                <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-white/5 italic text-sm">
+                                                    "Anotame un café con leche y una tostada con palta para el desayuno"
+                                                </div>
+                                                <p>Nuestra IA entenderá las calorías, macros y lo registrará automáticamente por ti.</p>
+                                            </div>
+                                        </motion.div>
+                                    )}
+
+                                    {tourStep === 1 && (
+                                        <motion.div
+                                            key="tour-1"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            className="space-y-6"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-4 bg-indigo-600/10 rounded-2xl text-indigo-600">
+                                                    <Activity size={32} strokeWidth={2.5} />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Visualización Pro</h3>
+                                                    <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em]">Paso 02 de 03</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4 text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                                                <p>Tu Dashboard analiza tendencias reales, no solo números diarios. Verás tu <span className="text-slate-900 dark:text-white font-bold">pérdida de grasa teórica</span> basada en tu déficit acumulado.</p>
+                                                <ul className="grid grid-cols-2 gap-3 text-xs">
+                                                    <li className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-white/5 rounded-xl">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Histórico de Peso
+                                                    </li>
+                                                    <li className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-white/5 rounded-xl">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500" /> Metas de Cintura
+                                                    </li>
+                                                    <li className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-white/5 rounded-xl">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500" /> Pasos y Actividad
+                                                    </li>
+                                                    <li className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-white/5 rounded-xl">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Macros Semanales
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </motion.div>
+                                    )}
+
+                                    {tourStep === 2 && (
+                                        <motion.div
+                                            key="tour-2"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            className="space-y-6"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-4 bg-emerald-600/10 rounded-2xl text-emerald-600">
+                                                    <Bot size={32} strokeWidth={2.5} />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Coach Personal IA</h3>
+                                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em]">Paso 03 de 03</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4 text-slate-600 dark:text-slate-400 font-medium leading-relaxed font-sans">
+                                                <p>Al final del Dashboard encontrarás a tu <span className="text-emerald-600 font-bold uppercase italic tracking-tighter">AI Fitness Coach</span>. Él analiza cada dato para darte reportes detallados y estrategias personalizadas.</p>
+                                                <p>No solo te da números, te dice <span className="text-slate-900 dark:text-white font-bold underline decoration-blue-500 underline-offset-4 decoration-2">por qué</span> ocurren tus cambios y cómo acelerar tus resultados.</p>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                <div className="mt-12 flex gap-4">
+                                    {tourStep > 0 && (
+                                        <button
+                                            onClick={() => setTourStep(prev => prev - 1)}
+                                            className="px-6 py-4 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px] rounded-2xl transition-all"
+                                        >
+                                            Atrás
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => {
+                                            if (tourStep < 2) setTourStep(prev => prev + 1);
+                                            else setShowTour(false);
+                                        }}
+                                        className="flex-1 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-white/5 transition-all active:scale-95 flex items-center justify-center gap-2 group"
+                                    >
+                                        {tourStep < 2 ? (
+                                            <>Siguiente <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" /></>
+                                        ) : '¡Listo para Transformarme!'}
+                                    </button>
                                 </div>
-                                <div className="space-y-4 text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
-                                    <div className="flex gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl">
-                                        <div className="text-blue-500 font-black">01</div>
-                                        <p><span className="text-slate-900 dark:text-white font-bold">Registro:</span> Usa tu voz o escribe en lenguaje natural para registrar comida, pasos o pesas.</p>
-                                    </div>
-                                    <div className="flex gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl">
-                                        <div className="text-blue-500 font-black">02</div>
-                                        <p><span className="text-slate-900 dark:text-white font-bold">Dashboard:</span> Visualiza tus tendencias de peso, cintura y déficit calórico acumulado.</p>
-                                    </div>
-                                    <div className="flex gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl">
-                                        <div className="text-blue-500 font-black">03</div>
-                                        <p><span className="text-slate-900 dark:text-white font-bold">Coach AI:</span> Obtén consejos personalizados basados en tus datos diarios reales.</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setShowTour(false)}
-                                    className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black uppercase tracking-widest rounded-2xl transition-all"
-                                >
-                                    ¡Entendido, a darle!
-                                </button>
                             </div>
                         </motion.div>
                     </div>
