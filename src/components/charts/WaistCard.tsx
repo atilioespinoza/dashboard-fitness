@@ -32,6 +32,9 @@ export function WaistCard({ currentWaist, data }: WaistCardProps) {
     let estimatedFinalDate = "";
     let estimatedInterDate = "";
 
+    const waistEntries = sortedData.filter(d => d.Waist > 0);
+    const prevWaistEntry = waistEntries.length > 1 ? waistEntries[waistEntries.length - 2] : null;
+
     if (waistRate < 0) {
         if (!isHit) {
             const remainingFinal = currentWaist - goal;
@@ -50,14 +53,30 @@ export function WaistCard({ currentWaist, data }: WaistCardProps) {
         <Card className="col-span-12 md:col-span-6 lg:col-span-4 bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col justify-center">
             <CardContent className="p-6 md:p-8">
                 <div className="flex justify-between items-start mb-6">
-                    <div>
-                        <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-1 px-1">Cintura Actual</p>
-                        <div className="flex items-baseline space-x-2">
-                            <span className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
-                                <Counter value={currentWaist} decimals={1} />
-                            </span>
-                            <span className="text-slate-500 dark:text-slate-400 font-bold text-base md:text-lg">cm</span>
+                    <div className="space-y-4">
+                        <div>
+                            <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-1 px-1">Cintura Actual</p>
+                            <div className="flex items-baseline space-x-2">
+                                <span className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                                    <Counter value={currentWaist} decimals={1} />
+                                </span>
+                                <span className="text-slate-500 dark:text-slate-400 font-bold text-base md:text-lg">cm</span>
+                            </div>
                         </div>
+
+                        {prevWaistEntry && (
+                            <div className="px-1 py-1 border-l-2 border-slate-100 dark:border-white/5 pl-3">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Medida Anterior</p>
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-lg font-black text-slate-500 dark:text-slate-400 tracking-tighter">
+                                        {prevWaistEntry.Waist.toFixed(1)}cm
+                                    </span>
+                                    <span className="text-[9px] font-bold text-slate-300 dark:text-slate-600 uppercase">
+                                        {format(parseISO(prevWaistEntry.Date), "d 'de' MMM", { locale: es })}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <div className={cn(
                         "px-3 py-2 rounded-2xl text-[10px] font-black flex flex-col items-center justify-center text-center shadow-lg backdrop-blur-md min-w-[100px]",
