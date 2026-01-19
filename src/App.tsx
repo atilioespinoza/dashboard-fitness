@@ -22,7 +22,10 @@ function AppContent() {
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [showTour, setShowTour] = useState(false);
     const [tourStep, setTourStep] = useState(0);
-    const [hasDismissedOnboarding, setHasDismissedOnboarding] = useState(() => localStorage.getItem('has_dismissed_onboarding') === 'true');
+    const [hasDismissedOnboarding, setHasDismissedOnboarding] = useState(() => {
+        return localStorage.getItem('has_dismissed_onboarding') === 'true' ||
+            localStorage.getItem('has_saved_profile') === 'true';
+    });
 
     useEffect(() => {
         if (!profileLoading && !profile && !profileError && user && !hasDismissedOnboarding) {
@@ -99,19 +102,25 @@ function AppContent() {
                 profile={profile}
                 onUpdate={async (updates) => {
                     try {
+                        console.log("Iniciando guardado de perfil...", updates);
                         await updateProfile(updates);
+
+                        // Si llegamos aquí, el guardado fue exitoso
+                        localStorage.setItem('has_saved_profile', 'true');
+                        setHasDismissedOnboarding(true);
+
                         const hasSeenTour = localStorage.getItem('has_seen_tour_v2');
                         if (showOnboarding && !hasSeenTour) {
                             setShowOnboarding(false);
                             setTourStep(0);
                             setShowTour(true);
                             localStorage.setItem('has_seen_tour_v2', 'true');
-                        } else if (showOnboarding) {
+                        } else {
                             setShowOnboarding(false);
                         }
                     } catch (err: any) {
-                        console.error("Critical Profile Update Error:", err);
-                        alert("Error al guardar perfil. ¿Ejecutaste el comando SQL en Supabase? " + (err.message || ""));
+                        console.error("ERROR CRÍTICO AL GUARDAR:", err);
+                        alert(`❌ ERROR DE BASE DE DATOS:\n\n${err.message || 'Error desconocido'}\n\nVerifica que ejecutaste el SQL en Supabase.`);
                     }
                 }}
             />
