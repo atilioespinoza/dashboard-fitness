@@ -137,8 +137,16 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                                     {isAI ? "Actualizar con Gemini" : "Analizar con IA"}
                                 </button>
                             </div>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2">
                                 {loading ? "Procesando datos..." : isAI ? "Briefing de inteligencia diaria (IA)" : "Basado en reglas locales"}
+                                {!loading && (
+                                    <>
+                                        <span className="opacity-20">|</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest opacity-60">
+                                            {new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' }).format(new Date())}
+                                        </span>
+                                    </>
+                                )}
                             </p>
                         </div>
                     </div>

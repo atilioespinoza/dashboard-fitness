@@ -157,8 +157,19 @@ export const ReportModal = ({ isOpen, onClose, report, loading }: ReportModalPro
                                                 <Brain size={28} className="md:w-9 md:h-9" />
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-[9px] md:text-[10px] font-black text-blue-600/60 dark:text-blue-500/60 uppercase tracking-[0.2em] mb-0.5">Estrategia Biométrica</p>
-                                                <h2 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">Reporte AI</h2>
+                                                <div className="flex items-center gap-3 mb-0.5">
+                                                    <p className="text-[9px] md:text-[10px] font-black text-blue-600/60 dark:text-blue-500/60 uppercase tracking-[0.2em]">Estrategia Biométrica</p>
+                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700 md:hidden" />
+                                                    <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest md:hidden">
+                                                        {new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' }).format(new Date())}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-baseline gap-3">
+                                                    <h2 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">Reporte AI</h2>
+                                                    <p className="hidden md:block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest opacity-60">
+                                                        {new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}
+                                                    </p>
+                                                </div>
                                             </div>
                                             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-slate-800 p-2 md:p-3 rounded-xl md:rounded-2xl text-center min-w-[70px] md:min-w-[80px]">
                                                 <p className="text-[9px] md:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase leading-none mb-1">Score</p>
