@@ -3,18 +3,21 @@ import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
 import { supabase } from './lib/supabase';
-import { Activity, Sun, Moon, LogOut, Database, Download, Brain } from 'lucide-react';
+import { Activity, Sun, Moon, LogOut, Database, Download, Brain, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { FadeIn } from './components/ui/FadeIn';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { DashboardPage } from './pages/DashboardPage';
 import { LogPage } from './pages/LogPage';
+import { ProfileModal } from './components/ui/ProfileModal';
 
 function AppContent() {
     const { user, loading: authLoading } = useAuth();
-    const { profile, loading: profileLoading } = useProfile(user?.id);
+    const { profile, loading: profileLoading, updateProfile } = useProfile(user?.id);
     const { data, loading: dataLoading, refresh: dataRefresh } = useFitnessData(user?.id);
     const location = useLocation();
+
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
@@ -76,6 +79,13 @@ function AppContent() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-3 md:p-8 font-sans pb-24 md:pb-8 transition-colors duration-300">
+            <ProfileModal
+                isOpen={isProfileOpen}
+                onClose={() => setIsProfileOpen(false)}
+                profile={profile}
+                onUpdate={updateProfile}
+            />
+
             <div className="max-w-7xl mx-auto space-y-4 md:space-y-8">
                 {/* Header */}
                 <FadeIn>
@@ -119,6 +129,15 @@ function AppContent() {
                                 {new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}
                             </span>
                             <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
+                                <button
+                                    onClick={() => setIsProfileOpen(true)}
+                                    className="p-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 transition-colors shadow-lg shadow-blue-500/10 flex items-center gap-2"
+                                    title="Editar Perfil"
+                                >
+                                    <User size={18} />
+                                    <span className="hidden sm:inline text-[8px] font-black uppercase tracking-widest ml-1">Perfil</span>
+                                </button>
+
                                 <button
                                     onClick={handleExport}
                                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-all font-black text-[10px] uppercase tracking-widest"
