@@ -11,6 +11,7 @@ export interface UserProfile {
     target_waist?: number;
     target_body_fat?: number;
     target_steps?: number;
+    notifications_enabled?: boolean;
 }
 
 export const useProfile = (userId?: string) => {
@@ -28,7 +29,7 @@ export const useProfile = (userId?: string) => {
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('id, full_name, birth_date, height, gender, target_weight, target_waist, target_body_fat, target_steps')
+                    .select('id, full_name, birth_date, height, gender, target_weight, target_waist, target_body_fat, target_steps, notifications_enabled')
                     .eq('id', userId)
                     .single();
 
@@ -51,7 +52,8 @@ export const useProfile = (userId?: string) => {
                         target_weight: data.target_weight,
                         target_waist: data.target_waist,
                         target_body_fat: data.target_body_fat,
-                        target_steps: data.target_steps || 8000
+                        target_steps: data.target_steps || 8000,
+                        notifications_enabled: data.notifications_enabled || false
                     });
                 } else {
                     console.log("No profile record exists in DB for:", userId);
