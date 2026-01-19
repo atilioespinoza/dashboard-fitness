@@ -20,7 +20,6 @@ import { differenceInYears } from 'date-fns';
 import { parseLocalDate } from '../lib/utils';
 import { FitnessEntry } from '../data/mockData';
 import { UserProfile } from '../hooks/useProfile';
-import { useNotificationCheck } from '../hooks/useNotificationCheck';
 
 interface DashboardPageProps {
     data: FitnessEntry[];
@@ -28,7 +27,6 @@ interface DashboardPageProps {
 }
 
 export function DashboardPage({ data, profile }: DashboardPageProps) {
-    useNotificationCheck(data, profile);
     const birthDate = profile?.birth_date || "1984-01-14";
     const age = useMemo(() => differenceInYears(new Date(), parseLocalDate(birthDate)), [birthDate]);
 

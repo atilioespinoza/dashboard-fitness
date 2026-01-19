@@ -33,13 +33,7 @@ Optimización total del flujo de entrada de datos:
 *   **Lógica de Datos Segura**: Implementación de lógica estrictamente aditiva para nutrición y actividad, evitando sobreescrituras accidentales.
 *   **Integración Siri**: Soporte para atajos de voz externos a través de funciones serverless dedicadas.
 
-### 4. Notificaciones Inteligentes & PWA
-Extiende la utilidad de la app fuera del navegador:
-*   **Experiencia PWA**: App totalmente instalable en el iPhone con iconos personalizados, eliminando la barrera del navegador.
-*   **Recordatorios Contextuales**: Sistema de notificaciones locales que alerta al usuario sobre metas faltantes (ej: recordatorio de proteína a las 5 PM si el progreso es bajo).
-*   **Permisos de Usuario**: Gestión granular de notificaciones desde el perfil biométrico.
-
-### 5. Experiencia de Usuario (UX/UI)
+### 4. Experiencia de Usuario (UX/UI)
 *   **Onboarding Interactivo**: Tour multi-pasos detallado que guía al usuario por las funciones clave (Log Inteligente, Visualización Pro y Coach IA).
 *   **Gamificación Pro**: Galería de logros (Achievements) y contadores de rachas totalmente sincronizados con las metas personalizadas del perfil.
 *   **Personalización Localizada**: Perfil dinámico ajustado a biometría individual y huso horario específico.
