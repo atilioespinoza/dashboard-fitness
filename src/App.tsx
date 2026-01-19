@@ -3,7 +3,7 @@ import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
 import { supabase } from './lib/supabase';
-import { Activity, Sun, Moon, LogOut, Database, Download, Brain, User, Sparkles, Mic, ChevronRight, Bot } from 'lucide-react';
+import { Activity, Sun, Moon, LogOut, Database, Download, Brain, User, Mic, ChevronRight, Bot } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { FadeIn } from './components/ui/FadeIn';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
