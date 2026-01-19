@@ -3,6 +3,8 @@ import { supabase } from '../../lib/supabase';
 import { parseFitnessEntry } from '../../lib/gemini';
 import { Brain, Send, Loader2, XCircle, Mic, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { cn } from '../../lib/utils';
+import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 
 import { UserProfile } from '../../hooks/useProfile';
 
@@ -25,6 +27,10 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
         tdee: 2000, steps: 0, bmr: 1600, activeKcal: 400
     });
     const [error, setError] = useState<string | null>(null);
+
+    const { isListening, startListening, stopListening } = useSpeechRecognition((text) => {
+        setInput(prev => prev ? `${prev} ${text}` : text);
+    });
 
     const getLocalToday = useCallback(() => {
         const d = new Date();
@@ -249,8 +255,18 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                     />
 
                     <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                        <button type="button" className="p-2 text-slate-400 hover:text-blue-500 transition-colors">
-                            <Mic size={20} />
+                        <button
+                            type="button"
+                            onClick={isListening ? stopListening : startListening}
+                            className={cn(
+                                "p-2 rounded-lg transition-all duration-300",
+                                isListening
+                                    ? "bg-red-500/10 text-red-500 animate-pulse scale-110 shadow-lg shadow-red-500/20"
+                                    : "text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            )}
+                            title={isListening ? "Detener micrófono" : "Grabar voz"}
+                        >
+                            <Mic size={20} className={isListening ? "scale-110" : ""} />
                         </button>
 
                         <button
