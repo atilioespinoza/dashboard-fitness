@@ -15,37 +15,39 @@
 
 ### 1. Centro de Control Biométrico (Dashboard)
 El corazón de la aplicación es un panel visual que ofrece:
-*   **Seguimiento Multi-Variable**: Monitoreo de peso, perímetro de cintura, grasa corporal, calorías, macros (proteínas/carbos/grasas), pasos y sueño.
-*   **Análisis Metabólico**: Cálculo automático de TDEE, déficit acumulado y pérdida de grasa teórica basada en el balance calórico real.
-*   **Visualización Avanzada**: Incluye gráficos de correlación (ej: Pasos vs. Sueño), mapas de calor de consistencia, galería de logros y proyecciones de metas.
+*   **Seguimiento Dinámico y Personalizado**: Monitoreo de peso, cintura, grasa corporal, calorías, macros, pasos y sueño.
+*   **Metas Inteligentes**: Las metas (incluyendo pasos diarios, cintura y % de grasa) son personalizables desde el perfil. El sistema calcula automáticamente el punto de inicio real basado en el primer registro histórico.
+*   **Hitos Intermedios**: Cálculo dinámico de metas intermedias (50% del progreso) para mantener la motivación.
+*   **Análisis Metabólico**: Cálculo de TDEE, déficit acumulado y pérdida de grasa teórica basada en el balance calórico real.
 
 ### 2. AI Fitness Coach (Integración con Gemini)
 La plataforma utiliza IA para actuar como un consultor de alto rendimiento:
-*   **Insights Dinámicos**: Analiza tendencias de los últimos 30 días para detectar patrones y sugerir acciones concretas (misiones).
+*   **Insights Contextuales**: Analiza tendencias para detectar patrones y sugerir acciones concretas. Incluye estados "Awaiting Data" para guiar a nuevos usuarios.
 *   **Reporte Ejecutivo**: Genera reportes profundos que identifican "puntos ciegos", analizan el estado metabólico y asignan un "Arquetipo de Usuario".
-*   **Proyecciones de Metas**: Calcula fechas estimadas para hitos específicos como alcanzar un 12% de grasa corporal o marcar abdominales.
+*   **Proyecciones de Metas**: Calcula fechas estimadas para hitos específicos basándose en promedios históricos, no solo en tendencias de corto plazo.
 
 ### 3. Registro Inteligente (Voice & Quick Log)
-Optimización del flujo de entrada de datos:
-*   **Procesamiento de Lenguaje Natural**: Los usuarios pueden registrar datos mediante texto o voz (ej: *"Comí una pizza y corrí 45 minutos"*). La IA extrae calorías, macros y estima el gasto calórico del ejercicio.
-*   **Lógica de Fusión (Add vs Set)**: Permite agregar datos de forma incremental o corregir errores previos ("modo corrección").
-*   **Integración Digital**: Soporte para Siri a través de una función serverless (`api/voice-log.ts`), permitiendo el registro sin manos.
+Optimización total del flujo de entrada de datos:
+*   **Reconocimiento de Voz Nativo**: Integración directa con la Speech API del navegador para un registro sin manos desde el dashboard.
+*   **Procesamiento de Lenguaje Natural**: Extracción automática de calorías, macros y gasto calórico mediante IA a partir de frases naturales.
+*   **Lógica de Datos Segura**: Implementación de lógica estrictamente aditiva para nutrición y actividad, evitando sobreescrituras accidentales.
+*   **Integración Siri**: Soporte para atajos de voz externos a través de funciones serverless dedicadas.
 
-### 4. Gestión de Datos y UX
-*   **Exportación**: Funcionalidad para descargar todo el historial en formato CSV.
-*   **Personalización**: Perfil de usuario dinámico que ajusta cálculos según edad, altura, sexo y zona horaria (Chile).
-*   **Gamificación**: Contadores de rachas (Streaks) para objetivos de calorías, proteínas y pasos diarios.
+### 4. Experiencia de Usuario (UX/UI)
+*   **Onboarding Interactivo**: Tour multi-pasos detallado que guía al usuario por las funciones clave (Log Inteligente, Visualización Pro y Coach IA).
+*   **Gamificación Pro**: Galería de logros (Achievements) y contadores de rachas totalmente sincronizados con las metas personalizadas del perfil.
+*   **Personalización Localizada**: Perfil dinámico ajustado a biometría individual y huso horario específico.
 
 ---
 
 ## 📂 Estructura de Archivos Clave
-*   `src/lib/gemini.ts`: Lógica de comunicación con el LLM y prompts de ingeniería.
-*   `src/lib/voiceService.ts`: Servicio de orquestación para el procesamiento de logs de voz.
-*   `api/voice-log.ts`: Endpoint para integraciones externas (Vercel).
-*   `src/components/charts/`: Biblioteca de visualizaciones personalizadas.
-*   `src/hooks/useFitnessData.ts`: Hook central para la sincronización de datos en tiempo real con Supabase.
+*   `src/lib/gemini.ts`: Orquestación del LLM y prompts de ingeniería avanzados.
+*   `src/hooks/useSpeechRecognition.ts`: Hook para gestión de entrada de voz nativa.
+*   `src/hooks/useProfile.ts`: Gestión de biometría y metas personalizables.
+*   `src/components/charts/`: Biblioteca de visualizaciones personalizadas y dashboards dinámicos.
+*   `api/voice-log.ts`: Endpoint serverless para integraciones de voz externas (Siri/iOS).
 
 ---
 
 ## 🎯 Objetivo del Proyecto
-El sistema no solo registra datos, sino que busca **eliminar la fricción del seguimiento manual** y proporcionar una **capa de inteligencia estratégica** para alcanzar objetivos estéticos y de salud de forma eficiente.
+El sistema busca **eliminar la fricción del seguimiento manual** convirtiendo registros simples en **inteligencia estratégica**, permitiendo a los usuarios alcanzar sus objetivos físicos con la precisión de un atleta profesional.
