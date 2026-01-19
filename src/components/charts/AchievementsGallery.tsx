@@ -5,12 +5,15 @@ import { Trophy, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useEffect } from 'react';
 
+import { UserProfile } from '../../hooks/useProfile';
+
 interface AchievementsGalleryProps {
     data: FitnessEntry[];
+    profile: UserProfile | null;
 }
 
-export const AchievementsGallery = ({ data }: AchievementsGalleryProps) => {
-    const achievements = useAchievements(data);
+export const AchievementsGallery = ({ data, profile }: AchievementsGalleryProps) => {
+    const achievements = useAchievements(data, profile);
     const unlockedCount = achievements.filter(a => a.isUnlocked).length;
     const totalCount = achievements.length;
     const progressPercent = Math.round((unlockedCount / totalCount) * 100);

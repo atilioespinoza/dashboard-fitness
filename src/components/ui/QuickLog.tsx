@@ -297,9 +297,9 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                     </div>
 
                     <div className="grid grid-cols-2 xs:grid-cols-3 gap-2 mb-3">
-                        <MetricRow label="Calorías" value={summary.calories} goal={2000} unit="kcal" type="max" />
+                        <MetricRow label="Calorías" value={summary.calories} goal={summary.tdee} unit="kcal" type="max" />
                         <MetricRow label="Proteína" value={summary.protein} goal={140} unit="g" type="min" />
-                        <MetricRow label="Pasos" value={summary.steps} goal={12000} unit="pts" type="min" />
+                        <MetricRow label="Pasos" value={summary.steps} goal={profile?.target_steps || 8000} unit="pts" type="min" />
                         <MetricRow label="Grasas" value={summary.fat} goal={75} unit="g" type="max" />
                         <MetricRow label="Carbos" value={summary.carbs} goal={170} unit="g" type="max" />
                         <MetricRow label="Gasto Act." value={summary.activeKcal} unit="kcal" />

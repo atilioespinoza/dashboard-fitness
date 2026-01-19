@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Ruler, Calendar, Activity, Save, Target } from 'lucide-react';
+import { X, User, Ruler, Calendar, Activity, Save, Target, Footprints } from 'lucide-react';
 import { UserProfile } from '../../hooks/useProfile';
 
 interface ProfileModalProps {
@@ -18,7 +18,8 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
         birth_date: profile?.birth_date || '1990-01-01',
         target_weight: profile?.target_weight || 85,
         target_waist: profile?.target_waist || 83,
-        target_body_fat: profile?.target_body_fat || 13
+        target_body_fat: profile?.target_body_fat || 13,
+        target_steps: profile?.target_steps || 8000
     });
     const [loading, setLoading] = useState(false);
 
@@ -32,7 +33,8 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
                 birth_date: profile.birth_date || '1990-01-01',
                 target_weight: profile.target_weight || 85,
                 target_waist: profile.target_waist || 83,
-                target_body_fat: profile.target_body_fat || 13
+                target_body_fat: profile.target_body_fat || 13,
+                target_steps: profile.target_steps || 8000
             });
         }
     }, [profile, isOpen]);
@@ -153,9 +155,9 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
                             {/* Goals Section */}
                             <div className="pt-4 border-t border-slate-100 dark:border-white/5">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-4 block">Objetivos y Metas</label>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Peso Meta (kg)</label>
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Peso Meta</label>
                                         <div className="relative">
                                             <Target className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
                                             <input
@@ -168,7 +170,7 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Cintura Meta (cm)</label>
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Cintura Meta</label>
                                         <div className="relative">
                                             <Target className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
                                             <input
@@ -180,13 +182,26 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Grasa Meta (%)</label>
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Grasa Meta %</label>
                                         <div className="relative">
                                             <Target className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
                                             <input
                                                 type="number"
                                                 value={formData.target_body_fat}
                                                 onChange={e => setFormData({ ...formData, target_body_fat: parseInt(e.target.value) })}
+                                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Pasos Meta</label>
+                                        <div className="relative">
+                                            <Footprints className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
+                                            <input
+                                                type="number"
+                                                step="500"
+                                                value={formData.target_steps}
+                                                onChange={e => setFormData({ ...formData, target_steps: parseInt(e.target.value) })}
                                                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
                                             />
                                         </div>

@@ -13,7 +13,10 @@ export interface Achievement {
     goal: number;
 }
 
-export const useAchievements = (data: FitnessEntry[]) => {
+import { UserProfile } from './useProfile';
+
+export const useAchievements = (data: FitnessEntry[], profile: UserProfile | null) => {
+    const STEP_GOAL = profile?.target_steps || 8000;
     const achievements = useMemo(() => {
         if (!data || data.length === 0) return [];
 
@@ -38,7 +41,7 @@ export const useAchievements = (data: FitnessEntry[]) => {
         // 3. Road Runner (Steps Streak)
         let stepsStreak = 0;
         for (const entry of latestEntries) {
-            if (entry.Steps >= 12000) stepsStreak++;
+            if (entry.Steps >= STEP_GOAL) stepsStreak++;
             else break;
         }
 
@@ -83,7 +86,7 @@ export const useAchievements = (data: FitnessEntry[]) => {
             {
                 id: 'road-runner',
                 title: 'Correcaminos',
-                description: '5 días superando los 12,000 pasos',
+                description: `5 días superando los ${STEP_GOAL.toLocaleString()} pasos`,
                 icon: Footprints,
                 color: 'text-blue-500',
                 isUnlocked: stepsStreak >= 5,

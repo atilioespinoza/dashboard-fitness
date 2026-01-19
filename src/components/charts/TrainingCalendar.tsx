@@ -12,11 +12,15 @@ import {
 import { es } from 'date-fns/locale';
 import { cn, parseLocalDate } from '../../lib/utils';
 
+import { UserProfile } from '../../hooks/useProfile';
+
 interface TrainingCalendarProps {
     data: FitnessEntry[];
+    profile: UserProfile | null;
 }
 
-export function TrainingCalendar({ data }: TrainingCalendarProps) {
+export function TrainingCalendar({ data, profile }: TrainingCalendarProps) {
+    const STEP_GOAL = profile?.target_steps || 8000;
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
     const monthStart = startOfMonth(currentMonth);
@@ -109,7 +113,7 @@ export function TrainingCalendar({ data }: TrainingCalendarProps) {
                                     )}>
                                         {format(day, 'd')}
                                     </span>
-                                    {training?.Steps && training.Steps >= 12000 && (
+                                    {training?.Steps && training.Steps >= STEP_GOAL && (
                                         <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" title="Meta de Pasos Lograda" />
                                     )}
                                 </div>
@@ -170,7 +174,7 @@ export function TrainingCalendar({ data }: TrainingCalendarProps) {
                             </div>
                             <div className="bg-slate-100 dark:bg-slate-950 p-2 rounded-lg text-center transition-colors">
                                 <p className="text-[10px] text-slate-500 uppercase font-bold">Pasos</p>
-                                <p className={cn("text-xs mt-1 font-medium", selectedDay.Steps >= 12000 ? "text-green-600 dark:text-green-400 font-bold" : "text-slate-900 dark:text-white")}>
+                                <p className={cn("text-xs mt-1 font-medium", selectedDay.Steps >= STEP_GOAL ? "text-green-600 dark:text-green-400 font-bold" : "text-slate-900 dark:text-white")}>
                                     {selectedDay.Steps}
                                 </p>
                             </div>

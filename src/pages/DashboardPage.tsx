@@ -44,7 +44,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
     let stepsStreak = 0;
     for (const day of sortedData) { if (day.Calories <= day.TDEE) calorieStreak++; else break; }
     for (const day of sortedData) { if (day.Protein >= 140) proteinStreak++; else break; }
-    for (const day of sortedData) { if (day.Steps >= 12000) stepsStreak++; else break; }
+    for (const day of sortedData) { if (day.Steps >= (profile?.target_steps || 8000)) stepsStreak++; else break; }
 
     return (
         <div className="space-y-4 md:space-y-8">
@@ -87,7 +87,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                     <GoalProjections data={data} profile={profile} />
                 </FadeIn>
                 <FadeIn className="col-span-12 lg:col-span-12">
-                    <AchievementsGallery data={data} />
+                    <AchievementsGallery data={data} profile={profile} />
                 </FadeIn>
             </div>
 
@@ -107,7 +107,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                             <StreakCounter label="Proteínas" count={proteinStreak} goal="Min 140g" />
                         </FadeIn>
                         <FadeIn>
-                            <StreakCounter label="Pasos" count={stepsStreak} goal="Min 12k" />
+                            <StreakCounter label="Pasos" count={stepsStreak} goal={`Min ${(profile?.target_steps || 8000) / 1000}k`} />
                         </FadeIn>
                     </FadeInStagger>
                 </div>
@@ -118,7 +118,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
             </FadeIn>
 
             <FadeIn className="grid grid-cols-12 gap-6">
-                <StepsChart data={data} />
+                <StepsChart data={data} profile={profile} />
             </FadeIn>
 
             <div className="grid grid-cols-12 gap-6">
@@ -126,7 +126,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                     <BodyHeatmap data={data} />
                 </FadeIn>
                 <FadeIn className="col-span-12 lg:col-span-8">
-                    <TrainingCalendar data={data} />
+                    <TrainingCalendar data={data} profile={profile} />
                 </FadeIn>
             </div>
 

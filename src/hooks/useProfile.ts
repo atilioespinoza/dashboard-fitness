@@ -10,6 +10,7 @@ export interface UserProfile {
     target_weight?: number;
     target_waist?: number;
     target_body_fat?: number;
+    target_steps?: number;
 }
 
 export const useProfile = (userId?: string) => {
@@ -27,7 +28,7 @@ export const useProfile = (userId?: string) => {
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('id, full_name, birth_date, height, gender, target_weight, target_waist, target_body_fat')
+                    .select('id, full_name, birth_date, height, gender, target_weight, target_waist, target_body_fat, target_steps')
                     .eq('id', userId)
                     .single();
 
@@ -48,7 +49,8 @@ export const useProfile = (userId?: string) => {
                         gender: data.gender || 'Masculino',
                         target_weight: data.target_weight,
                         target_waist: data.target_waist,
-                        target_body_fat: data.target_body_fat
+                        target_body_fat: data.target_body_fat,
+                        target_steps: data.target_steps || 8000
                     });
                 }
             } catch (err: any) {
@@ -86,7 +88,8 @@ export const useProfile = (userId?: string) => {
                     gender: 'Masculino',
                     target_weight: 85,
                     target_waist: 83,
-                    target_body_fat: 13
+                    target_body_fat: 13,
+                    target_steps: 8000
                 }),
                 ...updates
             } as UserProfile));

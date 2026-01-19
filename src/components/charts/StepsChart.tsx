@@ -8,14 +8,17 @@ import { Footprints, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import Counter from '../ui/Counter';
 
+import { UserProfile } from '../../hooks/useProfile';
+
 interface StepsChartProps {
     data: FitnessEntry[];
+    profile: UserProfile | null;
 }
 
-export function StepsChart({ data }: StepsChartProps) {
+export function StepsChart({ data, profile }: StepsChartProps) {
     // Last 30 days
     const last30 = data.slice(-30);
-    const STEP_GOAL = 12000;
+    const STEP_GOAL = profile?.target_steps || 8000;
 
     // Calculate Trend (Last 7 vs Previous 7)
     const last7 = data.slice(-7);
