@@ -5,7 +5,7 @@ import { BalanceChart } from '../components/charts/BalanceChart';
 import { ConsistencyGrid } from '../components/charts/ConsistencyGrid';
 import { StreakCounter } from '../components/charts/StreakCounter';
 import { MacroDonut } from '../components/charts/MacroDonut';
-import { CorrelationChart } from '../components/charts/CorrelationChart';
+import { SleepChart } from '../components/charts/SleepChart';
 import { NotesList } from '../components/charts/NotesList';
 import { TrainingCalendar } from '../components/charts/TrainingCalendar';
 import { StepsChart } from '../components/charts/StepsChart';
@@ -132,7 +132,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
 
             <div className="grid grid-cols-12 gap-6">
                 <FadeIn className="col-span-12 lg:col-span-8">
-                    <CorrelationChart data={data} />
+                    <SleepChart data={data} />
                 </FadeIn>
                 <FadeIn className="col-span-12 lg:col-span-4">
                     <NotesList data={data} />
