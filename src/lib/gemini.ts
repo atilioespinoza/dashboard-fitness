@@ -191,10 +191,9 @@ export const parseFitnessEntry = async (textInput: string) => {
     2. Si mencionan entrenamiento, descríbelo brevemente en 'training' y ESTIMA las calorías quemadas en 'burned_calories'.
     3. Si mencionan peso, cintura o grasa, extráelos.
     4. Usa la unidad métrica (kg, cm).
-    5. STEPS_MODE / TRAINING_MODE / NUTRITION_MODE: 
-       - Usa "set" si el usuario indica una CORRECCIÓN de un error previo o un total absoluto (ej: "mi total de calorías hoy es 1500", "no fueron 45 min de calistenia, fueron 30", "total de pasos hoy: 8000").
-       - Usa "add" si indica una nueva actividad incremental (ej: "comí una pizza", "caminé 1000 pasos", "entrené 1 hora").
-       - Por defecto usa "add".
+    5. MODOS (nutrition_mode / steps_mode / training_mode): 
+       - Usa SIEMPRE "add". NUNCA uses "set" para comida, pasos o entrenamientos. El usuario quiere que estos registros sean siempre incrementales.
+       - Los campos de biometría (weight, waist, body_fat) y sueño (sleep) son SIEMPRE absolutos ("set" implícito).
     6. Retorna UNICAMENTE el JSON.
   `;
 

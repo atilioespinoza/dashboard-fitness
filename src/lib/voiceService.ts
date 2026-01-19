@@ -28,19 +28,15 @@ export const processVoiceLog = async (userId: string, text: string) => {
             .eq('date', today)
             .maybeSingle();
 
-        // 3. Merge logic (same as QuickLog)
+        // 3. Merge logic (Always ADD for incremental metrics to prevent accidental overwrites)
         const currentWeight = aiData.weight ?? existing?.weight ?? 80;
-        const totalSteps = aiData.steps_mode === 'set'
-            ? (aiData.steps || 0)
-            : (existing?.steps || 0) + (aiData.steps || 0);
+        const totalSteps = (existing?.steps || 0) + (aiData.steps || 0);
 
         const getExistingExKcal = (notes: string | null) => {
             const match = (notes || '').match(/\[ExKcal:\s*(\d+)\]/);
             return match ? parseInt(match[1]) : 0;
         };
-        const totalExKcal = aiData.training_mode === 'set'
-            ? (aiData.burned_calories || 0)
-            : getExistingExKcal(existing?.notes) + (aiData.burned_calories || 0);
+        const totalExKcal = getExistingExKcal(existing?.notes) + (aiData.burned_calories || 0);
 
         // Calculate metrics
         // (Simplified BMR/TDEE for the API, will be updated by Dashboard on next load)
@@ -55,10 +51,10 @@ export const processVoiceLog = async (userId: string, text: string) => {
             weight: currentWeight,
             waist: aiData.waist ?? existing?.waist,
             body_fat: aiData.body_fat ?? existing?.body_fat,
-            calories: aiData.nutrition_mode === 'set' ? (aiData.calories || 0) : (existing?.calories || 0) + (aiData.calories || 0),
-            protein: aiData.nutrition_mode === 'set' ? (aiData.protein || 0) : (existing?.protein || 0) + (aiData.protein || 0),
-            carbs: aiData.nutrition_mode === 'set' ? (aiData.carbs || 0) : (existing?.carbs || 0) + (aiData.carbs || 0),
-            fat: aiData.nutrition_mode === 'set' ? (aiData.fat || 0) : (existing?.fat || 0) + (aiData.fat || 0),
+            calories: (existing?.calories || 0) + (aiData.calories || 0),
+            protein: (existing?.protein || 0) + (aiData.protein || 0),
+            carbs: (existing?.carbs || 0) + (aiData.carbs || 0),
+            fat: (existing?.fat || 0) + (aiData.fat || 0),
             steps: totalSteps,
             sleep: aiData.sleep ?? existing?.sleep,
             training: aiData.training || existing?.training,

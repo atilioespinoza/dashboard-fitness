@@ -61,9 +61,8 @@ export default async function handler(req: any, res: any) {
 
             REGLAS CRÍTICAS:
             - Si mencionan una actividad física (ej: "salto cuerda", "pesas", "correr"), ESTIMA DE FORMA REALISTA las calorías quemadas en 'burned_calories' si no las especifican.
-            - Usa "set" si el usuario indica una CORRECCIÓN, un TOTAL, o una frase de arrepentimiento (ej: "mi total de pasos hoy son 5000", "corrige mis calorías a 1200", "en realidad hice 8000 pasos", "mi peso real es 82kg").
-            - Usa "add" si indica algo nuevo que se suma (ej: "camina 1000 pasos más", "comí una manzana", "entrené 1 hora de pesas").
-            - Por defecto usa "add".
+            - Usa "add" SIEMPRE para comida, pasos o entrenamientos. El usuario prohíbe el modo "set" para estos campos para evitar borrar registros previos.
+            - Los campos de biometría (weight, waist, body_fat) y sueño (sleep) son SIEMPRE absolutos.
         `;
 
         const result = await model.generateContent(prompt);
@@ -86,25 +85,22 @@ export default async function handler(req: any, res: any) {
 
         // 6. Merge Logic (Handling ADD vs SET for all metrics)
 
-        // Nutrition
-        const nutritionMode = aiData.nutrition_mode || 'add';
-        const finalCalories = nutritionMode === 'set' ? (aiData.calories ?? (existing?.calories || 0)) : (existing?.calories || 0) + (aiData.calories || 0);
-        const finalProtein = nutritionMode === 'set' ? (aiData.protein ?? (existing?.protein || 0)) : (existing?.protein || 0) + (aiData.protein || 0);
-        const finalCarbs = nutritionMode === 'set' ? (aiData.carbs ?? (existing?.carbs || 0)) : (existing?.carbs || 0) + (aiData.carbs || 0);
-        const finalFat = nutritionMode === 'set' ? (aiData.fat ?? (existing?.fat || 0)) : (existing?.fat || 0) + (aiData.fat || 0);
+        // Nutrition (Always additive)
+        const finalCalories = (existing?.calories || 0) + (aiData.calories || 0);
+        const finalProtein = (existing?.protein || 0) + (aiData.protein || 0);
+        const finalCarbs = (existing?.carbs || 0) + (aiData.carbs || 0);
+        const finalFat = (existing?.fat || 0) + (aiData.fat || 0);
 
-        // Steps
-        const stepsMode = aiData.steps_mode || 'add';
-        const finalSteps = stepsMode === 'set' ? (aiData.steps ?? (existing?.steps || 0)) : (existing?.steps || 0) + (aiData.steps || 0);
+        // Steps (Always additive)
+        const finalSteps = (existing?.steps || 0) + (aiData.steps || 0);
 
-        // Training (Burned Calories)
+        // Training (Burned Calories - Always additive)
         const getExistingExKcal = (n: string | null) => {
             const match = (n || '').match(/\[ExKcal:\s*(\d+)\]/);
             return match ? parseInt(match[1]) : 0;
         };
-        const trainingMode = aiData.training_mode || 'add';
         const currentExKcal = getExistingExKcal(existing?.notes);
-        const finalExKcal = trainingMode === 'set' ? (aiData.burned_calories || 0) : currentExKcal + (aiData.burned_calories || 0);
+        const finalExKcal = currentExKcal + (aiData.burned_calories || 0);
 
         // 7. Calculate TDEE dynamically
         const currentWeight = aiData.weight ?? existing?.weight ?? 80;
@@ -124,8 +120,7 @@ export default async function handler(req: any, res: any) {
 
         // Notes Update
         const cleanNotes = (existing?.notes || '').replace(/\[ExKcal:\s*\d+\]/g, '').trim();
-        const modeFlag = (nutritionMode === 'set' || stepsMode === 'set' || trainingMode === 'set') ? '[CORRECCIÓN]' : '[VOZ]';
-        const newNotes = `${cleanNotes}\n${modeFlag} ${text}\n[ExKcal: ${finalExKcal}]`.trim();
+        const newNotes = `${cleanNotes}\n[VOZ] ${text}\n[ExKcal: ${finalExKcal}]`.trim();
 
         const payload = {
             user_id: userId,
