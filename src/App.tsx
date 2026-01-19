@@ -14,7 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 function AppContent() {
     const { user, loading: authLoading } = useAuth();
-    const { profile, loading: profileLoading, updateProfile } = useProfile(user?.id);
+    const { profile, loading: profileLoading, error: profileError, updateProfile } = useProfile(user?.id);
     const { data, loading: dataLoading, refresh: dataRefresh } = useFitnessData(user?.id);
     const location = useLocation();
 
@@ -24,10 +24,10 @@ function AppContent() {
     const [tourStep, setTourStep] = useState(0);
 
     useEffect(() => {
-        if (!profileLoading && !profile && user) {
+        if (!profileLoading && !profile && !profileError && user) {
             setShowOnboarding(true);
         }
-    }, [profile, profileLoading, user]);
+    }, [profile, profileLoading, profileError, user]);
 
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
@@ -143,14 +143,22 @@ function AppContent() {
                                         Tu viaje hacia la mejor versión de ti mismo comienza hoy. Necesitamos unos datos básicos para configurar tu dashboard inteligente.
                                     </p>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        setIsProfileOpen(true);
-                                    }}
-                                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-95"
-                                >
-                                    Comenzar Configuración
-                                </button>
+                                <div className="w-full space-y-3">
+                                    <button
+                                        onClick={() => {
+                                            setIsProfileOpen(true);
+                                        }}
+                                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-95"
+                                    >
+                                        Comenzar Configuración
+                                    </button>
+                                    <button
+                                        onClick={() => setShowOnboarding(false)}
+                                        className="w-full py-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-[10px] font-bold uppercase tracking-widest transition-colors"
+                                    >
+                                        Configurar más tarde
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     </div>
