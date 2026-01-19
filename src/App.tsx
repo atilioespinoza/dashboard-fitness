@@ -3,13 +3,14 @@ import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
 import { supabase } from './lib/supabase';
-import { Activity, Sun, Moon, LogOut, Database, Download, Brain, User } from 'lucide-react';
+import { Activity, Sun, Moon, LogOut, Database, Download, Brain, User, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { FadeIn } from './components/ui/FadeIn';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { DashboardPage } from './pages/DashboardPage';
 import { LogPage } from './pages/LogPage';
 import { ProfileModal } from './components/ui/ProfileModal';
+import { AnimatePresence, motion } from 'framer-motion';
 
 function AppContent() {
     const { user, loading: authLoading } = useAuth();
@@ -18,6 +19,14 @@ function AppContent() {
     const location = useLocation();
 
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [showOnboarding, setShowOnboarding] = useState(false);
+    const [showTour, setShowTour] = useState(false);
+
+    useEffect(() => {
+        if (!profileLoading && !profile && user) {
+            setShowOnboarding(true);
+        }
+    }, [profile, profileLoading, user]);
 
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
@@ -58,8 +67,11 @@ function AppContent() {
 
     if (authLoading || profileLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center transition-colors duration-300">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 animate-pulse">Cargando perfil...</p>
+                </div>
             </div>
         );
     }
@@ -71,7 +83,7 @@ function AppContent() {
             <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex items-center justify-center transition-colors duration-300">
                 <div className="flex flex-col items-center gap-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 animate-pulse">Sincronizando Biometría...</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 animate-pulse">Sincronizando Biometría...</p>
                 </div>
             </div>
         );
@@ -83,8 +95,104 @@ function AppContent() {
                 isOpen={isProfileOpen}
                 onClose={() => setIsProfileOpen(false)}
                 profile={profile}
-                onUpdate={updateProfile}
+                onUpdate={async (updates) => {
+                    await updateProfile(updates);
+                    if (showOnboarding) {
+                        setShowOnboarding(false);
+                        setShowTour(true);
+                    }
+                }}
             />
+
+            <AnimatePresence>
+                {showOnboarding && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[3rem] p-8 md:p-12 max-w-lg w-full shadow-2xl overflow-hidden"
+                        >
+                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600" />
+                            <div className="flex flex-col items-center text-center space-y-6">
+                                <div className="p-4 bg-blue-600/10 rounded-3xl text-blue-600">
+                                    <Brain size={48} />
+                                </div>
+                                <div className="space-y-2">
+                                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic">
+                                        ¡Bienvenido a <span className="text-blue-600 not-italic">Fitness Pro</span>!
+                                    </h2>
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium">
+                                        Tu viaje hacia la mejor versión de ti mismo comienza hoy. Necesitamos unos datos básicos para configurar tu dashboard inteligente.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setShowOnboarding(false);
+                                        setIsProfileOpen(true);
+                                    }}
+                                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-95"
+                                >
+                                    Comenzar Configuración
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+
+                {showTour && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center pointer-events-none">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm pointer-events-auto"
+                            onClick={() => setShowTour(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="relative bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl pointer-events-auto"
+                        >
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-500">
+                                        <Sparkles size={24} />
+                                    </div>
+                                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Mini Tour</h3>
+                                </div>
+                                <div className="space-y-4 text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                                    <div className="flex gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl">
+                                        <div className="text-blue-500 font-black">01</div>
+                                        <p><span className="text-slate-900 dark:text-white font-bold">Registro:</span> Usa tu voz o escribe en lenguaje natural para registrar comida, pasos o pesas.</p>
+                                    </div>
+                                    <div className="flex gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl">
+                                        <div className="text-blue-500 font-black">02</div>
+                                        <p><span className="text-slate-900 dark:text-white font-bold">Dashboard:</span> Visualiza tus tendencias de peso, cintura y déficit calórico acumulado.</p>
+                                    </div>
+                                    <div className="flex gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl">
+                                        <div className="text-blue-500 font-black">03</div>
+                                        <p><span className="text-slate-900 dark:text-white font-bold">Coach AI:</span> Obtén consejos personalizados basados en tus datos diarios reales.</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowTour(false)}
+                                    className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black uppercase tracking-widest rounded-2xl transition-all"
+                                >
+                                    ¡Entendido, a darle!
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             <div className="max-w-7xl mx-auto space-y-4 md:space-y-8">
                 {/* Header */}
