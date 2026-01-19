@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, Ruler, Calendar, Activity, ChevronRight, Save } from 'lucide-react';
 import { UserProfile } from '../../hooks/useProfile';
@@ -19,6 +19,19 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
         activity_level: profile?.activity_level || 'moderately_active'
     });
     const [loading, setLoading] = useState(false);
+
+    // Sincronizar el formulario con los datos reales cuando el perfil se cargue
+    useEffect(() => {
+        if (profile) {
+            setFormData({
+                full_name: profile.full_name || '',
+                height: profile.height || 170,
+                gender: profile.gender || 'Masculino',
+                birth_date: profile.birth_date || '1990-01-01',
+                activity_level: profile.activity_level || 'moderately_active'
+            });
+        }
+    }, [profile, isOpen]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

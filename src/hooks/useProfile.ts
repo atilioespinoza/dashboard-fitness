@@ -62,13 +62,34 @@ export const useProfile = (userId?: string) => {
     const updateProfile = async (updates: Partial<UserProfile>) => {
         if (!userId) return;
         try {
+            const payload = {
+                id: userId,
+                ...updates,
+                updated_at: new Date().toISOString()
+            };
+
             const { error } = await supabase
                 .from('profiles')
-                .upsert({ id: userId, ...updates });
+                .upsert(payload);
+
             if (error) throw error;
-            setProfile(prev => prev ? { ...prev, ...updates } : null);
+
+            // Actualizar el estado local inmediatamente
+            setProfile(prev => ({
+                ...(prev || {
+                    id: userId,
+                    full_name: '',
+                    birth_date: '1990-01-01',
+                    height: 170,
+                    gender: 'Masculino',
+                    activity_level: 'moderately_active'
+                }),
+                ...updates
+            } as UserProfile));
+
         } catch (err: any) {
             setError(err.message);
+            console.error('Error updating profile:', err);
             throw err;
         }
     };
