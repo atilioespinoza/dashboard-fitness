@@ -105,7 +105,7 @@ function AppContent() {
             />
 
             <AnimatePresence>
-                {showOnboarding && (
+                {showOnboarding && !isProfileOpen && (
                     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
                         <motion.div
                             initial={{ opacity: 0 }}
