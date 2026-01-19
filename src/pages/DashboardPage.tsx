@@ -56,9 +56,9 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
 
             <FadeIn>
                 <PersonalInfo
-                    fullName={profile?.full_name || "Usuario Fitness"}
+                    fullName={profile?.full_name || "Cargando..."}
                     age={age}
-                    height={profile?.height || 170}
+                    height={profile?.height || 0}
                     sex={profile?.gender || 'Masculino'}
                 />
             </FadeIn>
