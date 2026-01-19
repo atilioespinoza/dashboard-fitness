@@ -17,17 +17,21 @@ export function WaistCard({ currentWaist, data }: WaistCardProps) {
     const start = 100;
 
     // Calculate progress as a percentage from start (100) to goal (80)
-    const progress = Math.min(100, Math.max(0, ((start - currentWaist) / (start - goal)) * 100));
+    const progress = currentWaist > 0 ? Math.min(100, Math.max(0, ((start - currentWaist) / (start - goal)) * 100)) : 0;
 
-    const isHit = currentWaist <= goal;
-    const isIntermediateHit = currentWaist <= intermediateGoal;
+    const isHit = currentWaist > 0 && currentWaist <= goal;
+    const isIntermediateHit = currentWaist > 0 && currentWaist <= intermediateGoal;
 
     // Projection - Global Average
     const sortedData = [...data].sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
     const first = sortedData[0];
     const latest = sortedData[sortedData.length - 1];
-    const daysDiff = differenceInDays(parseISO(latest.Date), parseISO(first.Date)) || 1;
-    const waistRate = (latest.Waist - first.Waist) / daysDiff;
+
+    let waistRate = 0;
+    if (first && latest && first.Date !== latest.Date) {
+        const daysDiff = differenceInDays(parseISO(latest.Date), parseISO(first.Date)) || 1;
+        waistRate = (latest.Waist - first.Waist) / daysDiff;
+    }
 
     let estimatedFinalDate = "";
     let estimatedInterDate = "";

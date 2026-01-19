@@ -134,7 +134,6 @@ function AppContent() {
                                 </div>
                                 <button
                                     onClick={() => {
-                                        setShowOnboarding(false);
                                         setIsProfileOpen(true);
                                     }}
                                     className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-95"
