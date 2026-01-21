@@ -43,12 +43,14 @@ export const getGeminiInsights = async (data: FitnessEntry[]) => {
     ${JSON.stringify(data.slice(0, 30))}
 
     INSTRUCCIONES CLAVE:
-    1. ANALIZA TENDENCIAS: Mira más allá del día a día. ¿El peso baja pero la cintura no? ¿Los pasos afectan el sueño?
-    2. ACCIÓN CONCRETA: El campo "action" debe ser una "misión" accionable (ej: "Sube 20g de proteína hoy", "Camina 15 min después de cenar").
-    3. CATEGORIZA: Clasifica cada insight correctamente.
-    4. PRIORIZA: Usa "Alta" para temas críticos (poca proteína, poco sueño, rebote de peso) y "Media/Baja" para optimizaciones.
-    5. IDIOMA: Responde totalmente en ESPAÑOL.
-    6. FORMATO: No incluyes markdown adicional, solo el JSON puro.
+    1. ANALIZA TENDENCIAS (REGLA DE MEDIAS SEMANALES): No te guíes por el peso diario, es volátil (ruido biológico). Calcula mentalmente las medias de cada semana (7 días). Solo hay estancamiento real si la media semanal no varía más de +/- 200g durante 3-4 semanas.
+    2. RECOMPOSICIÓN: Si el peso medio es estable pero la cintura baja (>0.3cm/semana), es recomposición (ganancia de músculo, pérdida de grasa). Celébralo.
+    3. EFECTO WHOOSH: Ten en cuenta que tras entrenamientos intensos hay retención de agua. El peso real puede caer de golpe tras 2-3 semanas.
+    4. ACCIÓN CONCRETA: El campo "action" debe ser una "misión" accionable (ej: "Sube 20g de proteína hoy", "Camina 15 min después de cenar").
+    5. CATEGORIZA: Clasifica cada insight correctamente.
+    6. PRIORIZA: Usa "Alta" para temas críticos (poca proteína, poco sueño, rebote de peso) y "Media/Baja" para optimizaciones.
+    7. IDIOMA: Responde totalmente en ESPAÑOL.
+    8. FORMATO: No incluyes markdown adicional, solo el JSON puro.
   `;
 
   try {
@@ -126,8 +128,11 @@ export const getFullReport = async (data: FitnessEntry[]) => {
     }
 
     REGLAS ADICIONALES:
-    - RED ALERT: Evalúa SIEMPRE el estado metabólico. Si no hay estancamiento, pon "active": false y "level": "healthy".
-    - Si detectas que la cintura o peso no han bajado en los últimos 7-10 días a pesar de cumplimiento >85%, pon "active": true y "level": "critical" o "warning". 
+    - RED ALERT: Evalúa SIEMPRE el estado metabólico basado en MEDIAS SEMANALES. Si no hay estancamiento (bajada de 0.3-0.5kg en la media semanal), pon "active": false and "level": "healthy".
+    - Si el peso medio está estancado (+/- 200g) por más de 3 semanas: 
+        a) Si la cintura baja: Reporta RECOMPOSICIÓN (level: healthy/warning).
+        b) Si la cintura NO baja: Reporta ESTANCAMIENTO REAL (level: critical).
+    - EFECTO WHOOSH: No alertes de estancamiento si solo han pasado 1-2 semanas con peso estable, podría ser retención de agua post-entreno.
     - RECOMENDACIÓN: Si el estado es "healthy", felicita al usuario y dale un tip para optimizar (ej: 'Sigue así, el flujo es constante').
     - GOLDEN FORMULA: Identifica los valores promedio de las semanas donde el usuario tuvo el mayor progreso en cintura y mejores notas de energía.
     - METAS: Incluye al menos 2 metas intermedias (ej: bajar 2cm de cintura, bajar 2kg) y las metas finales (12% grasa y marcar abs). 

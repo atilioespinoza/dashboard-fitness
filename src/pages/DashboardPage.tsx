@@ -31,9 +31,42 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
     const age = useMemo(() => differenceInYears(new Date(), parseLocalDate(birthDate)), [birthDate]);
 
     const sortedData = [...data].sort((a, b) => b.Date.localeCompare(a.Date));
+
+    // Multi-week averages for more stable trend analysis
+    const getWeekAvg = (data: FitnessEntry[], weeksAgo: number) => {
+        const start = weeksAgo * 7;
+        const end = start + 7;
+        const weekSlice = data.slice(start, end);
+        if (weekSlice.length === 0) return null;
+        const sum = weekSlice.reduce((acc, d) => acc + d.Weight, 0);
+        return sum / weekSlice.length;
+    };
+
+    const avgWeek0 = getWeekAvg(sortedData, 0);
+    const avgWeek1 = getWeekAvg(sortedData, 1);
+    const avgWeek2 = getWeekAvg(sortedData, 2);
+    const avgWeek3 = getWeekAvg(sortedData, 3);
+
+    const weeklyRate = (avgWeek0 !== null && avgWeek1 !== null)
+        ? Number((avgWeek0 - avgWeek1).toFixed(2))
+        : 0;
+
+    // Stagnation logic: if diff is < 0.2kg for 3 weeks
+    const diff1 = (avgWeek0 && avgWeek1) ? Math.abs(avgWeek0 - avgWeek1) : null;
+    const diff2 = (avgWeek1 && avgWeek2) ? Math.abs(avgWeek1 - avgWeek2) : null;
+    const diff3 = (avgWeek2 && avgWeek3) ? Math.abs(avgWeek2 - avgWeek3) : null;
+
+    const isStagnant = diff1 !== null && diff1 < 0.2 &&
+        (diff2 === null || diff2 < 0.2) &&
+        (diff3 === null || diff3 < 0.2);
+
+    // Recomposition logic: weight stable but waist down
     const latest = sortedData[0];
-    const weekAgo = sortedData[6] || sortedData[sortedData.length - 1];
-    const weeklyRate = latest && weekAgo ? Number((latest.Weight - weekAgo.Weight).toFixed(1)) : 0;
+    const prevWeekData = sortedData.slice(7, 14);
+    const avgWaist0 = sortedData.slice(0, 7).reduce((acc, d) => acc + d.Waist, 0) / Math.max(1, sortedData.slice(0, 7).length);
+    const avgWaist1 = prevWeekData.length > 0 ? prevWeekData.reduce((acc, d) => acc + d.Waist, 0) / prevWeekData.length : avgWaist0;
+    const isRecomp = isStagnant && (avgWaist1 - avgWaist0) > 0.2;
+
     const last7Days = sortedData.slice(0, 7);
     const weeklyAvgDeficit = last7Days.length > 0 ? Math.round(last7Days.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0) / last7Days.length) : 0;
     const cumulativeDeficit = data.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0);
@@ -77,6 +110,8 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                             weeklyDeficit={weeklyAvgDeficit}
                             totalDeficit={cumulativeDeficit}
                             fatLoss={theoreticalFatLoss}
+                            isStagnant={isStagnant}
+                            isRecomp={isRecomp}
                         />
                     </FadeIn>
                 </FadeInStagger>

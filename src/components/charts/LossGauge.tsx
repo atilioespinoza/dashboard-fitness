@@ -6,13 +6,21 @@ interface LossGaugeProps {
     weeklyDeficit: number; // e.g., 600
     totalDeficit: number;
     fatLoss: number;
+    isStagnant: boolean;
+    isRecomp: boolean;
 }
 
-export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss }: LossGaugeProps) {
+export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss, isStagnant, isRecomp }: LossGaugeProps) {
     let rateColor = "#10b981"; // green
     let rateText = "Ideal";
 
-    if (weeklyRate < -1.0) {
+    if (isRecomp) {
+        rateColor = "#8b5cf6"; // purple for recomposition
+        rateText = "Recomposición";
+    } else if (isStagnant) {
+        rateColor = "#f59e0b"; // yellow
+        rateText = "Estancado";
+    } else if (weeklyRate < -1.0) {
         rateColor = "#ef4444"; // red/too fast
         rateText = "Muy Rápido";
     } else if (weeklyRate > 0) {
@@ -20,7 +28,7 @@ export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss }: 
         rateText = "Subiendo";
     } else if (weeklyRate > -0.2) {
         rateColor = "#f59e0b"; // yellow/stall
-        rateText = "Estancado";
+        rateText = "Estable";
     }
 
     const isDeficitGoalMet = weeklyDeficit >= 500 && weeklyDeficit <= 700;

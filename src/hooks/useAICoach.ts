@@ -24,24 +24,44 @@ export const useAICoach = (data: FitnessEntry[]) => {
         const list: Insight[] = [];
         const sortedData = [...data].sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime());
         const last7Days = sortedData.slice(0, 7);
-        const prev7Days = sortedData.slice(7, 14);
 
-        const weightNow = last7Days.reduce((acc, d) => acc + d.Weight, 0) / 7;
-        const weightPrev = prev7Days.reduce((acc, d) => acc + d.Weight, 0) / 7;
-        const actualLoss = weightPrev - weightNow;
-        const waistNow = last7Days.reduce((acc, d) => acc + d.Waist, 0) / 7;
-        const waistPrev = prev7Days.reduce((acc, d) => acc + d.Waist, 0) / 7;
-        const waistDiff = waistPrev - waistNow;
+        const getWeekAvg = (entries: FitnessEntry[], weeksAgo: number, key: 'Weight' | 'Waist') => {
+            const start = weeksAgo * 7;
+            const end = start + 7;
+            const slice = entries.slice(start, end);
+            if (slice.length === 0) return null;
+            return slice.reduce((acc, d) => acc + d[key], 0) / slice.length;
+        };
 
-        if (Math.abs(actualLoss) < 0.2 && waistDiff > 0.3) {
-            list.push({
-                type: 'positive',
-                title: 'Recomposición Corporal',
-                message: "Tu cintura baja pero tu peso es estable: Estás perdiendo grasa y ganando músculo simultáneamente.",
-                category: 'Entrenamiento',
-                priority: 'Alta',
-                action: 'Mantén la intensidad actual de entrenamiento.'
-            });
+        const w0 = getWeekAvg(sortedData, 0, 'Weight');
+        const w1 = getWeekAvg(sortedData, 1, 'Weight');
+        const w2 = getWeekAvg(sortedData, 2, 'Weight');
+        const wa0 = getWeekAvg(sortedData, 0, 'Waist');
+        const wa1 = getWeekAvg(sortedData, 1, 'Waist');
+
+        if (w0 !== null && w1 !== null) {
+            const weightDiff = Math.abs(w0 - w1);
+            const waistDiff = (wa1 || 0) - (wa0 || 0);
+
+            if (weightDiff < 0.2 && waistDiff > 0.3) {
+                list.push({
+                    type: 'positive',
+                    title: 'Recomposición Corporal',
+                    message: "¡Excelente! Tu peso se mantiene estable pero tu cintura está bajando. Estás ganando músculo mientras pierdes grasa.",
+                    category: 'Entrenamiento',
+                    priority: 'Alta',
+                    action: 'Sigue con la intensidad actual, el proceso es óptimo.'
+                });
+            } else if (weightDiff < 0.2 && w2 !== null && Math.abs(w1 - (w2 || 0)) < 0.2) {
+                list.push({
+                    type: 'warning',
+                    title: 'Meseta de Progreso',
+                    message: "Tu peso promedio apenas ha variado en las últimas 2-3 semanas. Podrías estar en una fase de mantenimiento metabólico.",
+                    category: 'Nutrición',
+                    priority: 'Media',
+                    action: 'Revisa tu actividad diaria o reduce ligeramente las calorías.'
+                });
+            }
         }
 
         const proteinAvg = last7Days.reduce((acc, d) => acc + d.Protein, 0) / 7;
