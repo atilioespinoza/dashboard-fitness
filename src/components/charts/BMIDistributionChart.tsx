@@ -81,21 +81,23 @@ export const BMIDistributionChart: React.FC<BMIDistributionChartProps> = ({ data
                                 type="number"
                                 domain={[15, 45]}
                                 stroke="#888888"
-                                fontSize={12}
+                                fontSize={10}
                                 tickLine={false}
                                 axisLine={false}
-                                label={{ value: 'Índice de Masa Corporal (IMC)', position: 'insideBottom', offset: -10, className: "text-[10px] font-bold fill-slate-500" }}
+                                ticks={[15, 20, 25, 30, 35, 40, 45]}
+                                label={{ value: 'Índice de Masa Corporal (IMC)', position: 'insideBottom', offset: -5, className: "text-[9px] font-black fill-slate-400 uppercase tracking-widest" }}
                             />
                             <YAxis hide />
                             <Tooltip
                                 content={({ active, payload }) => {
                                     if (active && payload && payload.length) {
                                         return (
-                                            <div className="bg-white dark:bg-slate-900 p-3 border border-slate-200 dark:border-white/10 rounded-xl shadow-lg ring-1 ring-black/5">
-                                                <p className="text-xs font-black text-slate-900 dark:text-white mb-1">IMC: {payload[0].payload.bmi}</p>
+                                            <div className="bg-white dark:bg-slate-900 p-3 border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl ring-1 ring-black/5">
+                                                <p className="text-xs font-black text-slate-900 dark:text-white mb-1 uppercase tracking-tighter italic">Punto Geométrico</p>
                                                 <div className="space-y-1">
-                                                    <p className="text-[10px] font-bold text-blue-500">Prob. Población: {(payload[0].value as number).toFixed(2)}%</p>
-                                                    <p className="text-[10px] font-bold text-slate-400">Prob. Elite: {(payload[1].value as number).toFixed(2)}%</p>
+                                                    <p className="text-[10px] font-bold text-slate-500">IMC: <span className="text-slate-900 dark:text-white font-black">{payload[0].payload.bmi}</span></p>
+                                                    <p className="text-[10px] font-bold text-blue-500">Población Chile: <span className="font-black">{(payload[0].value as number).toFixed(2)}%</span></p>
+                                                    <p className="text-[10px] font-bold text-slate-400">Estado Elite: <span className="font-black">{(payload[1].value as number).toFixed(2)}%</span></p>
                                                 </div>
                                             </div>
                                         );
@@ -126,26 +128,26 @@ export const BMIDistributionChart: React.FC<BMIDistributionChartProps> = ({ data
                             />
 
                             {/* Initial Position Marker */}
-                            <ReferenceLine x={initialBMI} stroke="#64748b" strokeWidth={2} strokeDasharray="3 3">
+                            <ReferenceLine x={initialBMI} stroke="#64748b" strokeWidth={2} strokeDasharray="4 4" strokeOpacity={0.5}>
                                 <Label
-                                    value={`Inicio: ${initialBMI}`}
+                                    value={`INICIO: ${initialBMI}`}
                                     position="top"
                                     fill="#64748b"
-                                    fontSize={10}
-                                    fontWeight="bold"
-                                    offset={10}
+                                    fontSize={9}
+                                    fontWeight="900"
+                                    offset={25}
                                 />
                             </ReferenceLine>
 
                             {/* Current Position Marker */}
-                            <ReferenceLine x={currentBMI} stroke="#06b6d4" strokeWidth={4}>
+                            <ReferenceLine x={currentBMI} stroke="#06b6d4" strokeWidth={3} strokeLinecap="round">
                                 <Label
-                                    value={`Hoy: ${currentBMI}`}
+                                    value={`HOY: ${currentBMI}`}
                                     position="top"
                                     fill="#06b6d4"
-                                    fontSize={12}
-                                    fontWeight="black"
-                                    offset={15}
+                                    fontSize={11}
+                                    fontWeight="900"
+                                    offset={10}
                                 />
                             </ReferenceLine>
                         </AreaChart>
