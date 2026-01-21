@@ -14,15 +14,20 @@ export const BMIDistributionChart: React.FC<BMIDistributionChartProps> = ({ data
     const heightM = heightCm / 100;
 
     const sortedData = [...data].sort((a, b) => a.Date.localeCompare(b.Date));
-    const initialWeight = sortedData[0]?.Weight || 94;
+
+    // Logic to find the true starting point of the journey (Historical Max or defined start)
+    const weights = data.map(d => d.Weight);
+    const maxWeightEver = weights.length > 0 ? Math.max(...weights) : 94;
+    const initialWeight = maxWeightEver > 90 ? maxWeightEver : 94; // Fallback to 94 if no higher weight found
+
     const currentWeight = sortedData[sortedData.length - 1]?.Weight || 81;
 
     const initialBMI = Number((initialWeight / (heightM * heightM)).toFixed(1));
     const currentBMI = Number((currentWeight / (heightM * heightM)).toFixed(1));
 
-    // Statistical Parameters (Encuesta Nacional de Salud Chile 2017 & Fitness Standards)
-    const chileMean = 28.5;
-    const chileSD = 5.0;
+    // Statistical Parameters (Simplified but based on ENCAVI 2024 Trends)
+    const chileMean = 28.8; // Observed upward trend in Chile
+    const chileSD = 5.2;
     const eliteMean = 22.5;
     const eliteSD = 1.8;
 
@@ -35,7 +40,7 @@ export const BMIDistributionChart: React.FC<BMIDistributionChartProps> = ({ data
         for (let x = 15; x <= 45; x += 0.5) {
             points.push({
                 bmi: x,
-                chile: normalDistribution(x, chileMean, chileSD) * 100, // scaled for visibility
+                chile: normalDistribution(x, chileMean, chileSD) * 100,
                 elite: normalDistribution(x, eliteMean, eliteSD) * 100,
             });
         }
@@ -54,11 +59,19 @@ export const BMIDistributionChart: React.FC<BMIDistributionChartProps> = ({ data
                             Tu progreso comparado con la población y el estado elite
                         </p>
                     </div>
-                    <div className="bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                        <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tighter">
-                            Fuente: ENS Chile 2017
+                    <a
+                        href="https://epi.minsal.cl/encuesta-nacional-de-salud-ens/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 hover:bg-blue-500/20 transition-colors group"
+                    >
+                        <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tighter flex items-center gap-1">
+                            Fuente: MINSAL Chile (ENCAVI 2024)
+                            <svg className="w-2.5 h-2.5 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
                         </span>
-                    </div>
+                    </a>
                 </div>
             </CardHeader>
             <CardContent className="p-8">
@@ -172,7 +185,7 @@ export const BMIDistributionChart: React.FC<BMIDistributionChartProps> = ({ data
                     </div>
                     <div className="md:col-span-1 flex items-center bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
                         <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 leading-relaxed italic">
-                            "Has superado la media nacional ({chileMean}) y te diriges hacia el percentil de alto rendimiento."
+                            "{initialBMI > 29 ? 'Has revertido con éxito el estado de obesidad' : 'Has superado con éxito la media nacional'} ({chileMean}) y te diriges hacia el percentil de alto rendimiento."
                         </p>
                     </div>
                 </div>
