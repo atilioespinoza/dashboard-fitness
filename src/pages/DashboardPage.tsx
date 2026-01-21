@@ -13,6 +13,7 @@ import { GoalProjections } from '../components/charts/GoalProjections';
 import { AchievementsGallery } from '../components/charts/AchievementsGallery';
 import { BodyHeatmap } from '../components/charts/BodyHeatmap';
 import { AICoachInsights } from '../components/charts/AICoachInsights';
+import { BMIDistributionChart } from '../components/charts/BMIDistributionChart';
 import { PersonalInfo } from '../components/ui/PersonalInfo';
 import { FadeIn, FadeInStagger } from '../components/ui/FadeIn';
 import { useMemo } from 'react';
@@ -115,6 +116,12 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                         />
                     </FadeIn>
                 </FadeInStagger>
+            </div>
+
+            <div className="grid grid-cols-12 gap-4 md:gap-6">
+                <FadeIn className="col-span-12">
+                    <BMIDistributionChart data={data} profile={profile} />
+                </FadeIn>
             </div>
 
             <div className="grid grid-cols-12 gap-6">
