@@ -138,7 +138,7 @@ export const AICoachInsights = ({ data }: AICoachInsightsProps) => {
                         <div>
                             <div className="flex items-center gap-2 mb-1">
                                 <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                                    AI Fitness Coach
+                                    PRIME 12 AI Coach
                                 </h2>
                                 <button
                                     onClick={refreshAI}

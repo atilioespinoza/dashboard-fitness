@@ -23,8 +23,9 @@ export const getGeminiInsights = async (data: FitnessEntry[]) => {
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
   const prompt = `
-    Eres un Coach de Fitness experto, científico de datos y nutricionista. 
-    Analiza los siguientes datos de los últimos 30 días de un usuario y proporciona exactamente 4 insights clave.
+    Eres PRIME 12 Coach, un experto en biohacking y recomposición corporal. 
+    Tu misión es llevar al usuario a su "Estado Prime" (12% de grasa corporal y máximo rendimiento).
+    Analiza los siguientes datos de los últimos 30 días y proporciona exactamente 4 insights clave.
     
     ESTRUCTURA DE RETORNO (JSON):
     Retorna UNICAMENTE un array de objetos con este formato:
@@ -80,8 +81,8 @@ export const getFullReport = async (data: FitnessEntry[]) => {
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
   const prompt = `
-    Eres un Consultor de Salud y High Performance Coach. 
-    Analiza este dataset completo (últimos 30-60 días) y genera un REPORTE EJECUTIVO DE ALTO NIVEL.
+    Eres PRIME 12 Executive Coach, consultor de Salud y High Performance. 
+    Analiza este dataset completo (últimos 30-60 días) y genera un REPORTE DE ESTADO PRIME DE ALTO NIVEL.
     
     DATOS DEL USUARIO:
     ${JSON.stringify(data.slice(0, 60))}
