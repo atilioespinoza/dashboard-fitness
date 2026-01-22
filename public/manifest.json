@@ -1,0 +1,15 @@
+{
+    "short_name": "Fitness",
+    "name": "Registro Fitness Pro",
+    "icons": [
+        {
+            "src": "icon.png",
+            "sizes": "1024x1024",
+            "type": "image/png"
+        }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#020617",
+    "background_color": "#020617"
+}
