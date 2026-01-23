@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { parseFitnessEntry } from '../../lib/gemini';
-import { Brain, Send, Loader2, XCircle, Mic, RefreshCw } from 'lucide-react';
+import { Brain, Send, Loader2, XCircle, Mic, RefreshCw, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
@@ -19,7 +19,15 @@ interface DailySummary {
     activeKcal: number;
 }
 
-export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpdate: () => void, profile: UserProfile | null }) {
+interface QuickLogProps {
+    userId: string;
+    onUpdate: () => void;
+    profile: UserProfile | null;
+    selectedDate: string;
+    onDateChange: (date: string) => void;
+}
+
+export function QuickLog({ userId, onUpdate, profile, selectedDate, onDateChange }: QuickLogProps) {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [summary, setSummary] = useState<DailySummary>({
@@ -32,13 +40,6 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
         setInput(prev => prev ? `${prev} ${text}` : text);
     });
 
-    const getLocalToday = useCallback(() => {
-        const d = new Date();
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }, []);
 
     const getDailyMetrics = useCallback((weight: number, steps: number, exKcal: number) => {
         const caloriePerStep = weight * 0.0005;
@@ -69,17 +70,16 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
         };
     }, [profile]);
 
-    const fetchTodaySummary = useCallback(async () => {
+    const fetchSummary = useCallback(async () => {
         try {
-            const today = getLocalToday();
             const { data: existing, error: fetchError } = await supabase
                 .from('fitness_logs')
                 .select('*')
                 .eq('user_id', userId)
-                .eq('date', today)
+                .eq('date', selectedDate)
                 .maybeSingle();
 
-            console.log(`Supabase fetch for userId: ${userId}, date: ${today}. Found existing: ${!!existing}`);
+            console.log(`Supabase fetch for userId: ${userId}, date: ${selectedDate}. Found existing: ${!!existing}`);
             if (fetchError) throw fetchError;
 
             const getExistingExKcal = (notes: string | null) => {
@@ -88,7 +88,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
             };
 
             if (existing) {
-                console.log("Found existing record for today:", existing);
+                console.log("Found existing record for date:", selectedDate, existing);
                 const metrics = getDailyMetrics(existing.weight || 80, existing.steps || 0, getExistingExKcal(existing.notes));
                 setSummary({
                     calories: existing.calories || 0,
@@ -111,16 +111,16 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 });
             }
         } catch (err: any) {
-            console.error("Error fetching today's summary:", err);
+            console.error("Error fetching summary:", err);
             if (err.message?.includes('401') || err.code === '401') {
                 setError("Tu sesión ha expirado. Por favor, sal y vuelve a entrar.");
             }
         }
-    }, [userId, profile, getDailyMetrics, getLocalToday]);
+    }, [userId, profile, getDailyMetrics, selectedDate]);
 
     useEffect(() => {
-        fetchTodaySummary();
-    }, [fetchTodaySummary]);
+        fetchSummary();
+    }, [fetchSummary, selectedDate]);
 
     // Add Realtime subscription to update Progress card when external changes (like Siri) occur
     useEffect(() => {
@@ -138,7 +138,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                 },
                 (payload) => {
                     console.log('[QuickLog] Cambio detectado en DB:', payload);
-                    fetchTodaySummary();
+                    fetchSummary();
                 }
             )
             .subscribe();
@@ -146,7 +146,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [userId, fetchTodaySummary]);
+    }, [userId, fetchSummary]);
 
     const handleLog = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -159,12 +159,11 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
             const aiData = await parseFitnessEntry(input);
             if (!aiData) throw new Error("No pudimos procesar el registro.");
 
-            const today = getLocalToday();
             const { data: existing, error: fetchError } = await supabase
                 .from('fitness_logs')
                 .select('*')
                 .eq('user_id', userId)
-                .eq('date', today)
+                .eq('date', selectedDate)
                 .maybeSingle();
 
             if (fetchError) console.error("Error fetching existing log:", fetchError);
@@ -185,7 +184,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
 
             const payload = {
                 user_id: userId,
-                date: today,
+                date: selectedDate,
                 weight: currentWeight,
                 waist: aiData.waist ?? existing?.waist,
                 body_fat: aiData.body_fat ?? existing?.body_fat,
@@ -209,7 +208,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
             // 4. Save individual event for history
             await supabase.from('log_events').insert({
                 user_id: userId,
-                date: today,
+                date: selectedDate,
                 raw_text: input,
                 parsed_data: aiData,
                 type: 'text'
@@ -243,6 +242,18 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                     <Brain size={20} />
                 </div>
                 <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Registro Inteligente (IA)</h3>
+
+                <div className="ml-auto flex items-center gap-2">
+                    <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200/50 dark:border-white/5">
+                        <Calendar size={12} className="text-blue-600 dark:text-blue-400" />
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => onDateChange(e.target.value)}
+                            className="bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 focus:ring-0 cursor-pointer outline-none w-[90px]"
+                        />
+                    </div>
+                </div>
             </div>
 
             <div className="flex-1 space-y-4">
@@ -284,7 +295,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Progreso del Día</h4>
                             <button
-                                onClick={(e) => { e.preventDefault(); fetchTodaySummary(); }}
+                                onClick={(e) => { e.preventDefault(); fetchSummary(); }}
                                 className="p-1 text-slate-400 hover:text-blue-500 transition-colors"
                                 title="Actualizar datos"
                             >
@@ -292,7 +303,7 @@ export function QuickLog({ userId, onUpdate, profile }: { userId: string, onUpda
                             </button>
                         </div>
                         <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize">
-                            {new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}
+                            {new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(selectedDate + 'T12:00:00'))}
                         </span>
                     </div>
 

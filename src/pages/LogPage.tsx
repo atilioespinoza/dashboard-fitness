@@ -5,6 +5,7 @@ import { UserProfile } from '../hooks/useProfile';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Utensils, Footprints, Dumbbell, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useState } from 'react';
 
 interface LogPageProps {
     userId: string;
@@ -13,14 +14,16 @@ interface LogPageProps {
 }
 
 export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
-    const today = new Intl.DateTimeFormat('fr-CA', {
-        timeZone: 'America/Santiago',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).format(new Date());
+    const [selectedDate, setSelectedDate] = useState(() => {
+        return new Intl.DateTimeFormat('fr-CA', {
+            timeZone: 'America/Santiago',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).format(new Date());
+    });
 
-    const { events, refresh: refreshHistory } = useLogEvents(userId, today);
+    const { events, refresh: refreshHistory } = useLogEvents(userId, selectedDate);
 
     const deleteEvent = async (event: any) => {
         try {
@@ -98,7 +101,13 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
     return (
         <div className="grid grid-cols-12 gap-6">
             <FadeIn className="col-span-12 lg:col-span-5">
-                <QuickLog userId={userId} profile={profile} onUpdate={onUpdate} />
+                <QuickLog
+                    userId={userId}
+                    profile={profile}
+                    onUpdate={onUpdate}
+                    selectedDate={selectedDate}
+                    onDateChange={setSelectedDate}
+                />
             </FadeIn>
 
             <FadeIn className="col-span-12 lg:col-span-7">
@@ -108,7 +117,9 @@ export function LogPage({ userId, profile, onUpdate }: LogPageProps) {
                             <div className="p-2 bg-blue-600/10 rounded-xl text-blue-600">
                                 <Clock size={20} />
                             </div>
-                            <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Historial de Hoy</h3>
+                            <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">
+                                Historial: {new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' }).format(new Date(selectedDate + 'T12:00:00'))}
+                            </h3>
                         </div>
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                             {events.length} entradas
