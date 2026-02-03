@@ -32,6 +32,13 @@ export function WeightChart({ data, profile }: WeightChartProps) {
         [data]
     );
 
+    const latestEntry = useMemo(() => sortedData[sortedData.length - 1], [sortedData]);
+    const latestWeight = latestEntry?.Weight;
+    const latestFat = useMemo(() => {
+        const withFat = sortedData.filter(d => d.BodyFat > 0);
+        return withFat.length > 0 ? withFat[withFat.length - 1].BodyFat : null;
+    }, [sortedData]);
+
     const filteredData = useMemo(() => {
         let cutoffDate: Date | null = null;
         const now = new Date();
@@ -62,10 +69,34 @@ export function WeightChart({ data, profile }: WeightChartProps) {
     return (
         <Card className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-xl overflow-hidden">
             <CardHeader className="p-6 md:p-8 pb-0">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex flex-col gap-1">
-                        <CardTitle className="text-xl md:text-2xl font-black italic text-slate-900 dark:text-white uppercase tracking-tighter leading-none">Análisis de Peso</CardTitle>
-                        <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest px-1">Composición Corporal</p>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                    <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-1">
+                            <CardTitle className="text-xl md:text-2xl font-black italic text-slate-900 dark:text-white uppercase tracking-tighter leading-none">Análisis de Peso</CardTitle>
+                            <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest px-1">Composición Corporal</p>
+                        </div>
+
+                        {/* Status Badges */}
+                        <div className="flex items-center gap-3">
+                            <div className="flex flex-col px-4 py-2 bg-blue-50 dark:bg-blue-500/10 rounded-2xl border border-blue-100 dark:border-blue-500/20">
+                                <span className="text-[8px] font-black text-blue-500/70 dark:text-blue-400/70 uppercase tracking-[0.2em]">Peso Actual</span>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums">
+                                        {latestWeight?.toFixed(1) || '--'}
+                                    </span>
+                                    <span className="text-[10px] font-black text-blue-500/50 uppercase italic">kg</span>
+                                </div>
+                            </div>
+                            <div className="flex flex-col px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20">
+                                <span className="text-[8px] font-black text-emerald-500/70 dark:text-emerald-400/70 uppercase tracking-[0.2em]">% Grasa</span>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                        {latestFat?.toFixed(1) || '--'}
+                                    </span>
+                                    <span className="text-[10px] font-black text-emerald-500/50 uppercase italic">%</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Time Range Selector */}
@@ -79,7 +110,7 @@ export function WeightChart({ data, profile }: WeightChartProps) {
                             <button
                                 key={btn.id}
                                 onClick={() => setRange(btn.id as TimeRange)}
-                                className={`px-3 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-200 whitespace-nowrap ${range === btn.id
+                                className={`px-4 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-200 whitespace-nowrap ${range === btn.id
                                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
                                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                                     }`}
