@@ -64,6 +64,23 @@ export const useAICoach = (data: FitnessEntry[]) => {
             }
         }
 
+        // New Insight for consistency/missing data
+        const entriesWithData = data.filter(d => d.Weight > 0).length;
+        const totalDaysRange = data.length > 0
+            ? Math.floor((new Date().getTime() - new Date(data[0].Date).getTime()) / (1000 * 60 * 60 * 24))
+            : 0;
+
+        if (totalDaysRange > 7 && entriesWithData / totalDaysRange < 0.7) {
+            list.push({
+                type: 'info',
+                title: 'Consistencia de Datos',
+                message: "No te preocupes si faltan algunos días de pesaje. La línea de 'Tendencia' en el gráfico de peso se ajusta automáticamente para mostrar tu progreso real ignorando las fluctuaciones diarias.",
+                category: 'Hábitos',
+                priority: 'Baja',
+                action: 'Navega por las tendencias promedio de 7 días para ver el progreso real.'
+            });
+        }
+
         const proteinAvg = last7Days.reduce((acc, d) => acc + d.Protein, 0) / 7;
         if (proteinAvg >= 150) {
             list.push({

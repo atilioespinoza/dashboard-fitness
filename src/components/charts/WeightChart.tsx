@@ -1,7 +1,7 @@
 import { ResponsiveContainer, ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, Area } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { FitnessEntry } from '../../data/mockData';
-import { format, subDays, isAfter, startOfDay } from 'date-fns';
+import { format, subDays, isAfter, startOfDay, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState, useMemo } from 'react';
 import { parseLocalDate } from '../../lib/utils';
@@ -57,11 +57,57 @@ export function WeightChart({ data, profile }: WeightChartProps) {
 
     // Calculate moving average for weight (7 day)
     const dataWithTrend = useMemo(() => {
-        return filteredData.map((day, index, arr) => {
+        if (filteredData.length === 0) return [];
+
+        // 1. Identify date range
+        const dates = filteredData.map(d => parseLocalDate(d.Date).getTime());
+        const minDate = Math.min(...dates);
+        const maxDate = Math.min(Math.max(...dates), new Date().getTime()); // Cap at today
+
+        // 2. Create normalized map of existing data
+        const dataMap = new Map(filteredData.map(d => [d.Date, d]));
+
+        // 3. Fill gaps
+        const normalized: (FitnessEntry & { weightTrend?: number | null })[] = [];
+        let currentDate = startOfDay(new Date(minDate));
+        const endDate = startOfDay(new Date(maxDate));
+
+        while (currentDate <= endDate) {
+            const dateStr = format(currentDate, 'yyyy-MM-dd');
+            const existing = dataMap.get(dateStr);
+
+            if (existing) {
+                normalized.push({ ...existing });
+            } else {
+                // Create a placeholder with nulls (types allow this or we handle in chart)
+                normalized.push({
+                    Date: dateStr,
+                    Weight: 0, // We'll treat 0 as "missing" in the trend calc
+                    BodyFat: 0,
+                    Waist: 0,
+                    Calories: 0,
+                    Protein: 0,
+                    Carbs: 0,
+                    Fat: 0,
+                    Steps: 0,
+                    TDEE: 0,
+                    Sleep: 0,
+                    Notes: ''
+                } as FitnessEntry);
+            }
+            currentDate = addDays(currentDate, 1);
+        }
+
+        // 4. Calculate trend ignoring 0s
+        return normalized.map((day, index, arr) => {
             const windowSize = 7;
             const start = Math.max(0, index - windowSize + 1);
             const window = arr.slice(start, index + 1);
-            const avg = window.reduce((sum, d) => sum + d.Weight, 0) / window.length;
+            const validWeights = window.filter(d => d.Weight > 0).map(d => d.Weight);
+
+            if (validWeights.length === 0) return { ...day, weightTrend: null };
+
+            const avg = validWeights.reduce((sum, w) => sum + w, 0) / validWeights.length;
             return { ...day, weightTrend: Number(avg.toFixed(2)) };
         });
     }, [filteredData]);
@@ -219,25 +265,27 @@ export function WeightChart({ data, profile }: WeightChartProps) {
                         <Area
                             yAxisId="left"
                             type="monotone"
-                            dataKey="Weight"
+                            dataKey={(d) => d.Weight > 0 ? d.Weight : null}
                             stroke="none"
                             fill="url(#colorWeight)"
                             legendType="none"
                             name="weight_area"
                             activeDot={false}
+                            connectNulls={true}
                         />
 
                         {/* Daily dots */}
                         <Line
                             yAxisId="left"
                             type="monotone"
-                            dataKey="Weight"
+                            dataKey={(d) => d.Weight > 0 ? d.Weight : null}
                             stroke="#60a5fa"
                             strokeWidth={0}
                             dot={{ r: 2.5, fill: "#60a5fa", strokeWidth: 0, fillOpacity: 0.6 }}
                             activeDot={{ r: 4, strokeWidth: 0 }}
                             name="Peso"
                             legendType="none"
+                            connectNulls={true}
                         />
 
                         {/* Moving Average Line */}
@@ -251,18 +299,20 @@ export function WeightChart({ data, profile }: WeightChartProps) {
                             dot={false}
                             name="Tendencia"
                             animationDuration={1500}
+                            connectNulls={true}
                         />
 
                         {/* Body Fat Line */}
                         <Line
                             yAxisId="right"
                             type="monotone"
-                            dataKey="BodyFat"
+                            dataKey={(d) => d.BodyFat > 0 ? d.BodyFat : null}
                             stroke="#10b981"
                             strokeWidth={3}
                             dot={false}
                             name="% Grasa"
                             animationDuration={2000}
+                            connectNulls={true}
                         />
 
                     </ComposedChart>
