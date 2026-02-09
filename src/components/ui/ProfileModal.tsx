@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Ruler, Calendar, Activity, Save, Target, Footprints } from 'lucide-react';
+import { X, User, Ruler, Calendar, Activity, Save, Target, Footprints, Sparkles } from 'lucide-react';
 import { UserProfile } from '../../hooks/useProfile';
+import { calculateSuggestedTargets } from '../../lib/fitness';
 
 interface ProfileModalProps {
     isOpen: boolean;
@@ -154,7 +155,26 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
 
                             {/* Goals Section */}
                             <div className="pt-4 border-t border-slate-100 dark:border-white/5">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-4 block">Objetivos y Metas</label>
+                                <div className="flex items-center justify-between mb-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-blue-600 block">Objetivos y Metas</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const suggestions = calculateSuggestedTargets(formData.height, formData.gender);
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                target_weight: suggestions.weight,
+                                                target_waist: suggestions.waist,
+                                                target_body_fat: suggestions.bodyFat,
+                                                target_steps: suggestions.steps
+                                            }));
+                                        }}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl transition-all group active:scale-95"
+                                    >
+                                        <Sparkles size={12} className="group-hover:rotate-12 transition-transform" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Sugerir Metas Saludables</span>
+                                    </button>
+                                </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Peso Meta</label>
@@ -207,6 +227,9 @@ export function ProfileModal({ isOpen, onClose, profile, onUpdate }: ProfileModa
                                         </div>
                                     </div>
                                 </div>
+                                <p className="mt-3 text-[9px] text-slate-400 italic leading-snug">
+                                    * Las sugerencias se calculan en base a tu estatura y sexo biológico para un perfil atlético saludable.
+                                </p>
                             </div>
 
                             <button
