@@ -214,19 +214,40 @@ export function WeightChart({ data, profile }: WeightChartProps) {
                             tickFormatter={(val) => `${val}%`}
                         />
                         <Tooltip
-                            contentStyle={{
-                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                                borderColor: 'rgba(255, 255, 255, 0.1)',
-                                borderRadius: '16px',
-                                fontSize: '11px',
-                                color: '#fff',
-                                backdropFilter: 'blur(8px)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)'
+                            content={({ active, payload, label }) => {
+                                if (active && payload && payload.length) {
+                                    const filteredPayload = payload.filter((item: any) =>
+                                        item.name !== 'weight_area' && item.value !== null && item.value !== 0
+                                    );
+
+                                    if (filteredPayload.length === 0) return null;
+
+                                    return (
+                                        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-white/10 p-4 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none min-w-[160px]">
+                                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 border-b border-slate-100 dark:border-white/5 pb-2">
+                                                {format(parseLocalDate(label), 'dd MMM, yyyy', { locale: es })}
+                                            </p>
+                                            <div className="space-y-2">
+                                                {filteredPayload.map((item: any, index: number) => (
+                                                    <div key={index} className="flex items-center justify-between gap-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-1.5 h-1.5 rounded-full shadow-sm" style={{ backgroundColor: item.color || item.payload.fill || '#3b82f6' }} />
+                                                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
+                                                                {item.name}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-[11px] font-black text-slate-900 dark:text-white tabular-nums">
+                                                            {typeof item.value === 'number' ? item.value.toFixed(1) : item.value}
+                                                            <span className="text-[8px] ml-0.5 opacity-50 uppercase italic">{item.name === '% Grasa' ? '%' : 'kg'}</span>
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
                             }}
-                            itemStyle={{ padding: '2px 0' }}
-                            labelStyle={{ color: '#94a3b8', fontWeight: '900', textTransform: 'uppercase', fontSize: '9px', marginBottom: '4px', letterSpacing: '0.1em' }}
-                            labelFormatter={(label) => format(parseLocalDate(label as string), 'dd MMM, yyyy', { locale: es })}
                         />
                         <Legend
                             verticalAlign="top"
