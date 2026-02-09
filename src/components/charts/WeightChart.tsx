@@ -217,31 +217,42 @@ export function WeightChart({ data, profile }: WeightChartProps) {
                             content={({ active, payload, label }) => {
                                 if (active && payload && payload.length) {
                                     const filteredPayload = payload.filter((item: any) =>
-                                        item.name !== 'weight_area' && item.value !== null && item.value !== 0
+                                        item.name !== '_hide' &&
+                                        item.dataKey !== '_hide' &&
+                                        item.name !== 'weight_area' &&
+                                        item.value !== null &&
+                                        item.value !== 0
                                     );
 
                                     if (filteredPayload.length === 0) return null;
 
                                     return (
-                                        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-white/10 p-4 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none min-w-[160px]">
+                                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 p-4 rounded-2xl shadow-2xl min-w-[160px] backdrop-blur-md">
                                             <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 border-b border-slate-100 dark:border-white/5 pb-2">
                                                 {format(parseLocalDate(label), 'dd MMM, yyyy', { locale: es })}
                                             </p>
                                             <div className="space-y-2">
-                                                {filteredPayload.map((item: any, index: number) => (
-                                                    <div key={index} className="flex items-center justify-between gap-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-1.5 h-1.5 rounded-full shadow-sm" style={{ backgroundColor: item.color || item.payload.fill || '#3b82f6' }} />
-                                                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
-                                                                {item.name}
+                                                {filteredPayload.map((item: any, index: number) => {
+                                                    let dotColor = item.color || '#3b82f6';
+                                                    if (dotColor.includes('url')) dotColor = '#3b82f6';
+
+                                                    return (
+                                                        <div key={index} className="flex items-center justify-between gap-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: dotColor }} />
+                                                                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight">
+                                                                    {item.name}
+                                                                </span>
+                                                            </div>
+                                                            <span className="text-[11px] font-black text-slate-900 dark:text-white tabular-nums">
+                                                                {typeof item.value === 'number' ? item.value.toFixed(1) : item.value}
+                                                                <span className="text-[8px] ml-0.5 opacity-50 uppercase italic font-bold">
+                                                                    {item.name === '% Grasa' ? '%' : 'kg'}
+                                                                </span>
                                                             </span>
                                                         </div>
-                                                        <span className="text-[11px] font-black text-slate-900 dark:text-white tabular-nums">
-                                                            {typeof item.value === 'number' ? item.value.toFixed(1) : item.value}
-                                                            <span className="text-[8px] ml-0.5 opacity-50 uppercase italic">{item.name === '% Grasa' ? '%' : 'kg'}</span>
-                                                        </span>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     );
@@ -290,7 +301,7 @@ export function WeightChart({ data, profile }: WeightChartProps) {
                             stroke="none"
                             fill="url(#colorWeight)"
                             legendType="none"
-                            name="weight_area"
+                            name="_hide"
                             activeDot={false}
                             connectNulls={true}
                         />
