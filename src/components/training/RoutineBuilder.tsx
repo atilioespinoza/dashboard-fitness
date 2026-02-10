@@ -6,7 +6,7 @@ import { WorkoutLiveSession } from './WorkoutLiveSession';
 import { Exercise } from '../../data/exerciseDB';
 import { calculateWorkoutCalories, calculateWorkoutDuration, estimateActiveDuration, estimateActiveDurationFromList } from '../../lib/calorieCalculator';
 import { UserProfile } from '../../hooks/useProfile';
-import { Dumbbell, Plus, Zap, X, Play, Clock } from 'lucide-react';
+import { Dumbbell, Plus, Zap, X, Play, Clock, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { useRoutines } from '../../hooks/useRoutines';
@@ -60,6 +60,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
     const [isLiveMode, setIsLiveMode] = useState(false);
     const [routineName, setRoutineName] = useState(initialName || '');
     const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+    const [completedSessionData, setCompletedSessionData] = useState<any | null>(null);
     const { saveRoutine, updateRoutine } = useRoutines(userId);
 
     const workoutData = useMemo(() => {
@@ -193,6 +194,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
                 raw_text: rawText,
                 parsed_data: {
                     burned_calories: finalCalories,
+                    planned_calories: totalCalories,
                     training: workoutSummary,
                     session_details: sessionDetails
                 }
@@ -228,7 +230,13 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
                 }).eq('user_id', userId).eq('date', dateStr);
             }
 
-            onComplete();
+
+            setCompletedSessionData({
+                actualCalories: finalCalories,
+                plannedCalories: totalCalories,
+                summary: workoutSummary,
+                details: sessionDetails
+            });
         } catch (err) {
             console.error('Error saving workout:', err);
             alert('Error al guardar el entrenamiento');
@@ -415,56 +423,117 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="h-full pt-4"
                         >
-                            <WorkoutLiveSession
-                                exercises={selectedExercises}
-                                totalEstimatedCalories={totalCalories}
-                                onFinish={handleFinish}
-                                onCancel={() => setIsLiveMode(false)}
-                            />
+                            {completedSessionData ? (
+                                <div className="flex flex-col items-center justify-center space-y-8 py-10 text-center">
+                                    <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/20 text-white mb-4">
+                                        <CheckCircle2 size={40} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-3xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">¡Misión Cumplida!</h3>
+                                        <p className="text-slate-500 font-medium">Tu entrenamiento ha sido registrado con éxito.</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+                                        <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-100 dark:border-white/5 space-y-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Tiempo Real</span>
+                                            <p className="text-3xl font-black text-blue-600">
+                                                {Math.round(completedSessionData.details?.durationSeconds / 60) || 0}
+                                                <span className="text-xs ml-1 text-slate-400">min</span>
+                                            </p>
+                                        </div>
+                                        <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-100 dark:border-white/5 space-y-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Calorías Reales</span>
+                                            <p className="text-3xl font-black text-emerald-600">
+                                                {completedSessionData.actualCalories}
+                                                <span className="text-xs ml-1 text-slate-400">kcal</span>
+                                            </p>
+                                        </div>
+                                        <div className="col-span-2 bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                                            <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest mb-2">
+                                                <span className="text-slate-400">Comparativa de Esfuerzo</span>
+                                                <span className={completedSessionData.actualCalories >= completedSessionData.plannedCalories ? 'text-emerald-500' : 'text-amber-500'}>
+                                                    {Math.round((completedSessionData.actualCalories / completedSessionData.plannedCalories) * 100)}% del objetivo
+                                                </span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-emerald-500"
+                                                    style={{ width: `${Math.min(100, (completedSessionData.actualCalories / completedSessionData.plannedCalories) * 100)}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="w-full max-w-md bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-100 dark:border-white/5 text-left space-y-3">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Resumen de la Sesión</span>
+                                        <p className="text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed italic">
+                                            {completedSessionData.summary}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        onClick={onComplete}
+                                        className="w-full max-w-md py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[2rem] font-black uppercase tracking-widest text-sm shadow-xl transition-all hover:scale-[1.02] active:scale-95"
+                                    >
+                                        Finalizar y Salir
+                                    </button>
+                                </div>
+                            ) : (
+                                <WorkoutLiveSession
+                                    exercises={selectedExercises}
+                                    totalEstimatedCalories={totalCalories}
+                                    onFinish={handleFinish}
+                                    onCancel={() => setIsLiveMode(false)}
+                                />
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
+            </div >
 
             {/* Modals outside main flow */}
             <AnimatePresence>
-                {activeTimerSeconds !== null && (
-                    <RestTimer
-                        seconds={activeTimerSeconds}
-                        onClose={() => setActiveTimerSeconds(null)}
-                    />
-                )}
-                {isAddingExercise && (
-                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
-                            onClick={() => setIsAddingExercise(false)}
+                {
+                    activeTimerSeconds !== null && (
+                        <RestTimer
+                            seconds={activeTimerSeconds}
+                            onClose={() => setActiveTimerSeconds(null)}
                         />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[3rem] p-8 w-full max-w-lg shadow-2xl h-[80vh] flex flex-col"
-                        >
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-black uppercase tracking-tighter italic text-slate-900 dark:text-white flex items-center gap-2">
-                                    <Plus className="text-blue-500" /> Elegir Ejercicio
-                                </h3>
-                                <button
-                                    onClick={() => setIsAddingExercise(false)}
-                                    className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
-                            <ExercisePicker onSelect={addExercise} />
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-        </div>
+                    )
+                }
+                {
+                    isAddingExercise && (
+                        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
+                                onClick={() => setIsAddingExercise(false)}
+                            />
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[3rem] p-8 w-full max-w-lg shadow-2xl h-[80vh] flex flex-col"
+                            >
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-black uppercase tracking-tighter italic text-slate-900 dark:text-white flex items-center gap-2">
+                                        <Plus className="text-blue-500" /> Elegir Ejercicio
+                                    </h3>
+                                    <button
+                                        onClick={() => setIsAddingExercise(false)}
+                                        className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+                                <ExercisePicker onSelect={addExercise} />
+                            </motion.div>
+                        </div>
+                    )
+                }
+            </AnimatePresence >
+        </div >
     );
 }
