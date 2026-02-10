@@ -73,6 +73,14 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
     const cumulativeDeficit = data.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0);
     const theoreticalFatLoss = Number((cumulativeDeficit / 7700).toFixed(2));
 
+    const firstEntry = sortedData[sortedData.length - 1];
+    const initialWeight = firstEntry?.Weight || 0;
+    const initialBodyFat = data.find(d => d.BodyFat > 0)?.BodyFat || profile?.target_body_fat || 20;
+    const targetBodyFat = profile?.target_body_fat || 15;
+    const initialLeanMass = initialWeight * (1 - initialBodyFat / 100);
+    const targetWeight = initialLeanMass / (1 - targetBodyFat / 100);
+    const fatLossGoal = Math.max(0, initialWeight - targetWeight);
+
     let calorieStreak = 0;
     let proteinStreak = 0;
     let stepsStreak = 0;
@@ -113,6 +121,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                             fatLoss={theoreticalFatLoss}
                             isStagnant={isStagnant}
                             isRecomp={isRecomp}
+                            fatLossGoal={fatLossGoal}
                         />
                     </FadeIn>
                 </FadeInStagger>

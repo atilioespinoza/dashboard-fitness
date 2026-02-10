@@ -8,9 +8,10 @@ interface LossGaugeProps {
     fatLoss: number;
     isStagnant: boolean;
     isRecomp: boolean;
+    fatLossGoal?: number;
 }
 
-export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss, isStagnant, isRecomp }: LossGaugeProps) {
+export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss, isStagnant, isRecomp, fatLossGoal }: LossGaugeProps) {
     let rateColor = "#10b981"; // green
     let rateText = "Ideal";
 
@@ -91,17 +92,34 @@ export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss, is
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <div className="flex justify-between text-[8px] font-black uppercase tracking-widest">
-                            <span className="text-slate-400 dark:text-slate-600">Kilo Actual</span>
-                            <span className="text-blue-500/80">Próximo Kilo • {nextKiloProgress.toFixed(0)}%</span>
+                    <div className="space-y-4 pt-2">
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-[8px] font-black uppercase tracking-widest">
+                                <span className="text-slate-400 dark:text-slate-600">Kilo Actual</span>
+                                <span className="text-blue-500/80">Próximo Kilo • {nextKiloProgress.toFixed(0)}%</span>
+                            </div>
+                            <div className="h-2 w-full bg-slate-100 dark:bg-slate-900 rounded-full p-[1px] overflow-hidden border border-slate-200 dark:border-white/5 shadow-inner">
+                                <div
+                                    className="h-full bg-gradient-to-r from-blue-700 to-blue-400 rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(59,130,246,0.2)]"
+                                    style={{ width: `${nextKiloProgress}%` }}
+                                />
+                            </div>
                         </div>
-                        <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full p-[1px] overflow-hidden border border-slate-200 dark:border-white/5 shadow-inner">
-                            <div
-                                className="h-full bg-gradient-to-r from-blue-700 to-blue-400 rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(59,130,246,0.2)]"
-                                style={{ width: `${nextKiloProgress}%` }}
-                            />
-                        </div>
+
+                        {fatLossGoal && fatLossGoal > 0 && (
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-[8px] font-black uppercase tracking-widest">
+                                    <span className="text-slate-400 dark:text-slate-600">Meta % Grasa</span>
+                                    <span className="text-emerald-500">Faltan {Math.max(0, fatLossGoal - fatLoss).toFixed(2)} kg • {Math.max(0, Math.min(100, (fatLoss / fatLossGoal) * 100)).toFixed(0)}%</span>
+                                </div>
+                                <div className="h-2 w-full bg-slate-100 dark:bg-slate-900 rounded-full p-[1px] overflow-hidden border border-slate-200 dark:border-white/5 shadow-inner">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(16,185,129,0.2)]"
+                                        style={{ width: `${Math.max(0, Math.min(100, (fatLoss / fatLossGoal) * 100))}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </CardContent>
