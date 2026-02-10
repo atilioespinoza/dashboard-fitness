@@ -6,7 +6,8 @@ interface WorkoutSet {
     sets?: number;
     reps?: number;
     weight?: number; // Only for logging, METs doesn't always use it directly
-    rpe?: number; // Rate of Perceived Exertion (1-10) for intensity adjustment
+    rpe?: number;
+    restTimeSeconds?: number;
 }
 
 interface UserStats {
@@ -65,6 +66,13 @@ export const calculateWorkoutCalories = (
             userStats.weightKp,
             intensityModifier
         );
+
+        // Add calories burned during rest (approx. 2.0 MET for recovery period)
+        if (set.restTimeSeconds && set.sets) {
+            const totalRestMinutes = (set.restTimeSeconds * (set.sets - 1)) / 60;
+            const restCalories = (2.0 * 3.5 * userStats.weightKp) / 200 * totalRestMinutes;
+            totalCalories += restCalories;
+        }
     });
 
     return Math.round(totalCalories);
@@ -75,7 +83,7 @@ export const calculateWorkoutCalories = (
  * E.g., 1 rep = 3 seconds (approx) + rest time
  * NOTE: For calorie burning, we usually count "active" time, not rest time.
  */
-export const estimateActiveDuration = (reps: number, sets: number, secondsPerRep: number = 3): number => {
+export const estimateActiveDuration = (reps: number, sets: number, secondsPerRep: number = 4): number => {
     const totalSeconds = reps * sets * secondsPerRep;
     return totalSeconds / 60; // minutes
 };

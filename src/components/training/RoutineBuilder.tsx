@@ -61,7 +61,9 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
         const sets = selectedExercises.map(ex => ({
             exercise: ex.exercise,
             durationMinutes: estimateActiveDuration(ex.reps, ex.sets),
-            rpe: ex.rpe
+            rpe: ex.rpe,
+            sets: ex.sets,
+            restTimeSeconds: ex.restTimeSeconds
         }));
         return calculateWorkoutCalories(sets, {
             weightKp: profile.target_weight || 80,
