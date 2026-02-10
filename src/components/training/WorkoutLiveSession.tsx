@@ -130,6 +130,7 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
                     plannedReps: ex.repsPerSet || ex.reps,
                     actualReps: actualReps.length > 0 ? actualReps : undefined,
                     weight: ex.weight,
+                    durationMinutes: ex.durationMinutes,
                     isSkipped
                 };
             })
