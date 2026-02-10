@@ -293,6 +293,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
                                         rpe={ex.rpe}
                                         restTimeSeconds={ex.restTimeSeconds}
                                         durationMinutes={ex.durationMinutes}
+                                        repsPerSet={ex.repsPerSet}
                                         onUpdate={(updates) => updateExercise(ex.id, updates)}
                                         onRemove={() => removeExercise(ex.id)}
                                         onMoveUp={index > 0 ? () => moveExercise(index, 'up') : undefined}
