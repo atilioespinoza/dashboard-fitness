@@ -114,6 +114,7 @@ export function RoutinePage({ userId, profile, onUpdate }: RoutinePageProps) {
                         <RoutineBuilder
                             userId={userId}
                             profile={profile}
+                            routineId={selectedRoutine?.id}
                             initialName={selectedRoutine?.name}
                             initialExercises={selectedRoutine?.exercises}
                             onComplete={() => {

@@ -70,6 +70,28 @@ export const useRoutines = (userId?: string) => {
         }
     };
 
+    const updateRoutine = async (id: string, name: string, exercises: any[]) => {
+        if (!userId) return;
+        try {
+            const { data, error: sbError } = await supabase
+                .from('workout_routines')
+                .update({
+                    name,
+                    exercises
+                })
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (sbError) throw sbError;
+            setRoutines(prev => prev.map(r => r.id === id ? data : r));
+            return data;
+        } catch (err: any) {
+            console.error('Error updating routine:', err);
+            throw err;
+        }
+    };
+
     const deleteRoutine = async (id: string) => {
         try {
             const { error: sbError } = await supabase
@@ -85,5 +107,5 @@ export const useRoutines = (userId?: string) => {
         }
     };
 
-    return { routines, loading, error, saveRoutine, deleteRoutine, refreshRoutines: fetchRoutines };
+    return { routines, loading, error, saveRoutine, updateRoutine, deleteRoutine, refreshRoutines: fetchRoutines };
 };

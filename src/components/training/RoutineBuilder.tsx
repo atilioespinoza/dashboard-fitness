@@ -18,6 +18,7 @@ interface RoutineBuilderProps {
     profile: UserProfile | null;
     onComplete: () => void;
     onCancel: () => void;
+    routineId?: string;
     initialName?: string;
     initialExercises?: {
         exercise: Exercise;
@@ -43,7 +44,7 @@ interface SelectedExercise {
     repsPerSet?: number[];
 }
 
-export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialName, initialExercises }: RoutineBuilderProps) {
+export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineId, initialName, initialExercises }: RoutineBuilderProps) {
     const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>(() => {
         if (initialExercises) {
             return initialExercises.map(ex => ({
@@ -59,7 +60,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
     const [isLiveMode, setIsLiveMode] = useState(false);
     const [routineName, setRoutineName] = useState(initialName || '');
     const [isSavingTemplate, setIsSavingTemplate] = useState(false);
-    const { saveRoutine } = useRoutines(userId);
+    const { saveRoutine, updateRoutine } = useRoutines(userId);
 
     const totalCalories = useMemo(() => {
         if (!profile) return 0;
@@ -158,11 +159,13 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
                 day: '2-digit'
             }).format(new Date());
 
-            const workoutSummary = selectedExercises.map(ex =>
-                ex.exercise.category === 'Cardio'
-                    ? `${ex.exercise.name} (${ex.durationMinutes} min)`
-                    : `${ex.exercise.name} (${ex.sets}x${ex.reps})`
-            ).join(', ');
+            const workoutSummary = selectedExercises.map(ex => {
+                if (ex.exercise.category === 'Cardio') {
+                    return `${ex.exercise.name} (${ex.durationMinutes} min)`;
+                }
+                const repsString = ex.repsPerSet ? `[${ex.repsPerSet.join(',')}]` : `${ex.reps}`;
+                return `${ex.exercise.name} (${ex.sets}x${repsString})`;
+            }).join(', ');
             const rawText = `Entrenamiento: ${workoutSummary}`;
 
             // 1. Log the event
@@ -218,11 +221,28 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
     const handleSaveTemplate = async () => {
         if (!routineName.trim() || selectedExercises.length === 0) return;
         setIsSavingTemplate(true);
+
+        // Map to cleaner objects for storage
+        const exercisesToSave = selectedExercises.map(({ exercise, sets, reps, weight, rpe, restTimeSeconds, durationMinutes, repsPerSet }) => ({
+            exercise,
+            sets,
+            reps,
+            weight,
+            rpe,
+            restTimeSeconds,
+            durationMinutes,
+            repsPerSet
+        }));
+
         try {
-            await saveRoutine(routineName, selectedExercises);
+            if (routineId) {
+                await updateRoutine(routineId, routineName, exercisesToSave);
+            } else {
+                await saveRoutine(routineName, exercisesToSave);
+            }
             alert('¡Rutina guardada con éxito!');
         } catch (err) {
-            alert('Error al guardar la plantilla. Asegúrate de tener la tabla workout_routines creada.');
+            alert('Error al guardar la plantilla.');
         } finally {
             setIsSavingTemplate(false);
         }
@@ -266,7 +286,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
                         disabled={!routineName.trim() || selectedExercises.length === 0 || isSavingTemplate}
                         className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all disabled:opacity-30"
                     >
-                        {isSavingTemplate ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save size={16} /> Guardar Plan</>}
+                        {isSavingTemplate ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save size={16} /> {routineId ? 'Actualizar Plan' : 'Guardar Plan'}</>}
                     </button>
                 </div>
             </div>
