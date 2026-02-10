@@ -14,6 +14,7 @@ interface RoutineExerciseItemProps {
     onStartRest: () => void;
     onMoveUp?: () => void;
     onMoveDown?: () => void;
+    repsPerSet?: number[];
 }
 
 export function RoutineExerciseItem({
@@ -24,6 +25,7 @@ export function RoutineExerciseItem({
     rpe,
     restTimeSeconds,
     durationMinutes,
+    repsPerSet,
     onUpdate,
     onRemove,
     onStartRest,
@@ -123,16 +125,49 @@ export function RoutineExerciseItem({
                         </div>
 
                         {/* Reps */}
-                        <div className="space-y-1.5">
-                            <label className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400">
-                                <Hash size={10} /> Reps
-                            </label>
-                            <input
-                                type="number"
-                                value={reps}
-                                onChange={(e) => onUpdate({ reps: Math.max(0, parseInt(e.target.value) || 0) })}
-                                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            />
+                        <div className="space-y-1.5 flex flex-col">
+                            <div className="flex justify-between items-center">
+                                <label className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400">
+                                    <Hash size={10} /> {repsPerSet ? 'Reps p/Serie' : 'Reps'}
+                                </label>
+                                <button
+                                    onClick={() => {
+                                        if (repsPerSet) {
+                                            onUpdate({ repsPerSet: undefined });
+                                        } else {
+                                            onUpdate({ repsPerSet: Array(sets).fill(reps) });
+                                        }
+                                    }}
+                                    className={`text-[7px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded ${repsPerSet ? 'bg-blue-500 text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-400'}`}
+                                >
+                                    {repsPerSet ? 'Fijo' : 'Variable'}
+                                </button>
+                            </div>
+                            {repsPerSet ? (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                    {repsPerSet.map((r, i) => (
+                                        <input
+                                            key={i}
+                                            type="number"
+                                            value={r}
+                                            onChange={(e) => {
+                                                const newReps = [...repsPerSet];
+                                                newReps[i] = Math.max(0, parseInt(e.target.value) || 0);
+                                                onUpdate({ repsPerSet: newReps });
+                                            }}
+                                            className="w-10 px-1 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            title={`Serie ${i + 1}`}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <input
+                                    type="number"
+                                    value={reps}
+                                    onChange={(e) => onUpdate({ reps: Math.max(0, parseInt(e.target.value) || 0) })}
+                                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                />
+                            )}
                         </div>
 
                         {/* Weight / Intensity */}

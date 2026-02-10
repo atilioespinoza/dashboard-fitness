@@ -13,6 +13,7 @@ interface WorkoutLiveSessionProps {
         weight: number;
         restTimeSeconds: number;
         durationMinutes?: number;
+        repsPerSet?: number[];
     }[];
     onFinish: (burnedCalories: number) => void;
     onCancel: () => void;
@@ -23,6 +24,16 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
     const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
     const [currentSet, setCurrentSet] = useState(1);
     const [isResting, setIsResting] = useState(false);
+    const [performedReps, setPerformedReps] = useState<{ [key: string]: number }>(() => {
+        const initial: { [key: string]: number } = {};
+        exercises.forEach((ex, exIdx) => {
+            for (let s = 1; s <= ex.sets; s++) {
+                // Priority: repsPerSet[s-1] > ex.reps
+                initial[`${exIdx}-${s}`] = ex.repsPerSet ? ex.repsPerSet[s - 1] : ex.reps;
+            }
+        });
+        return initial;
+    });
 
     const currentEx = exercises[currentExerciseIndex];
     const totalSetsInWorkout = exercises.reduce((acc, ex) => acc + ex.sets, 0);
@@ -45,10 +56,30 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
                 setCurrentExerciseIndex(prev => prev + 1);
                 setCurrentSet(1);
             } else {
-                // Workout Finished!
-                onFinish(totalEstimatedCalories);
+                // Workout Finished! Recalculate based on performed reps
+                onFinish(calculateActualCalories());
             }
         }
+    };
+
+    const calculateActualCalories = () => {
+        // We need user profile for this. Since we don't have it here, we'll 
+        // calculate a ratio compared to the initial estimate which already includes profile
+        const plannedRepsTotal = exercises.reduce((acc, ex) => {
+            if (ex.exercise.category === 'Cardio') return acc;
+            const planned = ex.repsPerSet ? ex.repsPerSet.reduce((a, b) => a + b, 0) : ex.reps * ex.sets;
+            return acc + planned;
+        }, 0);
+
+        const actualRepsTotal = Object.entries(performedReps).reduce((acc, [key, val]) => {
+            const exIdx = parseInt(key.split('-')[0]);
+            if (exercises[exIdx].exercise.category === 'Cardio') return acc;
+            return acc + val;
+        }, 0);
+
+        if (plannedRepsTotal === 0) return totalEstimatedCalories;
+
+        return Math.round(totalEstimatedCalories * (actualRepsTotal / plannedRepsTotal));
     };
 
 
@@ -110,12 +141,28 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Serie</span>
                                     <p className="text-4xl font-black text-blue-600">{currentSet}<span className="text-lg text-slate-300">/{currentEx.sets}</span></p>
                                 </div>
-                                <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-white/5 space-y-1">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Objetivo</span>
-                                    <p className="text-4xl font-black text-slate-900 dark:text-white">
-                                        {currentEx.reps}
-                                        <span className="text-sm uppercase tracking-widest ml-1 text-slate-400">reps</span>
-                                    </p>
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-white/5 space-y-3">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Reps Realizadas</span>
+                                    <div className="flex items-center justify-center gap-4">
+                                        <button
+                                            onClick={() => {
+                                                const key = `${currentExerciseIndex}-${currentSet}`;
+                                                setPerformedReps(prev => ({ ...prev, [key]: Math.max(0, prev[key] - 1) }));
+                                            }}
+                                            className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-white/5 rounded-full text-slate-400 font-black hover:bg-slate-200"
+                                        >-</button>
+                                        <p className="text-4xl font-black text-slate-900 dark:text-white tabular-nums">
+                                            {performedReps[`${currentExerciseIndex}-${currentSet}`]}
+                                        </p>
+                                        <button
+                                            onClick={() => {
+                                                const key = `${currentExerciseIndex}-${currentSet}`;
+                                                setPerformedReps(prev => ({ ...prev, [key]: prev[key] + 1 }));
+                                            }}
+                                            className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-white/5 rounded-full text-slate-400 font-black hover:bg-slate-200"
+                                        >+</button>
+                                    </div>
+                                    <p className="text-[8px] font-black uppercase text-blue-500">Objetivo: {currentEx.repsPerSet ? currentEx.repsPerSet[currentSet - 1] : currentEx.reps}</p>
                                 </div>
                             </>
                         )}

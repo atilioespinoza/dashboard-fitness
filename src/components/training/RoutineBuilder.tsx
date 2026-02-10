@@ -4,7 +4,7 @@ import { RoutineExerciseItem } from './RoutineExerciseItem';
 import { RestTimer } from './RestTimer';
 import { WorkoutLiveSession } from './WorkoutLiveSession';
 import { Exercise } from '../../data/exerciseDB';
-import { calculateWorkoutCalories, estimateActiveDuration } from '../../lib/calorieCalculator';
+import { calculateWorkoutCalories, estimateActiveDuration, estimateActiveDurationFromList } from '../../lib/calorieCalculator';
 import { UserProfile } from '../../hooks/useProfile';
 import { Dumbbell, Plus, Zap, X, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,6 +27,7 @@ interface RoutineBuilderProps {
         rpe: number;
         restTimeSeconds: number;
         durationMinutes?: number;
+        repsPerSet?: number[];
     }[];
 }
 
@@ -39,6 +40,7 @@ interface SelectedExercise {
     rpe: number;
     restTimeSeconds: number;
     durationMinutes?: number;
+    repsPerSet?: number[];
 }
 
 export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialName, initialExercises }: RoutineBuilderProps) {
@@ -61,15 +63,25 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
 
     const totalCalories = useMemo(() => {
         if (!profile) return 0;
-        const sets = selectedExercises.map(ex => ({
-            exercise: ex.exercise,
-            durationMinutes: ex.exercise.category === 'Cardio' && ex.durationMinutes
-                ? ex.durationMinutes
-                : estimateActiveDuration(ex.reps, ex.sets),
-            rpe: ex.rpe,
-            sets: ex.sets,
-            restTimeSeconds: ex.restTimeSeconds
-        }));
+        const sets = selectedExercises.map(ex => {
+            let duration = 0;
+            if (ex.exercise.category === 'Cardio' && ex.durationMinutes) {
+                duration = ex.durationMinutes;
+            } else if (ex.repsPerSet) {
+                duration = estimateActiveDurationFromList(ex.repsPerSet);
+            } else {
+                duration = estimateActiveDuration(ex.reps, ex.sets);
+            }
+
+            return {
+                exercise: ex.exercise,
+                durationMinutes: duration,
+                rpe: ex.rpe,
+                sets: ex.sets,
+                restTimeSeconds: ex.restTimeSeconds,
+                repsPerSet: ex.repsPerSet
+            };
+        });
         return calculateWorkoutCalories(sets, {
             weightKp: profile.target_weight || 80,
             heightCm: profile.height || 170,
@@ -96,7 +108,26 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
     };
 
     const updateExercise = (id: string, updates: Partial<SelectedExercise>) => {
-        setSelectedExercises(prev => prev.map(ex => ex.id === id ? { ...ex, ...updates } : ex));
+        setSelectedExercises(prev => prev.map(ex => {
+            if (ex.id !== id) return ex;
+
+            const nextEx = { ...ex, ...updates };
+
+            // Sync repsPerSet if sets changed and it exists
+            if (updates.sets !== undefined && ex.repsPerSet) {
+                const diff = updates.sets - ex.repsPerSet.length;
+                if (diff > 0) {
+                    // Add new sets with the value of the last set
+                    const lastVal = ex.repsPerSet[ex.repsPerSet.length - 1] || ex.reps;
+                    nextEx.repsPerSet = [...ex.repsPerSet, ...Array(diff).fill(lastVal)];
+                } else if (diff < 0) {
+                    // Remove sets from the end
+                    nextEx.repsPerSet = ex.repsPerSet.slice(0, updates.sets);
+                }
+            }
+
+            return nextEx;
+        }));
     };
 
     const removeExercise = (id: string) => {

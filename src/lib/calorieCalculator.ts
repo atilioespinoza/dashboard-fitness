@@ -8,6 +8,7 @@ interface WorkoutSet {
     weight?: number; // Only for logging, METs doesn't always use it directly
     rpe?: number;
     restTimeSeconds?: number;
+    repsPerSet?: number[];
 }
 
 interface UserStats {
@@ -85,5 +86,11 @@ export const calculateWorkoutCalories = (
  */
 export const estimateActiveDuration = (reps: number, sets: number, secondsPerRep: number = 4): number => {
     const totalSeconds = reps * sets * secondsPerRep;
+    return totalSeconds / 60; // minutes
+};
+
+export const estimateActiveDurationFromList = (repsPerSet: number[], secondsPerRep: number = 4): number => {
+    const totalReps = repsPerSet.reduce((acc, r) => acc + r, 0);
+    const totalSeconds = totalReps * secondsPerRep;
     return totalSeconds / 60; // minutes
 };

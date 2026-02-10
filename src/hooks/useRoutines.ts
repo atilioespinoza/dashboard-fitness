@@ -14,6 +14,7 @@ export interface Routine {
         rpe: number;
         restTimeSeconds: number;
         durationMinutes?: number;
+        repsPerSet?: number[];
     }[];
     created_at: string;
 }
