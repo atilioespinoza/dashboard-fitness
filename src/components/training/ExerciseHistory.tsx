@@ -1,9 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Exercise, EXERCISE_DATABASE } from '../../data/exerciseDB';
+import { EXERCISE_DATABASE } from '../../data/exerciseDB';
 import {
-    LineChart,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -12,8 +10,7 @@ import {
     AreaChart,
     Area
 } from 'recharts';
-import { Search, History, TrendingUp, Dumbbell, Calendar, Filter } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { TrendingUp, History } from 'lucide-react';
 
 interface ExerciseHistoryProps {
     userId: string;
@@ -146,15 +143,7 @@ export function ExerciseHistory({ userId }: ExerciseHistoryProps) {
         return historyData.filter(d => new Date(d.date) >= cutoff);
     }, [historyData, timeRange]);
 
-    const currentExercise = EXERCISE_DATABASE.find(e => e.id === selectedExerciseId);
 
-    const getMetricLabel = () => {
-        switch (metric) {
-            case 'estimated1RM': return '1RM Estimado (kg)';
-            case 'maxWeight': return 'Peso Máximo (kg)';
-            case 'totalVolume': return 'Volumen Total (kg)';
-        }
-    };
 
     const getMetricColor = () => {
         switch (metric) {
@@ -203,8 +192,8 @@ export function ExerciseHistory({ userId }: ExerciseHistoryProps) {
                                     key={m}
                                     onClick={() => setMetric(m)}
                                     className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${metric === m
-                                            ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
-                                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+                                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                                         }`}
                                 >
                                     {m === 'estimated1RM' ? '1RM Est.' : m === 'maxWeight' ? 'Peso Max' : 'Volumen'}
@@ -217,8 +206,8 @@ export function ExerciseHistory({ userId }: ExerciseHistoryProps) {
                                     key={r}
                                     onClick={() => setTimeRange(r)}
                                     className={`px-3 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${timeRange === r
-                                            ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
-                                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+                                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                                         }`}
                                 >
                                     {r}

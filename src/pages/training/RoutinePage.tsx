@@ -5,7 +5,7 @@ import { FadeIn } from '../../components/ui/FadeIn';
 import { UserProfile } from '../../hooks/useProfile';
 import { useRoutines, Routine } from '../../hooks/useRoutines';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, Plus, TrendingUp, LayoutGrid, History } from 'lucide-react';
+import { Dumbbell, Plus, TrendingUp, LayoutGrid } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { audioManager } from '../../lib/audioManager';
