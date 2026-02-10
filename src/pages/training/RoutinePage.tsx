@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { Dumbbell, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { audioManager } from '../../lib/audioManager';
 
 interface RoutinePageProps {
     userId: string;
@@ -21,11 +22,13 @@ export function RoutinePage({ userId, profile, onUpdate }: RoutinePageProps) {
     const { routines, loading, deleteRoutine } = useRoutines(userId);
 
     const handleSelectRoutine = (routine: Routine) => {
+        audioManager.init();
         setSelectedRoutine(routine);
         setIsBuilding(true);
     };
 
     const handleStartNew = () => {
+        audioManager.init();
         setSelectedRoutine(null);
         setIsBuilding(true);
     };

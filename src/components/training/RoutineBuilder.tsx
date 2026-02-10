@@ -10,6 +10,7 @@ import { Dumbbell, Plus, Zap, X, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { useRoutines } from '../../hooks/useRoutines';
+import { audioManager } from '../../lib/audioManager';
 import { Save } from 'lucide-react';
 
 interface RoutineBuilderProps {
@@ -241,7 +242,10 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
                                         restTimeSeconds={ex.restTimeSeconds}
                                         onUpdate={(updates) => updateExercise(ex.id, updates)}
                                         onRemove={() => removeExercise(ex.id)}
-                                        onStartRest={() => setActiveTimerSeconds(ex.restTimeSeconds)}
+                                        onStartRest={() => {
+                                            audioManager.init();
+                                            setActiveTimerSeconds(ex.restTimeSeconds);
+                                        }}
                                     />
                                 ))}
 

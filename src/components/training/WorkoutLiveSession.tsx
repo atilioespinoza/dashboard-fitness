@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Dumbbell, ChevronRight, SkipForward, Zap } from 'lucide-react';
 import { Exercise } from '../../data/exerciseDB';
 import { RestTimer } from './RestTimer';
+import { audioManager } from '../../lib/audioManager';
 
 interface WorkoutLiveSessionProps {
     exercises: {
@@ -30,6 +31,7 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
     const progress = ((completedSetsInPastExercises + (currentSet - 1)) / totalSetsInWorkout) * 100;
 
     const handleCompleteSet = () => {
+        audioManager.init();
         setIsResting(true);
     };
 
@@ -137,6 +139,7 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
                     {currentExerciseIndex < exercises.length - 1 && (
                         <button
                             onClick={() => {
+                                audioManager.init();
                                 setCurrentExerciseIndex(prev => prev + 1);
                                 setCurrentSet(1);
                             }}

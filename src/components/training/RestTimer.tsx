@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Bell, BellRing, Play, Pause, RotateCcw } from 'lucide-react';
+import { audioManager } from '../../lib/audioManager';
 
 interface RestTimerProps {
     seconds: number;
@@ -21,33 +22,10 @@ export function RestTimer({ seconds, onClose }: RestTimerProps) {
         } else if (timeLeft === 0 && !isFinished) {
             setIsFinished(true);
             setIsActive(false);
-            playAlarm();
+            audioManager.playAlarm();
         }
         return () => clearInterval(timer);
     }, [isActive, timeLeft, isFinished]);
-
-    const playAlarm = () => {
-        try {
-            const context = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const oscillator = context.createOscillator();
-            const gainNode = context.createGain();
-
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(880, context.currentTime); // A5 note
-
-            gainNode.gain.setValueAtTime(0, context.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.5, context.currentTime + 0.1);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 1);
-
-            oscillator.connect(gainNode);
-            gainNode.connect(context.destination);
-
-            oscillator.start();
-            oscillator.stop(context.currentTime + 1);
-        } catch (e) {
-            console.warn('Audio not supported or blocked');
-        }
-    };
 
     const formatTime = (s: number) => {
         const mins = Math.floor(s / 60);
@@ -104,7 +82,10 @@ export function RestTimer({ seconds, onClose }: RestTimerProps) {
 
                 <div className="flex gap-4">
                     <button
-                        onClick={() => setIsActive(!isActive)}
+                        onClick={() => {
+                            audioManager.init();
+                            setIsActive(!isActive);
+                        }}
                         disabled={isFinished}
                         className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all active:scale-95 ${isActive
                             ? 'bg-slate-100 dark:bg-white/5 text-slate-600'
@@ -115,6 +96,7 @@ export function RestTimer({ seconds, onClose }: RestTimerProps) {
                     </button>
                     <button
                         onClick={() => {
+                            audioManager.init();
                             setTimeLeft(seconds);
                             setIsActive(true);
                             setIsFinished(false);
