@@ -7,10 +7,11 @@ interface RoutineExerciseItemProps {
     sets: number;
     reps: number;
     weight: number;
-    duration: number;
     rpe: number;
+    restTimeSeconds: number;
     onUpdate: (updates: any) => void;
     onRemove: () => void;
+    onStartRest: () => void;
 }
 
 export function RoutineExerciseItem({
@@ -18,10 +19,11 @@ export function RoutineExerciseItem({
     sets,
     reps,
     weight,
-    duration,
     rpe,
+    restTimeSeconds,
     onUpdate,
-    onRemove
+    onRemove,
+    onStartRest
 }: RoutineExerciseItemProps) {
     return (
         <motion.div
@@ -88,17 +90,26 @@ export function RoutineExerciseItem({
                     />
                 </div>
 
-                {/* Duration */}
-                <div className="space-y-1.5">
+                {/* Rest Time */}
+                <div className="space-y-1.5 border-l border-slate-100 dark:border-white/5 pl-4 flex flex-col justify-end">
                     <label className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400">
-                        <Clock size={10} /> Minutos
+                        <Clock size={10} /> Descanso (s)
                     </label>
-                    <input
-                        type="number"
-                        value={duration}
-                        onChange={(e) => onUpdate({ duration: Math.max(1, parseInt(e.target.value) || 0) })}
-                        className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
+                    <div className="flex gap-2">
+                        <input
+                            type="number"
+                            value={restTimeSeconds}
+                            onChange={(e) => onUpdate({ restTimeSeconds: Math.max(0, parseInt(e.target.value) || 0) })}
+                            className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                        <button
+                            onClick={onStartRest}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center group"
+                            title="Iniciar Cronómetro"
+                        >
+                            <Clock size={16} className="group-hover:animate-pulse" />
+                        </button>
+                    </div>
                 </div>
             </div>
 

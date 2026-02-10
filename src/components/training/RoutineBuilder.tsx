@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { ExercisePicker } from './ExercisePicker';
 import { RoutineExerciseItem } from './RoutineExerciseItem';
+import { RestTimer } from './RestTimer';
 import { Exercise } from '../../data/exerciseDB';
-import { calculateWorkoutCalories } from '../../lib/calorieCalculator';
+import { calculateWorkoutCalories, estimateActiveDuration } from '../../lib/calorieCalculator';
 import { UserProfile } from '../../hooks/useProfile';
 import { Dumbbell, Plus, Zap, CheckCircle2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,26 +22,28 @@ interface SelectedExercise {
     sets: number;
     reps: number;
     weight: number;
-    duration: number;
     rpe: number;
+    restTimeSeconds: number;
 }
 
 export function RoutineBuilder({ userId, profile, onComplete, onCancel }: RoutineBuilderProps) {
     const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
     const [isAddingExercise, setIsAddingExercise] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [activeTimerSeconds, setActiveTimerSeconds] = useState<number | null>(null);
+
 
     const totalCalories = useMemo(() => {
         if (!profile) return 0;
         const sets = selectedExercises.map(ex => ({
             exercise: ex.exercise,
-            durationMinutes: ex.duration,
+            durationMinutes: estimateActiveDuration(ex.reps, ex.sets),
             rpe: ex.rpe
         }));
         return calculateWorkoutCalories(sets, {
-            weightKp: profile.target_weight || 80, // Default to target if current unknown
+            weightKp: profile.target_weight || 80,
             heightCm: profile.height || 170,
-            age: 30, // Approximate as we don't have birthDate object here easily
+            age: 30,
             gender: profile.gender || 'Masculino'
         });
     }, [selectedExercises, profile]);
@@ -54,8 +57,8 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
                 sets: 3,
                 reps: 10,
                 weight: 0,
-                duration: 10, // Default 10 min
-                rpe: 7
+                rpe: 7,
+                restTimeSeconds: 90 // Default 90s
             }
         ]);
         setIsAddingExercise(false);
@@ -166,10 +169,11 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
                             sets={ex.sets}
                             reps={ex.reps}
                             weight={ex.weight}
-                            duration={ex.duration}
                             rpe={ex.rpe}
+                            restTimeSeconds={ex.restTimeSeconds}
                             onUpdate={(updates) => updateExercise(ex.id, updates)}
                             onRemove={() => removeExercise(ex.id)}
+                            onStartRest={() => setActiveTimerSeconds(ex.restTimeSeconds)}
                         />
                     ))}
                 </AnimatePresence>
@@ -221,8 +225,8 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
                     onClick={handleFinish}
                     disabled={selectedExercises.length === 0 || isSaving}
                     className={`flex-[2] py-4 font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2 ${selectedExercises.length === 0 || isSaving
-                            ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none'
-                            : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20 active:scale-95'
+                        ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20 active:scale-95'
                         }`}
                 >
                     {isSaving ? (
@@ -232,6 +236,16 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
                     )}
                 </button>
             </div>
+
+            {/* Rest Timer Modal */}
+            <AnimatePresence>
+                {activeTimerSeconds !== null && (
+                    <RestTimer
+                        seconds={activeTimerSeconds}
+                        onClose={() => setActiveTimerSeconds(null)}
+                    />
+                )}
+            </AnimatePresence>
 
             {/* Modal for Exercise Selection */}
             <AnimatePresence>
