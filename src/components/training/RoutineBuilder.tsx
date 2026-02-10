@@ -2,10 +2,11 @@ import { useState, useMemo } from 'react';
 import { ExercisePicker } from './ExercisePicker';
 import { RoutineExerciseItem } from './RoutineExerciseItem';
 import { RestTimer } from './RestTimer';
+import { WorkoutLiveSession } from './WorkoutLiveSession';
 import { Exercise } from '../../data/exerciseDB';
 import { calculateWorkoutCalories, estimateActiveDuration } from '../../lib/calorieCalculator';
 import { UserProfile } from '../../hooks/useProfile';
-import { Dumbbell, Plus, Zap, CheckCircle2, X } from 'lucide-react';
+import { Dumbbell, Plus, Zap, CheckCircle2, X, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 
@@ -31,7 +32,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
     const [isAddingExercise, setIsAddingExercise] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [activeTimerSeconds, setActiveTimerSeconds] = useState<number | null>(null);
-
+    const [isLiveMode, setIsLiveMode] = useState(false);
 
     const totalCalories = useMemo(() => {
         if (!profile) return 0;
@@ -72,9 +73,10 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
         setSelectedExercises(prev => prev.filter(ex => ex.id !== id));
     };
 
-    const handleFinish = async () => {
+    const handleFinish = async (caloriesOverride?: number) => {
         if (selectedExercises.length === 0) return;
         setIsSaving(true);
+        const finalCalories = typeof caloriesOverride === 'number' ? caloriesOverride : totalCalories;
         try {
             const dateStr = new Intl.DateTimeFormat('fr-CA', {
                 timeZone: 'America/Santiago',
@@ -92,7 +94,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
                 date: dateStr,
                 raw_text: rawText,
                 parsed_data: {
-                    burned_calories: totalCalories,
+                    burned_calories: finalCalories,
                     training: workoutSummary
                 }
             });
@@ -111,14 +113,14 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
                 // Parse existing ExKcal if any
                 const match = (summary.notes || '').match(/\[ExKcal:\s*(\d+)\]/);
                 const currentExKcal = match ? parseInt(match[1]) : 0;
-                const newExKcal = currentExKcal + totalCalories;
+                const newExKcal = currentExKcal + finalCalories;
 
                 // Simple additive update for notes and total TDEE
                 const cleanNotes = (summary.notes || '').replace(/\[ExKcal: \d+\]/g, '').trim();
                 const newNotes = `${cleanNotes}\n[ExKcal: ${newExKcal}]`.trim();
 
                 // Recalculate TDEE roughly (this logic should ideally be centralized)
-                const newTdee = (summary.tdee || 2500) + totalCalories;
+                const newTdee = (summary.tdee || 2500) + finalCalories;
 
                 await supabase.from('fitness_logs').update({
                     training: summary.training ? `${summary.training}, ${workoutSummary}` : workoutSummary,
@@ -139,105 +141,126 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
     return (
         <div className="flex flex-col h-full space-y-6">
             {/* Header with Stats */}
-            <div className="flex justify-between items-center bg-blue-600 rounded-[2rem] p-6 shadow-xl shadow-blue-600/20 text-white">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                        <Dumbbell size={20} className="text-blue-100" />
-                        <h2 className="text-xl font-black uppercase tracking-tighter italic">Nueva Sesión</h2>
-                    </div>
-                    <p className="text-[10px] font-bold text-blue-100 uppercase tracking-[0.2em] opacity-80">Registro Detallado</p>
-                </div>
-                <div className="text-right">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-100 block mb-1">Gasto Estimado</span>
-                    <div className="flex items-baseline justify-end gap-1">
-                        <span className="text-3xl font-black tracking-tighter tabular-nums flex items-center gap-2">
-                            <Zap size={20} className="text-amber-400 fill-amber-400 animate-pulse" />
-                            {totalCalories}
-                        </span>
-                        <span className="text-xs font-bold uppercase text-blue-100">kcal</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Exercise List */}
-            <div className="flex-1 space-y-4">
-                <AnimatePresence mode="popLayout">
-                    {selectedExercises.map((ex) => (
-                        <RoutineExerciseItem
-                            key={ex.id}
-                            exercise={ex.exercise}
-                            sets={ex.sets}
-                            reps={ex.reps}
-                            weight={ex.weight}
-                            rpe={ex.rpe}
-                            restTimeSeconds={ex.restTimeSeconds}
-                            onUpdate={(updates) => updateExercise(ex.id, updates)}
-                            onRemove={() => removeExercise(ex.id)}
-                            onStartRest={() => setActiveTimerSeconds(ex.restTimeSeconds)}
-                        />
-                    ))}
-                </AnimatePresence>
-
-                {selectedExercises.length === 0 && !isAddingExercise && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex flex-col items-center justify-center py-20 bg-slate-100/50 dark:bg-slate-950/50 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-[2.5rem] text-center px-10"
-                    >
-                        <div className="w-20 h-20 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center mb-6 shadow-xl">
-                            <Dumbbell className="text-blue-500" size={32} />
+            {!isLiveMode && (
+                <div className="flex justify-between items-center bg-blue-600 rounded-[2rem] p-6 shadow-xl shadow-blue-600/20 text-white">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            <Dumbbell size={20} className="text-blue-100" />
+                            <h2 className="text-xl font-black uppercase tracking-tighter italic">Nueva Sesión</h2>
                         </div>
-                        <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2 italic">Rutina Vacía</h3>
-                        <p className="text-slate-500 text-sm font-medium mb-8 leading-relaxed">
-                            Añade ejercicios de calistenia, pesas o cardio para empezar a registrar tu progreso y quemar esas calorías.
-                        </p>
-                        <button
-                            onClick={() => setIsAddingExercise(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20 transition-all active:scale-95 flex items-center gap-2"
+                        <p className="text-[10px] font-bold text-blue-100 uppercase tracking-[0.2em] opacity-80">Registro Detallado</p>
+                    </div>
+                    <div className="text-right">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-100 block mb-1">Gasto Estimado</span>
+                        <div className="flex items-baseline justify-end gap-1">
+                            <span className="text-3xl font-black tracking-tighter tabular-nums flex items-center gap-2">
+                                <Zap size={20} className="text-amber-400 fill-amber-400 animate-pulse" />
+                                {totalCalories}
+                            </span>
+                            <span className="text-xs font-bold uppercase text-blue-100">kcal</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Content Area */}
+            <div className="flex-1">
+                <AnimatePresence mode="wait">
+                    {!isLiveMode ? (
+                        <motion.div
+                            key="builder"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="space-y-4"
                         >
-                            <Plus size={16} /> Añadir Primer Ejercicio
-                        </button>
-                    </motion.div>
-                )}
+                            <div className="space-y-4">
+                                {selectedExercises.map((ex) => (
+                                    <RoutineExerciseItem
+                                        key={ex.id}
+                                        exercise={ex.exercise}
+                                        sets={ex.sets}
+                                        reps={ex.reps}
+                                        weight={ex.weight}
+                                        rpe={ex.rpe}
+                                        restTimeSeconds={ex.restTimeSeconds}
+                                        onUpdate={(updates) => updateExercise(ex.id, updates)}
+                                        onRemove={() => removeExercise(ex.id)}
+                                        onStartRest={() => setActiveTimerSeconds(ex.restTimeSeconds)}
+                                    />
+                                ))}
 
-                {selectedExercises.length > 0 && !isAddingExercise && (
-                    <button
-                        onClick={() => setIsAddingExercise(true)}
-                        className="w-full py-6 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-3xl text-slate-400 hover:text-blue-500 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group flex flex-col items-center gap-2"
-                    >
-                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-all">
-                            <Plus size={20} />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Añadir Ejercicio</span>
-                    </button>
-                )}
-            </div>
+                                {selectedExercises.length === 0 && !isAddingExercise && (
+                                    <div className="flex flex-col items-center justify-center py-20 bg-slate-100/50 dark:bg-slate-950/50 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-[2.5rem] text-center px-10">
+                                        <div className="w-20 h-20 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center mb-6 shadow-xl">
+                                            <Dumbbell className="text-blue-500" size={32} />
+                                        </div>
+                                        <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2 italic">Rutina Vacía</h3>
+                                        <p className="text-slate-500 text-sm font-medium mb-8 leading-relaxed">
+                                            Diseña tu rutina primero y luego iníciala en modo "Seguimiento en Vivo".
+                                        </p>
+                                        <button
+                                            onClick={() => setIsAddingExercise(true)}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20 transition-all active:scale-95 flex items-center gap-2"
+                                        >
+                                            <Plus size={16} /> Añadir Primer Ejercicio
+                                        </button>
+                                    </div>
+                                )}
 
-            {/* Actions */}
-            <div className="sticky bottom-0 pt-4 bg-slate-50 dark:bg-slate-950 flex gap-4">
-                <button
-                    onClick={onCancel}
-                    className="flex-1 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
-                >
-                    <X size={16} /> Cancelar
-                </button>
-                <button
-                    onClick={handleFinish}
-                    disabled={selectedExercises.length === 0 || isSaving}
-                    className={`flex-[2] py-4 font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2 ${selectedExercises.length === 0 || isSaving
-                        ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none'
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20 active:scale-95'
-                        }`}
-                >
-                    {isSaving ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                {selectedExercises.length > 0 && !isAddingExercise && (
+                                    <button
+                                        onClick={() => setIsAddingExercise(true)}
+                                        className="w-full py-6 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-3xl text-slate-400 hover:text-blue-500 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group flex flex-col items-center gap-2"
+                                    >
+                                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                            <Plus size={20} />
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Añadir Ejercicio</span>
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Actions bar for Builder */}
+                            <div className="sticky bottom-0 pt-4 bg-slate-50 dark:bg-slate-950 flex gap-4">
+                                <button
+                                    onClick={onCancel}
+                                    className="flex-1 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <X size={16} /> Cancelar
+                                </button>
+                                <button
+                                    onClick={() => setIsLiveMode(true)}
+                                    disabled={selectedExercises.length === 0 || isSaving}
+                                    className={`flex-[2] py-4 font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2 ${selectedExercises.length === 0 || isSaving
+                                        ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none'
+                                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20 active:scale-95'
+                                        }`}
+                                >
+                                    <Play size={18} /> Iniciar Coach en Vivo
+                                </button>
+                            </div>
+                        </motion.div>
                     ) : (
-                        <><CheckCircle2 size={18} /> Finalizar Sesión</>
+                        <motion.div
+                            key="live"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="h-full pt-4"
+                        >
+                            <WorkoutLiveSession
+                                exercises={selectedExercises}
+                                totalEstimatedCalories={totalCalories}
+                                onFinish={handleFinish}
+                                onCancel={() => setIsLiveMode(false)}
+                            />
+                        </motion.div>
                     )}
-                </button>
+                </AnimatePresence>
             </div>
 
-            {/* Rest Timer Modal */}
+            {/* Modals outside main flow */}
             <AnimatePresence>
                 {activeTimerSeconds !== null && (
                     <RestTimer
@@ -245,10 +268,6 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
                         onClose={() => setActiveTimerSeconds(null)}
                     />
                 )}
-            </AnimatePresence>
-
-            {/* Modal for Exercise Selection */}
-            <AnimatePresence>
                 {isAddingExercise && (
                     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
                         <motion.div
