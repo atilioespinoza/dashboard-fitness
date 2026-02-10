@@ -4,9 +4,9 @@ import { RoutineExerciseItem } from './RoutineExerciseItem';
 import { RestTimer } from './RestTimer';
 import { WorkoutLiveSession } from './WorkoutLiveSession';
 import { Exercise } from '../../data/exerciseDB';
-import { calculateWorkoutCalories, estimateActiveDuration, estimateActiveDurationFromList } from '../../lib/calorieCalculator';
+import { calculateWorkoutCalories, calculateWorkoutDuration, estimateActiveDuration, estimateActiveDurationFromList } from '../../lib/calorieCalculator';
 import { UserProfile } from '../../hooks/useProfile';
-import { Dumbbell, Plus, Zap, X, Play } from 'lucide-react';
+import { Dumbbell, Plus, Zap, X, Play, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { useRoutines } from '../../hooks/useRoutines';
@@ -62,9 +62,8 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
     const [isSavingTemplate, setIsSavingTemplate] = useState(false);
     const { saveRoutine, updateRoutine } = useRoutines(userId);
 
-    const totalCalories = useMemo(() => {
-        if (!profile) return 0;
-        const sets = selectedExercises.map(ex => {
+    const workoutData = useMemo(() => {
+        return selectedExercises.map(ex => {
             let duration = 0;
             if (ex.exercise.category === 'Cardio' && ex.durationMinutes) {
                 duration = ex.durationMinutes;
@@ -83,13 +82,21 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
                 repsPerSet: ex.repsPerSet
             };
         });
-        return calculateWorkoutCalories(sets, {
+    }, [selectedExercises]);
+
+    const totalCalories = useMemo(() => {
+        if (!profile) return 0;
+        return calculateWorkoutCalories(workoutData, {
             weightKp: profile.target_weight || 80,
             heightCm: profile.height || 170,
             age: 30,
             gender: profile.gender || 'Masculino'
         });
-    }, [selectedExercises, profile]);
+    }, [workoutData, profile]);
+
+    const totalDuration = useMemo(() => {
+        return calculateWorkoutDuration(workoutData);
+    }, [workoutData]);
 
     const addExercise = (exercise: Exercise) => {
         setSelectedExercises(prev => [
@@ -261,14 +268,26 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
                         </div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Configura tu rutina</p>
                     </div>
-                    <div className="text-right">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Gasto Estimado</span>
-                        <div className="flex items-baseline justify-end gap-1">
-                            <span className="text-3xl font-black tracking-tighter tabular-nums flex items-center gap-2 text-white">
-                                <Zap size={20} className="text-amber-400 fill-amber-400 animate-pulse" />
-                                {totalCalories}
-                            </span>
-                            <span className="text-xs font-bold uppercase text-slate-400">kcal</span>
+                    <div className="flex gap-6 md:gap-10">
+                        <div className="text-right">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Duración</span>
+                            <div className="flex items-baseline justify-end gap-1">
+                                <span className="text-3xl font-black tracking-tighter tabular-nums flex items-center gap-2 text-white">
+                                    <Clock size={20} className="text-blue-400" />
+                                    {totalDuration}
+                                </span>
+                                <span className="text-xs font-bold uppercase text-slate-400">min</span>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Gasto</span>
+                            <div className="flex items-baseline justify-end gap-1">
+                                <span className="text-3xl font-black tracking-tighter tabular-nums flex items-center gap-2 text-white">
+                                    <Zap size={20} className="text-amber-400 fill-amber-400 animate-pulse" />
+                                    {totalCalories}
+                                </span>
+                                <span className="text-xs font-bold uppercase text-slate-400">kcal</span>
+                            </div>
                         </div>
                     </div>
                 </div>

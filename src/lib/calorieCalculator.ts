@@ -94,3 +94,17 @@ export const estimateActiveDurationFromList = (repsPerSet: number[], secondsPerR
     const totalSeconds = totalReps * secondsPerRep;
     return totalSeconds / 60; // minutes
 };
+
+export const calculateWorkoutDuration = (sets: WorkoutSet[]): number => {
+    let totalMinutes = 0;
+    sets.forEach(set => {
+        // Active time
+        totalMinutes += set.durationMinutes;
+        // Rest time between sets
+        if (set.restTimeSeconds && set.sets && set.sets > 1) {
+            totalMinutes += (set.restTimeSeconds * (set.sets - 1)) / 60;
+        }
+        // Potential rest time AFTER the last set of this exercise (if any, though usually MET doesn't account for transitions)
+    });
+    return Math.round(totalMinutes);
+};
