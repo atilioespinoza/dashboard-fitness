@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Dumbbell, ChevronRight, SkipForward, Zap } from 'lucide-react';
+import { CheckCircle2, Dumbbell, ChevronRight, SkipForward, Zap, Play, Pause, RotateCcw } from 'lucide-react';
 import { Exercise } from '../../data/exerciseDB';
 import { RestTimer } from './RestTimer';
 import { audioManager } from '../../lib/audioManager';
@@ -38,6 +38,46 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
     });
 
     const currentEx = exercises[currentExerciseIndex];
+
+    // Cardio Timer State
+    const [timerSeconds, setTimerSeconds] = useState(0);
+    const [isTimerRunning, setIsTimerRunning] = useState(false);
+    const [timerFinished, setTimerFinished] = useState(false);
+
+    useEffect(() => {
+        if (currentEx.exercise.category === 'Cardio') {
+            setTimerSeconds((currentEx.durationMinutes || 0) * 60);
+            setIsTimerRunning(false);
+            setTimerFinished(false);
+        } else {
+            setIsTimerRunning(false); // Ensure timer stops if switching to non-cardio (though usually sequential)
+        }
+    }, [currentExerciseIndex, currentEx.exercise.category, currentEx.durationMinutes]);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isTimerRunning && timerSeconds > 0) {
+            interval = setInterval(() => {
+                setTimerSeconds((prev) => {
+                    if (prev <= 1) {
+                        audioManager.playAlarm();
+                        setIsTimerRunning(false);
+                        setTimerFinished(true);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isTimerRunning, timerSeconds]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
     const totalSetsInWorkout = exercises.reduce((acc, ex) => acc + ex.sets, 0);
 
     // Calculate progress based on sets completed
@@ -169,11 +209,49 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
 
                     <div className="grid grid-cols-2 gap-8 w-full max-w-sm">
                         {currentEx.exercise.category === 'Cardio' ? (
-                            <div className="col-span-2 bg-white dark:bg-slate-900 p-8 rounded-[3rem] shadow-xl border border-slate-100 dark:border-white/5 space-y-2">
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">Duración Objetivo</span>
-                                <p className="text-5xl font-black text-slate-900 dark:text-white">
-                                    {currentEx.durationMinutes || 0}
-                                    <span className="text-lg uppercase tracking-widest ml-2 text-slate-400">min</span>
+                            <div className={`col-span-2 bg-white dark:bg-slate-900 p-8 rounded-[3rem] shadow-xl border ${timerFinished ? 'border-emerald-500 shadow-emerald-500/20' : 'border-slate-100 dark:border-white/5'} space-y-4 transition-all duration-500`}>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">Cronómetro en Vivo</span>
+                                    {timerFinished && (
+                                        <div className="flex items-center gap-1 text-emerald-500 animate-pulse">
+                                            <CheckCircle2 size={14} className="stroke-[3]" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Completado</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex flex-col items-center gap-4">
+                                    <p className={`text-7xl font-black tabular-nums tracking-tighter ${timerFinished ? 'text-emerald-500' : 'text-slate-900 dark:text-white'}`}>
+                                        {formatTime(timerSeconds)}
+                                    </p>
+
+                                    <div className="flex items-center gap-4">
+                                        <button
+                                            onClick={() => {
+                                                if (!isTimerRunning) audioManager.init();
+                                                setIsTimerRunning(!isTimerRunning);
+                                            }}
+                                            className={`w-16 h-16 flex items-center justify-center rounded-full transition-all ${isTimerRunning
+                                                ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
+                                                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/30'
+                                                }`}
+                                        >
+                                            {isTimerRunning ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setTimerSeconds((currentEx.durationMinutes || 0) * 60);
+                                                setIsTimerRunning(false);
+                                                setTimerFinished(false);
+                                            }}
+                                            className="w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                                        >
+                                            <RotateCcw size={20} />
+                                        </button>
+                                    </div>
+                                </div>
+                                <p className="text-center text-xs font-medium text-slate-400">
+                                    Objetivo: {currentEx.durationMinutes} min
                                 </p>
                             </div>
                         ) : (
