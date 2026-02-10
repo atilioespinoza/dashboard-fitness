@@ -44,12 +44,16 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
 
     const handleCompleteSet = () => {
         audioManager.init();
-        setIsResting(true);
+        if (currentEx.exercise.category === 'Cardio') {
+            // Cardio exercises move to next exercise immediately
+            moveToNext();
+        } else {
+            setIsResting(true);
+        }
     };
 
-    const handleRestFinished = () => {
-        setIsResting(false);
-        if (currentSet < currentEx.sets) {
+    const moveToNext = () => {
+        if (currentSet < currentEx.sets && currentEx.exercise.category !== 'Cardio') {
             setCurrentSet(prev => prev + 1);
         } else {
             if (currentExerciseIndex < exercises.length - 1) {
@@ -60,6 +64,11 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
                 onFinish(calculateActualCalories());
             }
         }
+    };
+
+    const handleRestFinished = () => {
+        setIsResting(false);
+        moveToNext();
     };
 
     const calculateActualCalories = () => {

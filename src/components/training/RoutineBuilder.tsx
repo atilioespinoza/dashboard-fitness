@@ -97,7 +97,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
             {
                 id: crypto.randomUUID(),
                 exercise,
-                sets: 3,
+                sets: exercise.category === 'Cardio' ? 1 : 3,
                 reps: 10,
                 weight: 0,
                 rpe: 7,
