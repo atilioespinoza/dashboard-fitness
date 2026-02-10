@@ -9,12 +9,23 @@ import { UserProfile } from '../../hooks/useProfile';
 import { Dumbbell, Plus, Zap, X, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
+import { useRoutines } from '../../hooks/useRoutines';
+import { Save } from 'lucide-react';
 
 interface RoutineBuilderProps {
     userId: string;
     profile: UserProfile | null;
     onComplete: () => void;
     onCancel: () => void;
+    initialName?: string;
+    initialExercises?: {
+        exercise: Exercise;
+        sets: number;
+        reps: number;
+        weight: number;
+        rpe: number;
+        restTimeSeconds: number;
+    }[];
 }
 
 interface SelectedExercise {
@@ -27,12 +38,23 @@ interface SelectedExercise {
     restTimeSeconds: number;
 }
 
-export function RoutineBuilder({ userId, profile, onComplete, onCancel }: RoutineBuilderProps) {
-    const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
+export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialName, initialExercises }: RoutineBuilderProps) {
+    const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>(() => {
+        if (initialExercises) {
+            return initialExercises.map(ex => ({
+                id: crypto.randomUUID(),
+                ...ex
+            }));
+        }
+        return [];
+    });
     const [isAddingExercise, setIsAddingExercise] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [activeTimerSeconds, setActiveTimerSeconds] = useState<number | null>(null);
     const [isLiveMode, setIsLiveMode] = useState(false);
+    const [routineName, setRoutineName] = useState(initialName || '');
+    const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+    const { saveRoutine } = useRoutines(userId);
 
     const totalCalories = useMemo(() => {
         if (!profile) return 0;
@@ -138,30 +160,61 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel }: Routin
         }
     };
 
+    const handleSaveTemplate = async () => {
+        if (!routineName.trim() || selectedExercises.length === 0) return;
+        setIsSavingTemplate(true);
+        try {
+            await saveRoutine(routineName, selectedExercises);
+            alert('¡Rutina guardada con éxito!');
+        } catch (err) {
+            alert('Error al guardar la plantilla. Asegúrate de tener la tabla workout_routines creada.');
+        } finally {
+            setIsSavingTemplate(false);
+        }
+    };
+
     return (
         <div className="flex flex-col h-full space-y-6">
             {/* Header with Stats */}
-            {!isLiveMode && (
-                <div className="flex justify-between items-center bg-blue-600 rounded-[2rem] p-6 shadow-xl shadow-blue-600/20 text-white">
+            {/* Header with Stats and Name */}
+            <div className="bg-slate-900 border border-white/5 rounded-[2rem] p-6 shadow-xl space-y-6">
+                <div className="flex justify-between items-center text-white">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                            <Dumbbell size={20} className="text-blue-100" />
+                            <Dumbbell size={20} className="text-blue-400" />
                             <h2 className="text-xl font-black uppercase tracking-tighter italic">Nueva Sesión</h2>
                         </div>
-                        <p className="text-[10px] font-bold text-blue-100 uppercase tracking-[0.2em] opacity-80">Registro Detallado</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Configura tu rutina</p>
                     </div>
                     <div className="text-right">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-100 block mb-1">Gasto Estimado</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Gasto Estimado</span>
                         <div className="flex items-baseline justify-end gap-1">
-                            <span className="text-3xl font-black tracking-tighter tabular-nums flex items-center gap-2">
+                            <span className="text-3xl font-black tracking-tighter tabular-nums flex items-center gap-2 text-white">
                                 <Zap size={20} className="text-amber-400 fill-amber-400 animate-pulse" />
                                 {totalCalories}
                             </span>
-                            <span className="text-xs font-bold uppercase text-blue-100">kcal</span>
+                            <span className="text-xs font-bold uppercase text-slate-400">kcal</span>
                         </div>
                     </div>
                 </div>
-            )}
+
+                <div className="flex gap-3">
+                    <input
+                        type="text"
+                        placeholder="Nombre de la rutina (ej: Empuje A...)"
+                        value={routineName}
+                        onChange={(e) => setRoutineName(e.target.value)}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                    <button
+                        onClick={handleSaveTemplate}
+                        disabled={!routineName.trim() || selectedExercises.length === 0 || isSavingTemplate}
+                        className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all disabled:opacity-30"
+                    >
+                        {isSavingTemplate ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save size={16} /> Guardar Plan</>}
+                    </button>
+                </div>
+            </div>
 
             {/* Content Area */}
             <div className="flex-1">

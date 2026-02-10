@@ -1,8 +1,10 @@
 import { RoutineBuilder } from '../../components/training/RoutineBuilder';
+import { SavedRoutinesList } from '../../components/training/SavedRoutinesList';
 import { FadeIn } from '../../components/ui/FadeIn';
 import { UserProfile } from '../../hooks/useProfile';
+import { useRoutines, Routine } from '../../hooks/useRoutines';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, History, Plus } from 'lucide-react';
+import { Dumbbell, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,6 +17,18 @@ interface RoutinePageProps {
 export function RoutinePage({ userId, profile, onUpdate }: RoutinePageProps) {
     const navigate = useNavigate();
     const [isBuilding, setIsBuilding] = useState(false);
+    const [selectedRoutine, setSelectedRoutine] = useState<Routine | null>(null);
+    const { routines, loading, deleteRoutine } = useRoutines(userId);
+
+    const handleSelectRoutine = (routine: Routine) => {
+        setSelectedRoutine(routine);
+        setIsBuilding(true);
+    };
+
+    const handleStartNew = () => {
+        setSelectedRoutine(null);
+        setIsBuilding(true);
+    };
 
     return (
         <div className="max-w-4xl mx-auto py-4 md:py-8 space-y-8">
@@ -41,34 +55,50 @@ export function RoutinePage({ userId, profile, onUpdate }: RoutinePageProps) {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                        className="space-y-12"
                     >
                         {/* New Workout Card */}
-                        <button
-                            onClick={() => setIsBuilding(true)}
-                            className="flex flex-col items-center text-center p-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[3rem] shadow-xl hover:border-emerald-500/50 hover:shadow-emerald-500/10 transition-all group"
-                        >
-                            <div className="w-20 h-20 bg-emerald-600/10 text-emerald-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                                <Plus size={32} />
-                            </div>
-                            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter mb-2">Nueva Sesión</h3>
-                            <p className="text-slate-500 text-sm font-medium">Empieza un entrenamiento desde cero y registra tus series en tiempo real.</p>
-                        </button>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <button
+                                onClick={handleStartNew}
+                                className="md:col-span-1 flex flex-col items-center justify-center p-8 bg-emerald-600 text-white rounded-[2.5rem] shadow-xl shadow-emerald-600/20 hover:scale-[1.02] active:scale-95 transition-all group border-4 border-emerald-500/20"
+                            >
+                                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 group-hover:rotate-90 transition-all duration-500">
+                                    <Plus size={32} />
+                                </div>
+                                <h3 className="text-xl font-black uppercase italic tracking-tighter">Plan Libre</h3>
+                                <p className="text-emerald-100 text-[10px] font-bold uppercase mt-1 opacity-80">Crear desde cero</p>
+                            </button>
 
-                        {/* Templates Card (Coming Soon) */}
-                        <div className="relative group overflow-hidden">
-                            <div className="flex flex-col items-center text-center p-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[3rem] shadow-xl opacity-60">
-                                <div className="w-20 h-20 bg-blue-600/10 text-blue-600 rounded-full flex items-center justify-center mb-6">
-                                    <History size={32} />
-                                </div>
-                                <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter mb-2">Mis Rutinas</h3>
-                                <p className="text-slate-500 text-sm font-medium">Usa tus plantillas guardadas para entrenar más rápido.</p>
+                            <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8 shadow-sm flex flex-col justify-center">
+                                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase italic tracking-tighter mb-2">Bienvenido a la Zona de Guerra</h3>
+                                <p className="text-slate-500 text-sm font-medium leading-relaxed">
+                                    Puedes diseñar una rutina nueva cada vez o cargar tus plantillas guardadas para empezar de inmediato con tus pesos y descansos ya configurados.
+                                </p>
                             </div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="bg-slate-900/90 text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] -rotate-12 shadow-2xl backdrop-blur-sm border border-white/20">
-                                    Próximamente
-                                </div>
+                        </div>
+
+                        {/* Saved Routines Section */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="h-px flex-1 bg-slate-100 dark:bg-white/5" />
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Tus Plantillas Guardadas</h3>
+                                <div className="h-px flex-1 bg-slate-100 dark:bg-white/5" />
                             </div>
+
+                            {loading ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {[1, 2].map(i => (
+                                        <div key={i} className="h-48 bg-slate-100 dark:bg-slate-900 rounded-[2rem] animate-pulse" />
+                                    ))}
+                                </div>
+                            ) : (
+                                <SavedRoutinesList
+                                    routines={routines}
+                                    onSelect={handleSelectRoutine}
+                                    onDelete={deleteRoutine}
+                                />
+                            )}
                         </div>
                     </motion.div>
                 ) : (
@@ -81,6 +111,8 @@ export function RoutinePage({ userId, profile, onUpdate }: RoutinePageProps) {
                         <RoutineBuilder
                             userId={userId}
                             profile={profile}
+                            initialName={selectedRoutine?.name}
+                            initialExercises={selectedRoutine?.exercises}
                             onComplete={() => {
                                 setIsBuilding(false);
                                 onUpdate();
@@ -94,4 +126,3 @@ export function RoutinePage({ userId, profile, onUpdate }: RoutinePageProps) {
         </div>
     );
 }
-
