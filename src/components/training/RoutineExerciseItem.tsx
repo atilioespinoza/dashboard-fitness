@@ -1,5 +1,5 @@
 import { Exercise } from '../../data/exerciseDB';
-import { Trash2, Clock, Hash, Weight, Star } from 'lucide-react';
+import { Trash2, Clock, Hash, Weight, Star, ChevronUp, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface RoutineExerciseItemProps {
@@ -12,6 +12,8 @@ interface RoutineExerciseItemProps {
     onUpdate: (updates: any) => void;
     onRemove: () => void;
     onStartRest: () => void;
+    onMoveUp?: () => void;
+    onMoveDown?: () => void;
 }
 
 export function RoutineExerciseItem({
@@ -24,7 +26,9 @@ export function RoutineExerciseItem({
     durationMinutes,
     onUpdate,
     onRemove,
-    onStartRest
+    onStartRest,
+    onMoveUp,
+    onMoveDown
 }: RoutineExerciseItemProps & { durationMinutes?: number }) {
     const isCardio = exercise.category === 'Cardio';
 
@@ -45,12 +49,33 @@ export function RoutineExerciseItem({
                         {exercise.category}
                     </span>
                 </div>
-                <button
-                    onClick={onRemove}
-                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                >
-                    <Trash2 size={18} />
-                </button>
+                <div className="flex items-center gap-1">
+                    {onMoveUp && (
+                        <button
+                            onClick={onMoveUp}
+                            className="p-2 text-slate-300 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-all"
+                            title="Mover arriba"
+                        >
+                            <ChevronUp size={18} />
+                        </button>
+                    )}
+                    {onMoveDown && (
+                        <button
+                            onClick={onMoveDown}
+                            className="p-2 text-slate-300 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-all"
+                            title="Mover abajo"
+                        >
+                            <ChevronDown size={18} />
+                        </button>
+                    )}
+                    <button
+                        onClick={onRemove}
+                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all ml-1"
+                        title="Eliminar"
+                    >
+                        <Trash2 size={18} />
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

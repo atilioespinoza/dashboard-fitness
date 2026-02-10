@@ -103,6 +103,18 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
         setSelectedExercises(prev => prev.filter(ex => ex.id !== id));
     };
 
+    const moveExercise = (index: number, direction: 'up' | 'down') => {
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        if (newIndex < 0 || newIndex >= selectedExercises.length) return;
+
+        setSelectedExercises(prev => {
+            const next = [...prev];
+            const [moved] = next.splice(index, 1);
+            next.splice(newIndex, 0, moved);
+            return next;
+        });
+    };
+
     const handleFinish = async (caloriesOverride?: number) => {
         if (selectedExercises.length === 0) return;
         setIsSaving(true);
@@ -240,7 +252,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
                             className="space-y-4"
                         >
                             <div className="space-y-4">
-                                {selectedExercises.map((ex) => (
+                                {selectedExercises.map((ex, index) => (
                                     <RoutineExerciseItem
                                         key={ex.id}
                                         exercise={ex.exercise}
@@ -252,6 +264,8 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
                                         durationMinutes={ex.durationMinutes}
                                         onUpdate={(updates) => updateExercise(ex.id, updates)}
                                         onRemove={() => removeExercise(ex.id)}
+                                        onMoveUp={index > 0 ? () => moveExercise(index, 'up') : undefined}
+                                        onMoveDown={index < selectedExercises.length - 1 ? () => moveExercise(index, 'down') : undefined}
                                         onStartRest={() => {
                                             audioManager.init();
                                             setActiveTimerSeconds(ex.restTimeSeconds);
