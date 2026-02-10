@@ -122,6 +122,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                             isStagnant={isStagnant}
                             isRecomp={isRecomp}
                             fatLossGoal={fatLossGoal}
+                            targetBodyFat={targetBodyFat}
                         />
                     </FadeIn>
                 </FadeInStagger>

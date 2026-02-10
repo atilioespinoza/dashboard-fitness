@@ -9,9 +9,10 @@ interface LossGaugeProps {
     isStagnant: boolean;
     isRecomp: boolean;
     fatLossGoal?: number;
+    targetBodyFat?: number;
 }
 
-export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss, isStagnant, isRecomp, fatLossGoal }: LossGaugeProps) {
+export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss, isStagnant, isRecomp, fatLossGoal, targetBodyFat }: LossGaugeProps) {
     let rateColor = "#10b981"; // green
     let rateText = "Ideal";
 
@@ -109,7 +110,7 @@ export function LossGauge({ weeklyRate, weeklyDeficit, totalDeficit, fatLoss, is
                         {fatLossGoal && fatLossGoal > 0 && (
                             <div className="space-y-2">
                                 <div className="flex justify-between text-[8px] font-black uppercase tracking-widest">
-                                    <span className="text-slate-400 dark:text-slate-600">Meta % Grasa</span>
+                                    <span className="text-slate-400 dark:text-slate-600">Meta {targetBodyFat}% Grasa</span>
                                     <span className="text-emerald-500">Faltan {Math.max(0, fatLossGoal - fatLoss).toFixed(2)} kg • {Math.max(0, Math.min(100, (fatLoss / fatLossGoal) * 100)).toFixed(0)}%</span>
                                 </div>
                                 <div className="h-2 w-full bg-slate-100 dark:bg-slate-900 rounded-full p-[1px] overflow-hidden border border-slate-200 dark:border-white/5 shadow-inner">
