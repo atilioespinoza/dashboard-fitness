@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 interface SavedRoutinesListProps {
     routines: Routine[];
     onSelect: (routine: Routine) => void;
-    onDelete: (id: string) => void;
+    onDelete?: (id: string) => void;
 }
 
 export function SavedRoutinesList({ routines, onSelect, onDelete }: SavedRoutinesListProps) {
@@ -47,15 +47,17 @@ export function SavedRoutinesList({ routines, onSelect, onDelete }: SavedRoutine
                                     </span>
                                 </div>
                             </div>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (window.confirm('¿Eliminar esta rutina?')) onDelete(routine.id);
-                                }}
-                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                            {onDelete && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm('¿Eliminar esta rutina?')) onDelete(routine.id);
+                                    }}
+                                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
                         </div>
 
                         <div className="flex flex-wrap gap-1.5">
