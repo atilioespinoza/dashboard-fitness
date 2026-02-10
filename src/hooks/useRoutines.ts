@@ -11,6 +11,7 @@ export interface Routine {
         sets: number;
         reps: number;
         weight: number;
+        rpe: number;
         restTimeSeconds: number;
     }[];
     created_at: string;

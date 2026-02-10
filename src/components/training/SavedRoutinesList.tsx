@@ -1,5 +1,5 @@
 import { Routine } from '../../hooks/useRoutines';
-import { Play, Trash2, Clock, Dumbbell, ChevronRight } from 'lucide-react';
+import { Trash2, Dumbbell, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SavedRoutinesListProps {
