@@ -154,7 +154,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
         });
     };
 
-    const handleFinish = async (caloriesOverride?: number) => {
+    const handleFinish = async (caloriesOverride?: number, sessionDetails?: any) => {
         if (selectedExercises.length === 0) return;
         setIsSaving(true);
         const finalCalories = typeof caloriesOverride === 'number' ? caloriesOverride : totalCalories;
@@ -166,13 +166,24 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
                 day: '2-digit'
             }).format(new Date());
 
-            const workoutSummary = selectedExercises.map(ex => {
-                if (ex.exercise.category === 'Cardio') {
-                    return `${ex.exercise.name} (${ex.durationMinutes} min)`;
+            // Determine which exercises were actually done
+            const actualExercises = sessionDetails
+                ? sessionDetails.exercises.filter((ex: any) => !ex.isSkipped)
+                : selectedExercises;
+
+            const workoutSummary = actualExercises.map((ex: any) => {
+                const exerciseName = ex.name || ex.exercise?.name;
+                if (ex.category === 'Cardio' || ex.exercise?.category === 'Cardio') {
+                    return `${exerciseName} (${ex.durationMinutes || 0} min)`;
                 }
-                const repsString = ex.repsPerSet ? `[${ex.repsPerSet.join(',')}]` : `${ex.reps}`;
-                return `${ex.exercise.name} (${ex.sets}x${repsString})`;
+                const repsString = ex.actualReps
+                    ? `[${ex.actualReps.join(',')}]`
+                    : (ex.repsPerSet ? `[${ex.repsPerSet.join(',')}]` : `${ex.reps}`);
+                const sets = ex.actualReps ? ex.actualReps.length : ex.sets;
+                const weightSuffix = ex.weight > 0 ? ` @ ${ex.weight}kg` : '';
+                return `${exerciseName} (${sets}x${repsString}${weightSuffix})`;
             }).join(', ');
+
             const rawText = `Entrenamiento: ${workoutSummary}`;
 
             // 1. Log the event
@@ -182,7 +193,8 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
                 raw_text: rawText,
                 parsed_data: {
                     burned_calories: finalCalories,
-                    training: workoutSummary
+                    training: workoutSummary,
+                    session_details: sessionDetails
                 }
             });
 

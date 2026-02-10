@@ -15,15 +15,17 @@ interface WorkoutLiveSessionProps {
         durationMinutes?: number;
         repsPerSet?: number[];
     }[];
-    onFinish: (burnedCalories: number) => void;
+    onFinish: (burnedCalories: number, sessionDetails?: any) => void;
     onCancel: () => void;
     totalEstimatedCalories: number;
 }
 
 export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimatedCalories }: WorkoutLiveSessionProps) {
+    const [startTime] = useState(() => new Date());
     const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
     const [currentSet, setCurrentSet] = useState(1);
     const [isResting, setIsResting] = useState(false);
+    const [skippedExerciseIndices, setSkippedExerciseIndices] = useState<number[]>([]);
     const [performedReps, setPerformedReps] = useState<{ [key: string]: number }>(() => {
         const initial: { [key: string]: number } = {};
         exercises.forEach((ex, exIdx) => {
@@ -59,10 +61,41 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
                 setCurrentExerciseIndex(prev => prev + 1);
                 setCurrentSet(1);
             } else {
-                // Workout Finished! Recalculate based on performed reps
-                onFinish(calculateActualCalories());
+                handleFinishSession();
             }
         }
+    };
+
+    const handleFinishSession = () => {
+        const endTime = new Date();
+        const durationSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+
+        const sessionDetails = {
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
+            durationSeconds,
+            exercises: exercises.map((ex, idx) => {
+                const isSkipped = skippedExerciseIndices.includes(idx);
+                const actualReps = [];
+                if (!isSkipped && ex.exercise.category !== 'Cardio') {
+                    for (let s = 1; s <= ex.sets; s++) {
+                        actualReps.push(performedReps[`${idx}-${s}`]);
+                    }
+                }
+
+                return {
+                    name: ex.exercise.name,
+                    category: ex.exercise.category,
+                    plannedSets: ex.sets,
+                    plannedReps: ex.repsPerSet || ex.reps,
+                    actualReps: actualReps.length > 0 ? actualReps : undefined,
+                    weight: ex.weight,
+                    isSkipped
+                };
+            })
+        };
+
+        onFinish(calculateActualCalories(), sessionDetails);
     };
 
     const handleRestFinished = () => {
@@ -204,18 +237,21 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
                     >
                         Abandonar
                     </button>
-                    {currentExerciseIndex < exercises.length - 1 && (
-                        <button
-                            onClick={() => {
-                                audioManager.init();
+                    <button
+                        onClick={() => {
+                            audioManager.init();
+                            setSkippedExerciseIndices(prev => [...prev, currentExerciseIndex]);
+                            if (currentExerciseIndex < exercises.length - 1) {
                                 setCurrentExerciseIndex(prev => prev + 1);
                                 setCurrentSet(1);
-                            }}
-                            className="flex-1 py-4 bg-slate-100 dark:bg-white/5 text-slate-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
-                        >
-                            Saltar Ejercicio <SkipForward size={14} />
-                        </button>
-                    )}
+                            } else {
+                                handleFinishSession();
+                            }
+                        }}
+                        className="flex-1 py-4 bg-slate-100 dark:bg-white/5 text-slate-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
+                    >
+                        {currentExerciseIndex < exercises.length - 1 ? 'Saltar Ejercicio' : 'Saltar y Terminar'} <SkipForward size={14} />
+                    </button>
                 </div>
             </div>
 
