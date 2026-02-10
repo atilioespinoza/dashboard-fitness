@@ -3,12 +3,13 @@ import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
 import { supabase } from './lib/supabase';
-import { Activity, Sun, Moon, LogOut, Database, Download, Brain, User, Mic, ChevronRight, Bot } from 'lucide-react';
+import { Activity, Sun, Moon, LogOut, Database, Download, Brain, User, Mic, ChevronRight, Bot, Dumbbell } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { FadeIn } from './components/ui/FadeIn';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { DashboardPage } from './pages/DashboardPage';
 import { LogPage } from './pages/LogPage';
+import { RoutinePage } from './pages/training/RoutinePage';
 import { ProfileModal } from './components/ui/ProfileModal';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -358,6 +359,12 @@ function AppContent() {
                             >
                                 Dashboard
                             </Link>
+                            <Link
+                                to="/training"
+                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${location.pathname === '/training' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            >
+                                Entrenamiento
+                            </Link>
                         </div>
 
                         <div className="flex flex-col items-end gap-1">
@@ -405,6 +412,7 @@ function AppContent() {
                     <Routes>
                         <Route path="/" element={<LogPage userId={user.id} profile={profile} onUpdate={dataRefresh} />} />
                         <Route path="/dashboard" element={<DashboardPage data={data} profile={profile} />} />
+                        <Route path="/training" element={<RoutinePage userId={user.id} profile={profile} onUpdate={dataRefresh} />} />
                     </Routes>
                 </main>
             </div>
@@ -425,6 +433,13 @@ function AppContent() {
                     >
                         <Activity size={20} />
                         <span className="text-[7px] font-black uppercase mt-1">Status</span>
+                    </Link>
+                    <Link
+                        to="/training"
+                        className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all ${location.pathname === '/training' ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-600/30' : 'text-slate-400'}`}
+                    >
+                        <Dumbbell size={20} />
+                        <span className="text-[7px] font-black uppercase mt-1">Train</span>
                     </Link>
                 </div>
             </div>
