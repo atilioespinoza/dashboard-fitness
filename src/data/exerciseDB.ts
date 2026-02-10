@@ -24,8 +24,12 @@ export const EXERCISE_DATABASE: Exercise[] = [
     { id: 'cal_burpees', name: 'Burpees', category: 'Calistenia', metValue: 9.0, muscleGroup: ['Full Body'] },
     { id: 'cal_plank', name: 'Plancha Abdominal', category: 'Calistenia', metValue: 3.5, muscleGroup: ['Core'] },
     { id: 'cal_hanging_leg_raises', name: 'Elevación Piernas Colgado', category: 'Calistenia', metValue: 4.0, muscleGroup: ['Abs', 'Core'] },
+    { id: 'cal_parallettes_leg_raises', name: 'Elevación Piernas en Paralelas', category: 'Calistenia', metValue: 4.5, muscleGroup: ['Abs'] },
+    { id: 'cal_lsit', name: 'L-Sit (Isométrico)', category: 'Calistenia', metValue: 7.0, muscleGroup: ['Abs', 'Core', 'Tríceps'] },
     { id: 'cal_muscleup', name: 'Muscle-up', category: 'Calistenia', metValue: 11.0, muscleGroup: ['Full Body', 'Espalda'] },
     { id: 'cal_handstand_pushups', name: 'Flexiones haciendo el Pino', category: 'Calistenia', metValue: 10.0, muscleGroup: ['Hombros', 'Tríceps'] },
+    { id: 'cal_russian_twists', name: 'Giro Ruso (Russian Twists)', category: 'Calistenia', metValue: 4.0, muscleGroup: ['Oblicuos'] },
+    { id: 'cal_superman', name: 'Superman (Lumbares)', category: 'Calistenia', metValue: 3.0, muscleGroup: ['Espalda Baja'] },
     { id: 'cal_front_lever', name: 'Front Lever Hold', category: 'Calistenia', metValue: 12.0, muscleGroup: ['Core', 'Espalda'] },
 
     // --- CARDIO ---
@@ -41,6 +45,9 @@ export const EXERCISE_DATABASE: Exercise[] = [
     { id: 'cardio_elliptical', name: 'Elíptica', category: 'Cardio', metValue: 5.5 },
     { id: 'cardio_stairmaster', name: 'Escaladora (StairMaster)', category: 'Cardio', metValue: 9.0 },
     { id: 'cardio_hiit', name: 'HIIT (Alta Intensidad)', category: 'Cardio', metValue: 12.0 },
+    { id: 'cardio_battle_ropes', name: 'Cuerdas de Batalla (Battle Ropes)', category: 'Cardio', metValue: 10.0 },
+    { id: 'cardio_kettlebell_swings', name: 'Kettlebell Swings', category: 'Cardio', metValue: 9.0 },
+    { id: 'cardio_assault_bike', name: 'Assault Bike / Fan Bike', category: 'Cardio', metValue: 12.0 },
     { id: 'cardio_mountain_climbers', name: 'Mountain Climbers', category: 'Cardio', metValue: 8.0 },
 
     // --- FUERZA (Pesas / Gimnasio) ---
@@ -55,6 +62,10 @@ export const EXERCISE_DATABASE: Exercise[] = [
     { id: 'gym_leg_press', name: 'Prensa de Piernas', category: 'Fuerza', metValue: 4.5, muscleGroup: ['Piernas'] },
     { id: 'gym_lat_pulldown', name: 'Jalones en Polea (Lat Pulldown)', category: 'Fuerza', metValue: 4.0, muscleGroup: ['Espalda'] },
     { id: 'gym_shoulder_flies', name: 'Elevaciones Laterales (Hombros)', category: 'Fuerza', metValue: 3.0, muscleGroup: ['Hombros'] },
+    { id: 'gym_bulgarian_split_squat', name: 'Sentadilla Búlgara', category: 'Fuerza', metValue: 6.5, muscleGroup: ['Piernas', 'Glúteos'] },
+    { id: 'gym_romanian_deadlift', name: 'Peso Muerto Rumano (RDL)', category: 'Fuerza', metValue: 7.0, muscleGroup: ['Isquios', 'Glúteos'] },
+    { id: 'gym_face_pulls', name: 'Face Pulls (Cara)', category: 'Fuerza', metValue: 3.0, muscleGroup: ['Deltoides Posterior', 'Espalda Alta'] },
+    { id: 'gym_incline_bench_press', name: 'Press Superior (Inclinado)', category: 'Fuerza', metValue: 5.5, muscleGroup: ['Pecho Superior', 'Tríceps'] },
 
     // --- DEPORTES / OTROS ---
     { id: 'sport_soccer', name: 'Fútbol (Competitivo)', category: 'Deportes', metValue: 10.0 },
@@ -62,7 +73,10 @@ export const EXERCISE_DATABASE: Exercise[] = [
     { id: 'sport_tennis', name: 'Tenis (Individual)', category: 'Deportes', metValue: 7.3 },
     { id: 'sport_padel', name: 'Pádel', category: 'Deportes', metValue: 6.0 },
     { id: 'sport_boxing', name: 'Boxeo / Saco', category: 'Deportes', metValue: 9.0 },
+    { id: 'sport_volleyball', name: 'Vóleibol', category: 'Deportes', metValue: 4.0 },
     { id: 'yoga_hatha', name: 'Yoga (Hatha)', category: 'Flexibilidad', metValue: 2.5 },
     { id: 'yoga_power', name: 'Yoga (Power/Vinyasa)', category: 'Flexibilidad', metValue: 4.0 },
+    { id: 'flex_cobra', name: 'Postura de Cobra', category: 'Flexibilidad', metValue: 2.0, muscleGroup: ['Espalda', 'Abs'] },
+    { id: 'flex_child_pose', name: 'Postura del Niño', category: 'Flexibilidad', metValue: 1.5, muscleGroup: ['Espalda'] },
     { id: 'flex_stretching', name: 'Estiramiento Dinámico/Estático', category: 'Flexibilidad', metValue: 2.3 },
 ];
