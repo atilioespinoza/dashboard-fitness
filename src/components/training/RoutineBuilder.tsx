@@ -101,7 +101,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, routineI
                 reps: 10,
                 weight: 0,
                 rpe: 7,
-                restTimeSeconds: 90,
+                restTimeSeconds: exercise.category === 'Cardio' ? 0 : 90,
                 durationMinutes: exercise.category === 'Cardio' ? 30 : undefined
             }
         ]);

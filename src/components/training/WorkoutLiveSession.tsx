@@ -44,11 +44,10 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
 
     const handleCompleteSet = () => {
         audioManager.init();
-        if (currentEx.exercise.category === 'Cardio') {
-            // Cardio exercises move to next exercise immediately
-            moveToNext();
-        } else {
+        if (currentEx.restTimeSeconds > 0) {
             setIsResting(true);
+        } else {
+            moveToNext();
         }
     };
 
