@@ -6,7 +6,7 @@ import { WorkoutLiveSession } from './WorkoutLiveSession';
 import { Exercise } from '../../data/exerciseDB';
 import { calculateWorkoutCalories, estimateActiveDuration } from '../../lib/calorieCalculator';
 import { UserProfile } from '../../hooks/useProfile';
-import { Dumbbell, Plus, Zap, CheckCircle2, X, Play } from 'lucide-react';
+import { Dumbbell, Plus, Zap, X, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 

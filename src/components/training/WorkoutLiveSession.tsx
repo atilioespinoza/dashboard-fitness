@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Clock, Dumbbell, ChevronRight, Play, SkipForward, Flame, Zap } from 'lucide-react';
+import { CheckCircle2, Dumbbell, ChevronRight, SkipForward, Zap } from 'lucide-react';
 import { Exercise } from '../../data/exerciseDB';
 import { RestTimer } from './RestTimer';
 
@@ -48,9 +48,6 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
         }
     };
 
-    const skipRest = () => {
-        handleRestFinished();
-    };
 
     return (
         <div className="flex flex-col h-full space-y-8 pb-10">
