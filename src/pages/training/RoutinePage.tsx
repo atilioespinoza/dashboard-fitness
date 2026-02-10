@@ -108,21 +108,6 @@ export function RoutinePage({ userId, profile, onUpdate }: RoutinePageProps) {
                                     </div>
                                 </div>
 
-                                {/* Default Routines Section */}
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-px flex-1 bg-slate-100 dark:bg-white/5" />
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 flex items-center gap-2">
-                                            <Award size={12} /> Rutinas de la Casa
-                                        </h3>
-                                        <div className="h-px flex-1 bg-slate-100 dark:bg-white/5" />
-                                    </div>
-                                    <SavedRoutinesList
-                                        routines={DEFAULT_ROUTINES}
-                                        onSelect={handleSelectRoutine}
-                                    />
-                                </div>
-
                                 {/* Saved Routines Section */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3">
@@ -144,6 +129,21 @@ export function RoutinePage({ userId, profile, onUpdate }: RoutinePageProps) {
                                             onDelete={deleteRoutine}
                                         />
                                     )}
+                                </div>
+
+                                {/* Default Routines Section */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-px flex-1 bg-slate-100 dark:bg-white/5" />
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 flex items-center gap-2">
+                                            <Award size={12} /> Rutinas de la Casa
+                                        </h3>
+                                        <div className="h-px flex-1 bg-slate-100 dark:bg-white/5" />
+                                    </div>
+                                    <SavedRoutinesList
+                                        routines={DEFAULT_ROUTINES}
+                                        onSelect={handleSelectRoutine}
+                                    />
                                 </div>
                             </div>
                         ) : (
