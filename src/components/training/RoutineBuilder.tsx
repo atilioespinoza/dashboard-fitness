@@ -26,6 +26,7 @@ interface RoutineBuilderProps {
         weight: number;
         rpe: number;
         restTimeSeconds: number;
+        durationMinutes?: number;
     }[];
 }
 
@@ -37,6 +38,7 @@ interface SelectedExercise {
     weight: number;
     rpe: number;
     restTimeSeconds: number;
+    durationMinutes?: number;
 }
 
 export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialName, initialExercises }: RoutineBuilderProps) {
@@ -61,7 +63,9 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
         if (!profile) return 0;
         const sets = selectedExercises.map(ex => ({
             exercise: ex.exercise,
-            durationMinutes: estimateActiveDuration(ex.reps, ex.sets),
+            durationMinutes: ex.exercise.category === 'Cardio' && ex.durationMinutes
+                ? ex.durationMinutes
+                : estimateActiveDuration(ex.reps, ex.sets),
             rpe: ex.rpe,
             sets: ex.sets,
             restTimeSeconds: ex.restTimeSeconds
@@ -84,7 +88,8 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
                 reps: 10,
                 weight: 0,
                 rpe: 7,
-                restTimeSeconds: 90 // Default 90s
+                restTimeSeconds: 90,
+                durationMinutes: exercise.category === 'Cardio' ? 30 : undefined
             }
         ]);
         setIsAddingExercise(false);
@@ -110,7 +115,11 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
                 day: '2-digit'
             }).format(new Date());
 
-            const workoutSummary = selectedExercises.map(ex => `${ex.exercise.name} (${ex.sets}x${ex.reps})`).join(', ');
+            const workoutSummary = selectedExercises.map(ex =>
+                ex.exercise.category === 'Cardio'
+                    ? `${ex.exercise.name} (${ex.durationMinutes} min)`
+                    : `${ex.exercise.name} (${ex.sets}x${ex.reps})`
+            ).join(', ');
             const rawText = `Entrenamiento: ${workoutSummary}`;
 
             // 1. Log the event
@@ -240,6 +249,7 @@ export function RoutineBuilder({ userId, profile, onComplete, onCancel, initialN
                                         weight={ex.weight}
                                         rpe={ex.rpe}
                                         restTimeSeconds={ex.restTimeSeconds}
+                                        durationMinutes={ex.durationMinutes}
                                         onUpdate={(updates) => updateExercise(ex.id, updates)}
                                         onRemove={() => removeExercise(ex.id)}
                                         onStartRest={() => {

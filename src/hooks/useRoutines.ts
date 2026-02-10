@@ -13,6 +13,7 @@ export interface Routine {
         weight: number;
         rpe: number;
         restTimeSeconds: number;
+        durationMinutes?: number;
     }[];
     created_at: string;
 }

@@ -12,6 +12,7 @@ interface WorkoutLiveSessionProps {
         reps: number;
         weight: number;
         restTimeSeconds: number;
+        durationMinutes?: number;
     }[];
     onFinish: (burnedCalories: number) => void;
     onCancel: () => void;
@@ -95,17 +96,29 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
                     </div>
 
                     <div className="grid grid-cols-2 gap-8 w-full max-w-sm">
-                        <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-white/5 space-y-1">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Serie</span>
-                            <p className="text-4xl font-black text-blue-600">{currentSet}<span className="text-lg text-slate-300">/{currentEx.sets}</span></p>
-                        </div>
-                        <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-white/5 space-y-1">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Objetivo</span>
-                            <p className="text-4xl font-black text-slate-900 dark:text-white">
-                                {currentEx.reps}
-                                <span className="text-sm uppercase tracking-widest ml-1 text-slate-400">reps</span>
-                            </p>
-                        </div>
+                        {currentEx.exercise.category === 'Cardio' ? (
+                            <div className="col-span-2 bg-white dark:bg-slate-900 p-8 rounded-[3rem] shadow-xl border border-slate-100 dark:border-white/5 space-y-2">
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">Duración Objetivo</span>
+                                <p className="text-5xl font-black text-slate-900 dark:text-white">
+                                    {currentEx.durationMinutes || 0}
+                                    <span className="text-lg uppercase tracking-widest ml-2 text-slate-400">min</span>
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-white/5 space-y-1">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Serie</span>
+                                    <p className="text-4xl font-black text-blue-600">{currentSet}<span className="text-lg text-slate-300">/{currentEx.sets}</span></p>
+                                </div>
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-white/5 space-y-1">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Objetivo</span>
+                                    <p className="text-4xl font-black text-slate-900 dark:text-white">
+                                        {currentEx.reps}
+                                        <span className="text-sm uppercase tracking-widest ml-1 text-slate-400">reps</span>
+                                    </p>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     {currentEx.weight > 0 && (
@@ -126,7 +139,7 @@ export function WorkoutLiveSession({ exercises, onFinish, onCancel, totalEstimat
                     className="w-full py-8 bg-blue-600 hover:bg-blue-700 text-white rounded-[2.5rem] shadow-2xl shadow-blue-600/30 font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 transition-all active:scale-95 group"
                 >
                     <CheckCircle2 size={24} className="group-hover:scale-110 transition-transform" />
-                    Completar Serie
+                    {currentEx.exercise.category === 'Cardio' ? 'Finalizar Bloque' : 'Completar Serie'}
                 </button>
 
                 <div className="flex gap-4">
