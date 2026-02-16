@@ -14,6 +14,8 @@ import { AchievementsGallery } from '../components/charts/AchievementsGallery';
 import { BodyHeatmap } from '../components/charts/BodyHeatmap';
 import { AICoachInsights } from '../components/charts/AICoachInsights';
 import { BMIDistributionChart } from '../components/charts/BMIDistributionChart';
+import { TrainingIntensityStats } from '../components/charts/TrainingIntensityStats';
+import { TrainingProgressWidget } from '../components/charts/TrainingProgressWidget';
 import { PersonalInfo } from '../components/ui/PersonalInfo';
 import { FadeIn, FadeInStagger } from '../components/ui/FadeIn';
 import { useMemo } from 'react';
@@ -21,6 +23,7 @@ import { differenceInYears } from 'date-fns';
 import { parseLocalDate } from '../lib/utils';
 import { FitnessEntry } from '../data/mockData';
 import { UserProfile } from '../hooks/useProfile';
+import { Dumbbell } from 'lucide-react';
 
 interface DashboardPageProps {
     data: FitnessEntry[];
@@ -173,11 +176,36 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                 <StepsChart data={data} profile={profile} />
             </FadeIn>
 
-            <div className="grid grid-cols-12 gap-6">
-                <FadeIn className="col-span-12 lg:col-span-4">
-                    <BodyHeatmap data={data} />
+            {/* --- SECCIÓN DE ENTRENAMIENTO PRO --- */}
+            <div className="space-y-6 md:space-y-8 pt-8 border-t border-slate-200 dark:border-white/5">
+                <FadeIn>
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-emerald-600 rounded-2xl shadow-lg shadow-emerald-600/20 text-white">
+                            <Dumbbell size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl md:text-2xl font-black tracking-tighter text-slate-900 dark:text-white uppercase italic leading-none">
+                                Optimización de <span className="text-emerald-600 not-italic">Entrenamiento</span>
+                            </h2>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Inteligencia y Progresión de Fuerza</p>
+                        </div>
+                    </div>
                 </FadeIn>
-                <FadeIn className="col-span-12 lg:col-span-8">
+
+                <FadeIn>
+                    <TrainingIntensityStats data={data} />
+                </FadeIn>
+
+                <div className="grid grid-cols-12 gap-6">
+                    <FadeIn className="col-span-12 lg:col-span-4">
+                        <BodyHeatmap data={data} />
+                    </FadeIn>
+                    <FadeIn className="col-span-12 lg:col-span-8">
+                        <TrainingProgressWidget userId={profile?.id || ''} />
+                    </FadeIn>
+                </div>
+
+                <FadeIn>
                     <TrainingCalendar data={data} profile={profile} />
                 </FadeIn>
             </div>
