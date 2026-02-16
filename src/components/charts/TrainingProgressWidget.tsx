@@ -32,7 +32,7 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
     const [historyData, setHistoryData] = useState<ExerciseDataPoint[]>([]);
     const [availableExercises, setAvailableExercises] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
-    const [metric, setMetric] = useState<'maxWeight' | 'estimated1RM' | 'totalVolume'>('estimated1RM');
+    const [metric, setMetric] = useState<'maxWeight' | 'estimated1RM' | 'totalVolume' | 'totalReps'>('estimated1RM');
 
     // Load available exercises from history
     useEffect(() => {
@@ -83,6 +83,7 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
             if (!selectedExerciseName) return;
 
             const points: ExerciseDataPoint[] = [];
+            let allWeightIsZero = true;
 
             data.forEach((row: any) => {
                 const details = row.parsed_data?.session_details;
@@ -101,6 +102,8 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
                 for (let i = 0; i < setsCount; i++) {
                     const reps = exLog.actualReps ? exLog.actualReps[i] : (exLog.plannedReps ? (Array.isArray(exLog.plannedReps) ? exLog.plannedReps[i] : exLog.plannedReps) : 0);
                     const weight = exLog.weight || 0;
+
+                    if (weight > 0) allWeightIsZero = false;
 
                     if (weight > maxWeight) maxWeight = weight;
                     totalVolume += reps * weight;
@@ -124,6 +127,14 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
             });
 
             setHistoryData(points);
+
+            // Si es un ejercicio corporal (todo peso 0), cambiar métrica por defecto a Reps
+            if (allWeightIsZero && points.length > 0) {
+                setMetric('totalReps');
+            } else if (metric === 'totalReps' && !allWeightIsZero) {
+                // Si volvemos a un ejercicio con peso y estábamos en reps, 1RM suele ser más útil
+                setMetric('estimated1RM');
+            }
         };
 
         loadExerciseData();
@@ -134,6 +145,7 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
             case 'estimated1RM': return '#10b981'; // emerald-500
             case 'maxWeight': return '#3b82f6'; // blue-500
             case 'totalVolume': return '#f59e0b'; // amber-500
+            case 'totalReps': return '#8b5cf6'; // violet-500
         }
     };
 
@@ -141,9 +153,12 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
         switch (metric) {
             case 'estimated1RM': return 'Fuerza (1RM)';
             case 'maxWeight': return 'Carga Máxima';
-            case 'totalVolume': return 'Volumen Semanal';
+            case 'totalVolume': return 'Volumen Diario (kg)';
+            case 'totalReps': return 'Volumen Diario (reps)';
         }
     };
+
+    const getMetricUnit = () => metric === 'totalReps' ? 'reps' : 'kg';
 
     const prValue = historyData.length > 0 ? Math.max(...historyData.map(d => d[metric])) : 0;
     const initialValue = historyData.length > 0 ? historyData[0][metric] : 0;
@@ -169,9 +184,9 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
                     <div>
                         <div className="flex items-center gap-2">
                             <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Progresión Elite</h3>
-                            {growth > 0 && (
-                                <span className="bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
-                                    <TrendingUp size={10} /> +{growth}%
+                            {growth !== 0 && (
+                                <span className={`${growth > 0 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'} px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1`}>
+                                    <TrendingUp size={10} className={growth < 0 ? 'rotate-180' : ''} /> {growth > 0 ? '+' : ''}{growth}%
                                 </span>
                             )}
                         </div>
@@ -198,57 +213,57 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
             {selectedExerciseId && historyData.length > 0 ? (
                 <div className="flex-1 flex flex-col gap-6 relative z-10">
                     {/* Metric Selector Tabs */}
-                    <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-950 rounded-2xl w-fit border border-slate-200/50 dark:border-white/5">
-                        {(['estimated1RM', 'maxWeight', 'totalVolume'] as const).map(m => (
+                    <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100 dark:bg-slate-950 rounded-2xl w-fit border border-slate-200/50 dark:border-white/5">
+                        {(['estimated1RM', 'maxWeight', 'totalVolume', 'totalReps'] as const).map(m => (
                             <button
                                 key={m}
                                 onClick={() => setMetric(m)}
-                                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${metric === m
+                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${metric === m
                                     ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md scale-105'
                                     : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                                     }`}
                             >
-                                {m === 'estimated1RM' ? '1RM Est.' : m === 'maxWeight' ? 'Carga' : 'Volumen'}
+                                {m === 'estimated1RM' ? '1RM' : m === 'maxWeight' ? 'Máx KG' : m === 'totalVolume' ? 'Vol KG' : 'Vol Reps'}
                             </button>
                         ))}
                     </div>
 
                     {/* Stats Highlights */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 group/stat relative overflow-hidden transition-all hover:bg-white dark:hover:bg-slate-900">
+                        <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 group/stat relative overflow-hidden transition-all hover:bg-white dark:hover:bg-slate-900 shadow-sm">
                             <div className="absolute top-0 right-0 p-3 opacity-10 group-hover/stat:opacity-20 transition-opacity">
                                 <Award size={32} />
                             </div>
-                            <span className="text-[11px] uppercase font-black text-slate-400 tracking-[0.2em] block mb-2">Récord Histórico</span>
+                            <span className="text-[11px] uppercase font-black text-slate-400 tracking-[0.2em] block mb-2 text-shadow-sm">Récord Histórico</span>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-3xl font-black text-slate-900 dark:text-white italic">
                                     {prValue}
                                 </span>
-                                <span className="text-xs font-bold text-slate-400 uppercase">kg</span>
+                                <span className="text-xs font-bold text-slate-400 uppercase">{getMetricUnit()}</span>
                             </div>
                         </div>
-                        <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 group/stat relative overflow-hidden transition-all hover:bg-white dark:hover:bg-slate-900">
+                        <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 group/stat relative overflow-hidden transition-all hover:bg-white dark:hover:bg-slate-900 shadow-sm">
                             <div className="absolute top-0 right-0 p-3 opacity-10 group-hover/stat:opacity-20 transition-opacity">
                                 <Calendar size={32} />
                             </div>
-                            <span className="text-[11px] uppercase font-black text-slate-400 tracking-[0.2em] block mb-2">Última Sesión</span>
+                            <span className="text-[11px] uppercase font-black text-slate-400 tracking-[0.2em] block mb-2 text-shadow-sm">Última Sesión</span>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-3xl font-black text-emerald-500 dark:text-emerald-400 italic">
                                     {historyData[historyData.length - 1]?.[metric] || 0}
                                 </span>
-                                <span className="text-xs font-bold text-slate-400 uppercase">kg</span>
+                                <span className="text-xs font-bold text-slate-400 uppercase">{getMetricUnit()}</span>
                             </div>
                         </div>
-                        <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 group/stat relative overflow-hidden transition-all hover:bg-white dark:hover:bg-slate-900 hidden sm:block">
+                        <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 group/stat relative overflow-hidden transition-all hover:bg-white dark:hover:bg-slate-900 shadow-sm hidden sm:block">
                             <div className="absolute top-0 right-0 p-3 opacity-10 group-hover/stat:opacity-20 transition-opacity">
                                 <Activity size={32} />
                             </div>
-                            <span className="text-[11px] uppercase font-black text-slate-400 tracking-[0.2em] block mb-2">Carga Semanal</span>
-                            <div className="flex items-baseline gap-2">
+                            <span className="text-[11px] uppercase font-black text-slate-400 tracking-[0.2em] block mb-2 text-shadow-sm">Consistencia</span>
+                            <div className="flex items-baseline gap-1">
                                 <span className="text-3xl font-black text-blue-500 dark:text-blue-400 italic">
-                                    {historyData.slice(-7).reduce((acc, d) => acc + d.totalVolume, 0)}
+                                    {historyData.length}
                                 </span>
-                                <span className="text-xs font-bold text-slate-400 uppercase">vol</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase ml-1">sesiones</span>
                             </div>
                         </div>
                     </div>
@@ -277,10 +292,11 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
                                     tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 'bold' }}
                                     axisLine={false}
                                     tickLine={false}
-                                    domain={['dataMin - 5', 'dataMax + 5']}
+                                    domain={['dataMin', 'dataMax']}
+                                    padding={{ top: 20, bottom: 20 }}
                                 />
                                 <Tooltip
-                                    content={<CustomTooltip metricLabel={getMetricLabel()} color={getMetricColor()} />}
+                                    content={<CustomTooltip metricLabel={getMetricLabel()} color={getMetricColor()} unit={getMetricUnit()} />}
                                     cursor={{ stroke: getMetricColor(), strokeWidth: 1, strokeDasharray: '4 4' }}
                                 />
                                 <ReferenceLine y={prValue} stroke="#ec4899" strokeDasharray="5 5" opacity={0.3} label={{ value: 'PR', position: 'right', fill: '#ec4899', fontSize: 10, fontWeight: 'black' }} />
@@ -326,7 +342,7 @@ const CustomDot = (props: any) => {
     return null;
 };
 
-const CustomTooltip = ({ active, payload, label, metricLabel, color }: any) => {
+const CustomTooltip = ({ active, payload, label, metricLabel, color, unit }: any) => {
     if (active && payload && payload.length) {
         const data = payload[0].payload;
         return (
@@ -339,13 +355,13 @@ const CustomTooltip = ({ active, payload, label, metricLabel, color }: any) => {
                     <p className="text-[10px] font-bold text-slate-400 uppercase">{metricLabel}</p>
                     <p className="text-2xl font-black text-white italic">
                         {payload[0].value}
-                        <span className="text-xs font-bold text-slate-500 ml-1">kg</span>
+                        <span className="text-xs font-bold text-slate-500 ml-1">{unit}</span>
                     </p>
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
                     <div>
                         <p className="text-[8px] font-bold text-slate-500 uppercase">Volumen</p>
-                        <p className="text-xs font-black text-slate-300">{data.totalVolume}<span className="text-[8px] ml-0.5">vol</span></p>
+                        <p className="text-xs font-black text-slate-300">{data.totalVolume}<span className="text-[8px] ml-0.5">kg</span></p>
                     </div>
                     <div>
                         <p className="text-[8px] font-bold text-slate-500 uppercase">Reps Totales</p>
