@@ -3,14 +3,12 @@ import { WaistCard } from '../components/charts/WaistCard';
 import { LossGauge } from '../components/charts/LossGauge';
 import { BalanceChart } from '../components/charts/BalanceChart';
 import { ConsistencyGrid } from '../components/charts/ConsistencyGrid';
-import { StreakCounter } from '../components/charts/StreakCounter';
 import { MacroDonut } from '../components/charts/MacroDonut';
 import { SleepChart } from '../components/charts/SleepChart';
 import { NotesList } from '../components/charts/NotesList';
 import { TrainingCalendar } from '../components/charts/TrainingCalendar';
 import { StepsChart } from '../components/charts/StepsChart';
 import { GoalProjections } from '../components/charts/GoalProjections';
-import { AchievementsGallery } from '../components/charts/AchievementsGallery';
 import { BodyHeatmap } from '../components/charts/BodyHeatmap';
 import { AICoachInsights } from '../components/charts/AICoachInsights';
 import { BMIDistributionChart } from '../components/charts/BMIDistributionChart';
@@ -84,12 +82,6 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
     const targetWeight = initialLeanMass / (1 - targetBodyFat / 100);
     const fatLossGoal = Math.max(0, initialWeight - targetWeight);
 
-    let calorieStreak = 0;
-    let proteinStreak = 0;
-    let stepsStreak = 0;
-    for (const day of sortedData) { if (day.Calories <= day.TDEE) calorieStreak++; else break; }
-    for (const day of sortedData) { if (day.Protein >= 140) proteinStreak++; else break; }
-    for (const day of sortedData) { if (day.Steps >= (profile?.target_steps || 8000)) stepsStreak++; else break; }
 
     return (
         <div className="space-y-4 md:space-y-8">
@@ -141,9 +133,6 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                 <FadeIn className="col-span-12 lg:col-span-12">
                     <GoalProjections data={data} profile={profile} />
                 </FadeIn>
-                <FadeIn className="col-span-12 lg:col-span-12">
-                    <AchievementsGallery data={data} profile={profile} />
-                </FadeIn>
             </div>
 
             <div className="grid grid-cols-12 gap-4 md:gap-6">
@@ -154,17 +143,6 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                     <FadeIn>
                         <ConsistencyGrid data={data} />
                     </FadeIn>
-                    <FadeInStagger className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                        <FadeIn>
-                            <StreakCounter label="Calorías" count={calorieStreak} goal="Bajo TDEE" />
-                        </FadeIn>
-                        <FadeIn>
-                            <StreakCounter label="Proteínas" count={proteinStreak} goal="Min 140g" />
-                        </FadeIn>
-                        <FadeIn>
-                            <StreakCounter label="Pasos" count={stepsStreak} goal={`Min ${(profile?.target_steps || 8000) / 1000}k`} />
-                        </FadeIn>
-                    </FadeInStagger>
                 </div>
             </div>
 
