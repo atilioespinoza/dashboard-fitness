@@ -23,7 +23,7 @@ export const getGeminiInsights = async (data: FitnessEntry[]) => {
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
   const prompt = `
-    Eres PRIME 12 Coach, un experto en biohacking y recomposición corporal. 
+    Eres PRIME 12 Coach, un experto en biohacking, entrenamiento de fuerza y recomposición corporal. 
     Tu misión es llevar al usuario a su "Estado Prime" (12% de grasa corporal y máximo rendimiento).
     Analiza los siguientes datos de los últimos 30 días y proporciona exactamente 4 insights clave.
     
@@ -44,14 +44,13 @@ export const getGeminiInsights = async (data: FitnessEntry[]) => {
     ${JSON.stringify(data.slice(0, 30))}
 
     INSTRUCCIONES CLAVE:
-    1. ANALIZA TENDENCIAS (REGLA DE MEDIAS SEMANALES): No te guíes por el peso diario, es volátil (ruido biológico). Calcula mentalmente las medias de cada semana (7 días). Solo hay estancamiento real si la media semanal no varía más de +/- 200g durante 3-4 semanas.
-    2. RECOMPOSICIÓN: Si el peso medio es estable pero la cintura baja (>0.3cm/semana), es recomposición (ganancia de músculo, pérdida de grasa). Celébralo.
-    3. EFECTO WHOOSH: Ten en cuenta que tras entrenamientos intensos hay retención de agua. El peso real puede caer de golpe tras 2-3 semanas.
-    4. ACCIÓN CONCRETA: El campo "action" debe ser una "misión" accionable (ej: "Sube 20g de proteína hoy", "Camina 15 min después de cenar").
-    5. CATEGORIZA: Clasifica cada insight correctamente.
-    6. PRIORIZA: Usa "Alta" para temas críticos (poca proteína, poco sueño, rebote de peso) y "Media/Baja" para optimizaciones.
-    7. IDIOMA: Responde totalmente en ESPAÑOL.
-    8. FORMATO: No incluyes markdown adicional, solo el JSON puro.
+    1. ANALIZA ENTRENAMIENTO: Revisa el campo "Training". Busca nombres de ejercicios, repeticiones y pesos. Si detectas que un ejercicio se repite con el mismo peso/reps por 3 sesiones, advierte sobre estancamiento. Si ves una mejora en volumen (sets * reps), celébralo como "Sobrecarga Progresiva".
+    2. ENTRENAMIENTOS CORPORALES: Si el usuario hace Dominadas o Flexiones con peso corporal (0kg), fíjate en el aumento de repeticiones totales como medida de progreso.
+    3. RECOMPOSICIÓN: Si el peso medio es estable pero la cintura baja (>0.3cm/semana), es recomposición. Atribúyelo a la calidad del entrenamiento.
+    4. ACCIÓN CONCRETA: El campo "action" debe ser una "misión" accionable enfocada en entrenamiento si es posible (ej: "Añade 1 serie más a tus dominadas", "Intenta subir 2.5kg en tu press de banca").
+    5. PRIORIZA: Usa "Alta" para estancamientos reales de fuerza (> 2 semanas sin mejora) o falta de proteína/sueño.
+    6. IDIOMA: Responde totalmente en ESPAÑOL.
+    7. FORMATO: No incluyes markdown adicional, solo el JSON puro.
   `;
 
   try {
@@ -59,7 +58,6 @@ export const getGeminiInsights = async (data: FitnessEntry[]) => {
     const response = await result.response;
     const text = response.text();
 
-    // Improved JSON extraction: find the first '[' and last ']'
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
       console.error("Could not find JSON array in Gemini response:", text);
@@ -81,7 +79,7 @@ export const getFullReport = async (data: FitnessEntry[]) => {
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
   const prompt = `
-    Eres PRIME 12 Executive Coach, consultor de Salud y High Performance. 
+    Eres PRIME 12 Executive Coach, experto en fisiología del ejercicio y High Performance. 
     Analiza este dataset completo (últimos 30-60 días) y genera un REPORTE DE ESTADO PRIME DE ALTO NIVEL.
     
     DATOS DEL USUARIO:
@@ -89,31 +87,31 @@ export const getFullReport = async (data: FitnessEntry[]) => {
 
     TU REPORTE DEBE TENER ESTA ESTRUCTURA (JSON):
     {
-      "executiveSummary": "Un párrafo potente analizando la evolución metabólica real.",
-      "blindSpots": ["Punto ciego 1", "Punto ciego 2"],
+      "executiveSummary": "Un párrafo potente analizando la evolución metabólica y de FUERZA real.",
+      "blindSpots": ["Punto ciego 1 (ej: falta de frecuencia en pierna)", "Punto ciego 2"],
       "projections": {
         "scenario": "Descripción del escenario actual",
         "goals": [
           { 
-            "name": "Nombre de la meta (ej: Meta Intermedia: Cintura 88cm)", 
+            "name": "Nombre de la meta (ej: Meta de Fuerza: Dominadas +5 reps)", 
             "estimatedDate": "Fecha estimada", 
             "progress": 0-100,
             "probability": 0-100,
-            "analysis": "Breve explicación de por qué este hito es clave y qué lo determina."
+            "analysis": "Análisis de por qué llegará a esta meta de rendimiento."
           }
         ],
         "overallProbability": 0-100
       },
-      "metabolicAnalysis": "Análisis técnico de por qué los resultados se dan a este ritmo.",
+      "metabolicAnalysis": "Análisis técnico de la relación entre nutrición, pasos y rendimiento en el gym.",
       "score": 0-100,
       "archetype": {
-        "name": "Nombre creativo del arquetipo (ej: La Máquina de Consistencia)",
-        "emoji": "💎",
-        "description": "Explicación de por qué este perfil encaja con el usuario basado en sus patrones de 60 días.",
+        "name": "Nombre creativo",
+        "emoji": "🔥",
+        "description": "Basado en su estilo de entrenamiento (ej: El Calisténico Metódico)",
         "traits": ["Rasgo 1", "Rasgo 2"]
       },
       "goldenFormula": {
-        "explanation": "Breve texto explicando que estos valores son tus 'puntos dulces' detectados en tus mejores semanas.",
+        "explanation": "Combinación perfecta de variables para su mejor progreso detectado.",
         "steps": 0,
         "calories": 0,
         "protein": 0,
@@ -122,30 +120,16 @@ export const getFullReport = async (data: FitnessEntry[]) => {
       "metabolicRedAlert": {
         "active": boolean,
         "level": "warning" | "critical" | "healthy",
-        "title": "Título del estado",
-        "explanation": "Análisis del flujo metabólico",
-        "recommendation": "Sugerencia para mantener o mejorar"
+        "title": "Estatus de Rendimiento/Metabolismo",
+        "explanation": "Detalla si hay sobreentrenamiento o estancamiento de fuerza.",
+        "recommendation": "Sugerencia técnica de entrenamiento (ej: Deload week, aumento de RPE)"
       }
     }
 
-    REGLAS ADICIONALES:
-    - RED ALERT: Evalúa SIEMPRE el estado metabólico basado en MEDIAS SEMANALES. Si no hay estancamiento (bajada de 0.3-0.5kg en la media semanal), pon "active": false and "level": "healthy".
-    - Si el peso medio está estancado (+/- 200g) por más de 3 semanas: 
-        a) Si la cintura baja: Reporta RECOMPOSICIÓN (level: healthy/warning).
-        b) Si la cintura NO baja: Reporta ESTANCAMIENTO REAL (level: critical).
-    - EFECTO WHOOSH: No alertes de estancamiento si solo han pasado 1-2 semanas con peso estable, podría ser retención de agua post-entreno.
-    - RECOMENDACIÓN: Si el estado es "healthy", felicita al usuario y dale un tip para optimizar (ej: 'Sigue así, el flujo es constante').
-    - GOLDEN FORMULA: Identifica los valores promedio de las semanas donde el usuario tuvo el mayor progreso en cintura y mejores notas de energía.
-    - METAS: Incluye al menos 2 metas intermedias (ej: bajar 2cm de cintura, bajar 2kg) y las metas finales (12% grasa y marcar abs). 
-    - ARQUETIPOS: Identifica si el usuario es 'La Máquina de Consistencia', 'El Guerrero de Fin de Semana', 'El Estratega de Recomposición', 'El Velocista Metabólico' o 'El Maestro de la Recuperación'.
-    - El usuario prioriza MARCAR ABDOMINALES. Define hitos de cintura cada 2-3cm.
-    - Calcula las fechas basándote en la tendencia real de los últimos 30-60 días.
-    - Analiza la probabilidad específica para cada meta basada en la racha actual de pasos y nutrición.
-
-
-    REGLAS:
-    - Sé crítico pero constructivo.
-    - Si los datos son inconsistentes (ej: mucho déficit pero el peso no baja), menciónalo como un Punto Ciego (posible subestime de calorías).
+    REGLAS DE ANÁLISIS DE ENTRENAMIENTO:
+    - Cruza los datos: Si el peso no baja pero el volumen de entrenamiento sube, es una victoria de recomposición.
+    - Identifica los ejercicios principales en el texto de "Training" y evalúa si hay "Sobrecarga Progresiva".
+    - Si detectas que entrena poco (menos de 3 veces/semana), el Red Alert debe activarse por "Bajo Estímulo".
     - TODO EN ESPAÑOL.
     - Retorna solo el JSON.
   `;
