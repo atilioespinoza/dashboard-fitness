@@ -22,6 +22,9 @@ export const getGeminiInsights = async (data: FitnessEntry[]) => {
 
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
+  // Ensure data is sorted by date descending (newest first)
+  const sortedData = [...data].sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime());
+
   const prompt = `
     Eres PRIME 12 Coach, un experto en biohacking, entrenamiento de fuerza y recomposición corporal. 
     Tu misión es llevar al usuario a su "Estado Prime" (12% de grasa corporal y máximo rendimiento).
@@ -40,8 +43,8 @@ export const getGeminiInsights = async (data: FitnessEntry[]) => {
       }
     ]
 
-    DATOS DEL USUARIO (ÚLTIMOS 30 DÍAS):
-    ${JSON.stringify(data.slice(0, 30))}
+    DATOS DEL USUARIO (MÁS RECIENTES PRIMERO):
+    ${JSON.stringify(sortedData.slice(0, 30))}
 
     INSTRUCCIONES CLAVE:
     1. ANALIZA ENTRENAMIENTO: Revisa el campo "Training". Busca nombres de ejercicios, repeticiones y pesos. Si detectas que un ejercicio se repite con el mismo peso/reps por 3 sesiones, advierte sobre estancamiento. Si ves una mejora en volumen (sets * reps), celébralo como "Sobrecarga Progresiva".
@@ -78,12 +81,15 @@ export const getFullReport = async (data: FitnessEntry[]) => {
 
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
+  // Ensure data is sorted by date descending (newest first)
+  const sortedData = [...data].sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime());
+
   const prompt = `
     Eres PRIME 12 Executive Coach, experto en fisiología del ejercicio y High Performance. 
     Analiza este dataset completo (últimos 30-60 días) y genera un REPORTE DE ESTADO PRIME DE ALTO NIVEL.
     
-    DATOS DEL USUARIO:
-    ${JSON.stringify(data.slice(0, 60))}
+    DATOS DEL USUARIO (MÁS RECIENTES PRIMERO):
+    ${JSON.stringify(sortedData.slice(0, 60))}
 
     TU REPORTE DEBE TENER ESTA ESTRUCTURA (JSON):
     {
