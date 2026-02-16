@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Label } from 'recharts';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { FitnessEntry } from '../../data/mockData';
 import { UserProfile } from '../../hooks/useProfile';
+import { TrendingDown, Activity, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface BMIDistributionChartProps {
     data: FitnessEntry[];
@@ -14,179 +14,124 @@ export const BMIDistributionChart: React.FC<BMIDistributionChartProps> = ({ data
     const heightM = heightCm / 100;
 
     const sortedData = [...data].sort((a, b) => a.Date.localeCompare(b.Date));
-
-    // Logic to find the true starting point of the journey (Historical Max or defined start)
     const weights = data.map(d => d.Weight);
     const maxWeightEver = weights.length > 0 ? Math.max(...weights) : 94;
-    const initialWeight = maxWeightEver > 90 ? maxWeightEver : 94; // Fallback to 94 if no higher weight found
+    const initialWeight = maxWeightEver > 90 ? maxWeightEver : 94;
 
     const currentWeight = sortedData[sortedData.length - 1]?.Weight || 81;
-
     const initialBMI = Number((initialWeight / (heightM * heightM)).toFixed(1));
     const currentBMI = Number((currentWeight / (heightM * heightM)).toFixed(1));
 
-    // Statistical Parameters (Simplified but based on ENCAVI 2024 Trends)
-    const chileMean = 28.8; // Observed upward trend in Chile
-    const chileSD = 5.2;
-    const eliteMean = 22.5;
-    const eliteSD = 1.8;
-
-    const normalDistribution = (x: number, mean: number, sd: number) => {
-        return (1 / (sd * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / sd, 2));
+    const getBMICategory = (bmi: number) => {
+        if (bmi < 18.5) return { label: 'Bajo peso', color: 'text-blue-500', bg: 'bg-blue-500', status: 'warning' };
+        if (bmi < 25) return { label: 'Saludable', color: 'text-emerald-500', bg: 'bg-emerald-500', status: 'success' };
+        if (bmi < 30) return { label: 'Sobrepeso', color: 'text-orange-500', bg: 'bg-orange-500', status: 'warning' };
+        return { label: 'Obesidad', color: 'text-red-500', bg: 'bg-red-500', status: 'danger' };
     };
 
-    const chartData = useMemo(() => {
-        const points = [];
-        for (let x = 15; x <= 45; x += 0.5) {
-            points.push({
-                bmi: x,
-                chile: normalDistribution(x, chileMean, chileSD) * 100,
-                elite: normalDistribution(x, eliteMean, eliteSD) * 100,
-            });
-        }
-        return points;
-    }, []);
+    const currentCat = getBMICategory(currentBMI);
+    const totalImprovement = (initialBMI - currentBMI).toFixed(1);
+
+    // Calculate marker position percentage (from BMI 15 to 40)
+    const minBMI = 15;
+    const maxBMI = 40;
+    const position = Math.min(Math.max(((currentBMI - minBMI) / (maxBMI - minBMI)) * 100, 0), 100);
 
     return (
-        <Card className="bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-xl overflow-hidden">
-            <CardHeader className="pb-2 pt-8 px-8">
-                <div className="flex justify-between items-start">
+        <Card className="bg-white dark:bg-slate-950 border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-xl overflow-hidden relative group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -mr-32 -mt-32 transition-opacity group-hover:opacity-100 opacity-50" />
+
+            <CardHeader className="pb-2 pt-8 px-8 relative z-10">
+                <div className="flex justify-between items-center">
                     <div>
-                        <CardTitle className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase italic">
-                            Análisis de Distribución IMC
+                        <CardTitle className="text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic leading-none">
+                            Análisis IMC
                         </CardTitle>
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
-                            Tu progreso comparado con la población y el estado elite
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-2">
+                            Indicador de Composición Corporal
                         </p>
                     </div>
-                    <a
-                        href="https://epi.minsal.cl/encuesta-nacional-de-salud-ens/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 hover:bg-blue-500/20 transition-colors group"
-                    >
-                        <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tighter flex items-center gap-1">
-                            Fuente: MINSAL Chile (ENCAVI 2024)
-                            <svg className="w-2.5 h-2.5 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                        </span>
-                    </a>
+                    <div className={`flex items-center gap-2 px-4 py-2 rounded-2xl border ${currentCat.status === 'success'
+                            ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-orange-500/5 border-orange-500/10 text-orange-600'
+                        }`}>
+                        {currentCat.status === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                        <span className="text-xs font-black uppercase tracking-widest">{currentCat.label}</span>
+                    </div>
                 </div>
             </CardHeader>
-            <CardContent className="p-8">
-                <div className="h-[300px] w-full mt-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                            <defs>
-                                <linearGradient id="colorChile" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorElite" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor="#94a3b8" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#888888" strokeOpacity={0.1} />
-                            <XAxis
-                                dataKey="bmi"
-                                type="number"
-                                domain={[15, 45]}
-                                stroke="#888888"
-                                fontSize={10}
-                                tickLine={false}
-                                axisLine={false}
-                                ticks={[15, 20, 25, 30, 35, 40, 45]}
-                                label={{ value: 'Índice de Masa Corporal (IMC)', position: 'insideBottom', offset: -5, className: "text-[9px] font-black fill-slate-400 uppercase tracking-widest" }}
-                            />
-                            <YAxis hide />
-                            <Tooltip
-                                content={({ active, payload }) => {
-                                    if (active && payload && payload.length) {
-                                        return (
-                                            <div className="bg-white dark:bg-slate-900 p-3 border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl ring-1 ring-black/5">
-                                                <p className="text-xs font-black text-slate-900 dark:text-white mb-1 uppercase tracking-tighter italic">Punto Geométrico</p>
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-bold text-slate-500">IMC: <span className="text-slate-900 dark:text-white font-black">{payload[0].payload.bmi}</span></p>
-                                                    <p className="text-[10px] font-bold text-blue-500">Población Chile: <span className="font-black">{(payload[0].value as number).toFixed(2)}%</span></p>
-                                                    <p className="text-[10px] font-bold text-slate-400">Estado Elite: <span className="font-black">{(payload[1].value as number).toFixed(2)}%</span></p>
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                }}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="chile"
-                                name="Población Chile"
-                                stroke="#3b82f6"
-                                strokeWidth={3}
-                                fillOpacity={1}
-                                fill="url(#colorChile)"
-                                isAnimationActive={false}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="elite"
-                                name="Elite Fitness"
-                                stroke="#94a3b8"
-                                strokeWidth={2}
-                                strokeDasharray="5 5"
-                                fillOpacity={1}
-                                fill="url(#colorElite)"
-                                isAnimationActive={false}
-                            />
 
-                            {/* Initial Position Marker */}
-                            <ReferenceLine x={initialBMI} stroke="#64748b" strokeWidth={2} strokeDasharray="4 4" strokeOpacity={0.5}>
-                                <Label
-                                    value={`INICIO: ${initialBMI}`}
-                                    position="top"
-                                    fill="#64748b"
-                                    fontSize={9}
-                                    fontWeight="900"
-                                    offset={25}
-                                />
-                            </ReferenceLine>
+            <CardContent className="p-8 relative z-10">
+                {/* IMC Principal */}
+                <div className="flex flex-col md:flex-row items-end gap-6 mb-12">
+                    <div className="flex items-baseline gap-2">
+                        <span className={`text-7xl font-black italic tracking-tighter ${currentCat.color}`}>
+                            {currentBMI}
+                        </span>
+                        <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Puntos</span>
+                    </div>
 
-                            {/* Current Position Marker */}
-                            <ReferenceLine x={currentBMI} stroke="#06b6d4" strokeWidth={3} strokeLinecap="round">
-                                <Label
-                                    value={`HOY: ${currentBMI}`}
-                                    position="top"
-                                    fill="#06b6d4"
-                                    fontSize={11}
-                                    fontWeight="900"
-                                    offset={10}
-                                />
-                            </ReferenceLine>
-                        </AreaChart>
-                    </ResponsiveContainer>
+                    <div className="flex-1 pb-2">
+                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
+                            Has mejorado <span className="text-blue-500 font-black">-{totalImprovement}</span> puntos desde tu inicio ({initialBMI}).
+                            Tu peso ideal se encuentra entre 18.5 y 24.9.
+                        </p>
+                    </div>
                 </div>
 
-                {/* Legend and Analysis */}
-                <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100 dark:border-white/5">
-                    <div className="space-y-1">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado Actual</span>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-black text-cyan-500">{currentBMI}</span>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">Saludable</span>
+                {/* Health Scale Bar */}
+                <div className="relative pt-8 pb-12 w-full">
+                    <div className="h-4 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden flex shadow-inner border border-slate-200/50 dark:border-white/5">
+                        <div className="h-full bg-blue-400/40" style={{ width: '14%' }} /> {/* Underweight < 18.5 */}
+                        <div className="h-full bg-emerald-400" style={{ width: '26%' }} /> {/* Normal 18.5-25 */}
+                        <div className="h-full bg-orange-400" style={{ width: '20%' }} /> {/* Overweight 25-30 */}
+                        <div className="h-full bg-red-400/40 flex-1" /> {/* Obesity > 30 */}
+                    </div>
+
+                    {/* Cursor / Marker */}
+                    <div
+                        className="absolute top-6 transition-all duration-1000 ease-out"
+                        style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
+                    >
+                        <div className="flex flex-col items-center">
+                            <div className={`w-1 h-8 rounded-full shadow-lg ${currentCat.bg}`} />
+                            <div className={`mt-2 px-3 py-1 rounded-lg text-[10px] font-black text-white shadow-xl ${currentCat.bg} transform hover:scale-110 transition-transform cursor-default whitespace-nowrap`}>
+                                TU NIVEL: {currentBMI}
+                            </div>
                         </div>
                     </div>
-                    <div className="space-y-1">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mejora Total</span>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-black text-blue-500">-{(initialBMI - currentBMI).toFixed(1)}</span>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">Puntos IMC</span>
+
+                    {/* Scale Labels */}
+                    <div className="mt-8 flex justify-between px-2">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">15 (Bajo)</span>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">25 (Límite)</span>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">40 (Obeso)</span>
+                    </div>
+                </div>
+
+                {/* Stats Summary */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 group/stat hover:bg-white dark:hover:bg-slate-900 transition-all">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Inicio</p>
+                        <p className="text-xl font-black text-slate-900 dark:text-white italic">{initialBMI}</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 group/stat hover:bg-white dark:hover:bg-slate-900 transition-all">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Mejora</p>
+                        <div className="flex items-center gap-1">
+                            <TrendingDown size={14} className="text-blue-500" />
+                            <p className="text-xl font-black text-blue-500 italic">-{totalImprovement}</p>
                         </div>
                     </div>
-                    <div className="md:col-span-1 flex items-center bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
-                        <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 leading-relaxed italic">
-                            "{initialBMI > 29 ? 'Has revertido con éxito el estado de obesidad' : 'Has superado con éxito la media nacional'} ({chileMean}) y te diriges hacia el percentil de alto rendimiento."
-                        </p>
+                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 group/stat hover:bg-white dark:hover:bg-slate-900 transition-all">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Meta</p>
+                        <p className="text-xl font-black text-emerald-500 italic">22.5</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 group/stat hover:bg-white dark:hover:bg-slate-900 transition-all">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Rendimiento</p>
+                        <div className="flex items-center gap-1">
+                            <Activity size={14} className="text-slate-400" />
+                            <p className="text-base font-black text-slate-900 dark:text-white">TOP 10%</p>
+                        </div>
                     </div>
                 </div>
             </CardContent>
