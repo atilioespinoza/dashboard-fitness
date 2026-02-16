@@ -8,9 +8,12 @@ import {
     Tooltip,
     ResponsiveContainer,
     AreaChart,
-    Area
+    Area,
+    ReferenceLine
 } from 'recharts';
-import { TrendingUp, Activity } from 'lucide-react';
+import { TrendingUp, Activity, Award, Calendar, Info } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface TrainingProgressWidgetProps {
     userId: string;
@@ -134,6 +137,18 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
         }
     };
 
+    const getMetricLabel = () => {
+        switch (metric) {
+            case 'estimated1RM': return 'Fuerza (1RM)';
+            case 'maxWeight': return 'Carga Máxima';
+            case 'totalVolume': return 'Volumen Semanal';
+        }
+    };
+
+    const prValue = historyData.length > 0 ? Math.max(...historyData.map(d => d[metric])) : 0;
+    const initialValue = historyData.length > 0 ? historyData[0][metric] : 0;
+    const growth = initialValue > 0 ? Math.round(((historyData[historyData.length - 1]?.[metric] || 0) - initialValue) / initialValue * 100) : 0;
+
     if (loading) return (
         <div className="h-full bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-white/10 flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"></div>
@@ -143,121 +158,202 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
     return (
         <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-200 dark:border-white/10 shadow-sm flex flex-col h-full group relative overflow-hidden">
             {/* Background Accent */}
-            <div className="absolute -left-10 -top-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl" />
+            <div className="absolute -left-10 -top-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl opacity-50" />
 
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 relative z-10">
-                <div className="flex items-center gap-3">
-                    <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-600">
-                        <TrendingUp size={24} />
+            {/* Header Area */}
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8 relative z-10">
+                <div className="flex items-start gap-4">
+                    <div className="p-4 bg-emerald-500/10 rounded-2xl text-emerald-600 shadow-inner">
+                        <TrendingUp size={28} />
                     </div>
                     <div>
-                        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Progresión de Fuerza</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Evolución por ejercicio</p>
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Progresión Elite</h3>
+                            {growth > 0 && (
+                                <span className="bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                                    <TrendingUp size={10} /> +{growth}%
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 flex items-center gap-1.5">
+                            <Info size={12} className="text-blue-500" /> Evolución histórica de rendimiento
+                        </p>
                     </div>
                 </div>
 
-                <select
-                    value={selectedExerciseId}
-                    onChange={(e) => setSelectedExerciseId(e.target.value)}
-                    className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-2 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all cursor-pointer"
-                >
-                    {availableExercises.size === 0 ? (
-                        <option>Sin datos</option>
-                    ) : (
-                        Array.from(availableExercises).map(id => {
+                <div className="flex items-center gap-2 w-full xl:w-auto">
+                    <select
+                        value={selectedExerciseId}
+                        onChange={(e) => setSelectedExerciseId(e.target.value)}
+                        className="flex-1 xl:w-64 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-2.5 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all cursor-pointer shadow-sm hover:bg-slate-100 dark:hover:bg-slate-900"
+                    >
+                        {Array.from(availableExercises).map(id => {
                             const ex = EXERCISE_DATABASE.find(e => e.id === id);
                             return <option key={id} value={id}>{ex?.name || id}</option>;
-                        })
-                    )}
-                </select>
+                        })}
+                    </select>
+                </div>
             </div>
 
             {selectedExerciseId && historyData.length > 0 ? (
                 <div className="flex-1 flex flex-col gap-6 relative z-10">
-                    <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl w-fit">
+                    {/* Metric Selector Tabs */}
+                    <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-950 rounded-2xl w-fit border border-slate-200/50 dark:border-white/5">
                         {(['estimated1RM', 'maxWeight', 'totalVolume'] as const).map(m => (
                             <button
                                 key={m}
                                 onClick={() => setMetric(m)}
-                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${metric === m
-                                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+                                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${metric === m
+                                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md scale-105'
                                     : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                                     }`}
                             >
-                                {m === 'estimated1RM' ? '1RM' : m === 'maxWeight' ? 'Máx' : 'Vol'}
+                                {m === 'estimated1RM' ? '1RM Est.' : m === 'maxWeight' ? 'Carga' : 'Volumen'}
                             </button>
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-white/5">
-                            <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest block mb-1">Récord</span>
-                            <span className="text-2xl font-black text-slate-900 dark:text-white italic">
-                                {Math.max(...historyData.map(d => d[metric]))}
-                                <span className="text-xs font-bold text-slate-400 ml-1 not-italic">kg</span>
-                            </span>
+                    {/* Stats Highlights */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 group/stat relative overflow-hidden transition-all hover:bg-white dark:hover:bg-slate-900">
+                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover/stat:opacity-20 transition-opacity">
+                                <Award size={32} />
+                            </div>
+                            <span className="text-[11px] uppercase font-black text-slate-400 tracking-[0.2em] block mb-2">Récord Histórico</span>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-3xl font-black text-slate-900 dark:text-white italic">
+                                    {prValue}
+                                </span>
+                                <span className="text-xs font-bold text-slate-400 uppercase">kg</span>
+                            </div>
                         </div>
-                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-white/5">
-                            <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest block mb-1">Última</span>
-                            <span className="text-2xl font-black text-slate-900 dark:text-white italic">
-                                {historyData[historyData.length - 1]?.[metric] || 0}
-                                <span className="text-xs font-bold text-slate-400 ml-1 not-italic">kg</span>
-                            </span>
+                        <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 group/stat relative overflow-hidden transition-all hover:bg-white dark:hover:bg-slate-900">
+                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover/stat:opacity-20 transition-opacity">
+                                <Calendar size={32} />
+                            </div>
+                            <span className="text-[11px] uppercase font-black text-slate-400 tracking-[0.2em] block mb-2">Última Sesión</span>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-3xl font-black text-emerald-500 dark:text-emerald-400 italic">
+                                    {historyData[historyData.length - 1]?.[metric] || 0}
+                                </span>
+                                <span className="text-xs font-bold text-slate-400 uppercase">kg</span>
+                            </div>
+                        </div>
+                        <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 group/stat relative overflow-hidden transition-all hover:bg-white dark:hover:bg-slate-900 hidden sm:block">
+                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover/stat:opacity-20 transition-opacity">
+                                <Activity size={32} />
+                            </div>
+                            <span className="text-[11px] uppercase font-black text-slate-400 tracking-[0.2em] block mb-2">Carga Semanal</span>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-3xl font-black text-blue-500 dark:text-blue-400 italic">
+                                    {historyData.slice(-7).reduce((acc, d) => acc + d.totalVolume, 0)}
+                                </span>
+                                <span className="text-xs font-bold text-slate-400 uppercase">vol</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 min-h-[220px] w-full mt-2">
+                    {/* Elite Chart Center */}
+                    <div className="flex-1 min-h-[280px] w-full mt-4 bg-slate-50/50 dark:bg-slate-950/20 rounded-[2rem] p-4 border border-slate-200/50 dark:border-white/5">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={historyData}>
+                            <AreaChart data={historyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
-                                    <linearGradient id="colorMetricDash" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={getMetricColor()} stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor={getMetricColor()} stopOpacity={0} />
+                                    <linearGradient id="colorMetricElite" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={getMetricColor()} stopOpacity={0.4} />
+                                        <stop offset="80%" stopColor={getMetricColor()} stopOpacity={0.05} />
+                                        <stop offset="100%" stopColor={getMetricColor()} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} opacity={0.3} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} opacity={0.2} />
                                 <XAxis
                                     dataKey="date"
-                                    tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 'bold' }}
-                                    tickFormatter={(val) => new Date(val).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
+                                    tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 'bold' }}
+                                    tickFormatter={(val) => format(new Date(val), 'dd MMM', { locale: es })}
                                     axisLine={false}
                                     tickLine={false}
+                                    minTickGap={30}
                                 />
                                 <YAxis
-                                    tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 'bold' }}
+                                    tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 'bold' }}
                                     axisLine={false}
                                     tickLine={false}
-                                    width={25}
+                                    domain={['dataMin - 5', 'dataMax + 5']}
                                 />
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', background: '#1e293b' }}
-                                    labelStyle={{ fontWeight: 'black', color: '#f8fafc', fontSize: '10px', textTransform: 'uppercase' }}
-                                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                                    content={<CustomTooltip metricLabel={getMetricLabel()} color={getMetricColor()} />}
+                                    cursor={{ stroke: getMetricColor(), strokeWidth: 1, strokeDasharray: '4 4' }}
                                 />
+                                <ReferenceLine y={prValue} stroke="#ec4899" strokeDasharray="5 5" opacity={0.3} label={{ value: 'PR', position: 'right', fill: '#ec4899', fontSize: 10, fontWeight: 'black' }} />
                                 <Area
                                     type="monotone"
                                     dataKey={metric}
                                     stroke={getMetricColor()}
-                                    strokeWidth={3}
+                                    strokeWidth={4}
                                     fillOpacity={1}
-                                    fill="url(#colorMetricDash)"
-                                    animationDuration={1500}
+                                    fill="url(#colorMetricElite)"
+                                    animationDuration={2000}
+                                    activeDot={{ r: 6, stroke: '#fff', strokeWidth: 3 }}
+                                    dot={<CustomDot prValue={prValue} metric={metric} />}
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
             ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-full text-slate-300">
-                        <Activity size={40} />
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-6 border-4 border-dashed border-slate-100 dark:border-white/5 rounded-[3rem] bg-slate-50/30 dark:bg-slate-900/10">
+                    <div className="p-6 bg-white dark:bg-slate-800 rounded-full text-slate-200 dark:text-slate-700 shadow-xl ring-8 ring-slate-50 dark:ring-white/5">
+                        <Activity size={56} />
                     </div>
-                    <div>
-                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400">No hay registros de fuerza aún</p>
-                        <p className="text-[10px] text-slate-400 max-w-[200px] mt-1">Usa la sección de entrenamiento para registrar tus ejercicios y ver tu progreso aquí.</p>
+                    <div className="max-w-xs">
+                        <h4 className="text-lg font-black text-slate-700 dark:text-slate-300 uppercase italic tracking-tighter">Sin Datos de Progresión</h4>
+                        <p className="text-xs text-slate-500 font-medium leading-relaxed mt-2">Registra ejercicios específicos en tus rutinas para desbloquear el análisis de fuerza y volumen.</p>
                     </div>
                 </div>
             )}
         </div>
     );
 }
+
+const CustomDot = (props: any) => {
+    const { cx, cy, payload, prValue, metric } = props;
+    if (payload[metric] === prValue) {
+        return (
+            <svg x={cx - 6} y={cy - 6} width={12} height={12} fill="#ec4899" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" stroke="#fff" strokeWidth="20" />
+            </svg>
+        );
+    }
+    return null;
+};
+
+const CustomTooltip = ({ active, payload, label, metricLabel, color }: any) => {
+    if (active && payload && payload.length) {
+        const data = payload[0].payload;
+        return (
+            <div className="bg-slate-900/95 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-2xl space-y-3 min-w-[180px]">
+                <div className="flex justify-between items-center gap-4">
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{format(new Date(label), 'dd MMMM, yyyy', { locale: es })}</span>
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                </div>
+                <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">{metricLabel}</p>
+                    <p className="text-2xl font-black text-white italic">
+                        {payload[0].value}
+                        <span className="text-xs font-bold text-slate-500 ml-1">kg</span>
+                    </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
+                    <div>
+                        <p className="text-[8px] font-bold text-slate-500 uppercase">Volumen</p>
+                        <p className="text-xs font-black text-slate-300">{data.totalVolume}<span className="text-[8px] ml-0.5">vol</span></p>
+                    </div>
+                    <div>
+                        <p className="text-[8px] font-bold text-slate-500 uppercase">Reps Totales</p>
+                        <p className="text-xs font-black text-slate-300">{data.totalReps}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
