@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
-import { parseFitnessEntry } from '../../lib/gemini';
-import { Brain, Send, Loader2, XCircle, Mic, RefreshCw, Calendar } from 'lucide-react';
+import { Brain, Send, Loader2, XCircle, Mic, RefreshCw, Calendar, Camera } from 'lucide-react';
+import { parseFitnessEntry, parseFoodImage } from '../../lib/gemini';
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
@@ -35,6 +36,8 @@ export function QuickLog({ userId, onUpdate, profile, selectedDate, onDateChange
         tdee: 2000, steps: 0, bmr: 1600, activeKcal: 400
     });
     const [error, setError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isProcessingImage, setIsProcessingImage] = useState(false);
 
     const { isListening, startListening, stopListening } = useSpeechRecognition((text) => {
         setInput(prev => prev ? `${prev} ${text}` : text);
@@ -235,6 +238,82 @@ export function QuickLog({ userId, onUpdate, profile, selectedDate, onDateChange
         }
     };
 
+    const handleImageCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsProcessingImage(true);
+        setError(null);
+
+        try {
+            // Convert to base64
+            const reader = new FileReader();
+            const base64Promise = new Promise<string>((resolve, reject) => {
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            const base64Image = await base64Promise;
+            const aiData = await parseFoodImage(base64Image);
+
+            if (!aiData) throw new Error("No pudimos analizar la imagen.");
+
+            // Prepare log entry like in handleLog
+            const { data: existing } = await supabase
+                .from('fitness_logs')
+                .select('*')
+                .eq('user_id', userId)
+                .eq('date', selectedDate)
+                .maybeSingle();
+
+            const foodDesc = aiData.food_description || "Comida capturada por foto";
+            const newNotes = `${existing?.notes || ''}\n[📸 Foto: ${foodDesc}]\n(Cal: ${aiData.calories}, P: ${aiData.protein}, C: ${aiData.carbs}, F: ${aiData.fat})`.trim();
+
+            const payload = {
+                user_id: userId,
+                date: selectedDate,
+                weight: existing?.weight ?? 80,
+                waist: existing?.waist,
+                body_fat: existing?.body_fat,
+                calories: (existing?.calories || 0) + (aiData.calories || 0),
+                protein: (existing?.protein || 0) + (aiData.protein || 0),
+                carbs: (existing?.carbs || 0) + (aiData.carbs || 0),
+                fat: (existing?.fat || 0) + (aiData.fat || 0),
+                steps: existing?.steps || 0,
+                sleep: existing?.sleep,
+                training: existing?.training,
+                tdee: existing?.tdee || 2000,
+                notes: newNotes,
+            };
+
+            const { error: insertError } = await supabase
+                .from('fitness_logs')
+                .upsert(payload, { onConflict: 'user_id, date' });
+
+            if (insertError) throw insertError;
+
+            // Log event
+            await supabase.from('log_events').insert({
+                user_id: userId,
+                date: selectedDate,
+                raw_text: `Foto: ${foodDesc}`,
+                parsed_data: aiData,
+                type: 'photo'
+            });
+
+            fetchSummary();
+            onUpdate();
+            setInput(''); // Clear input if any
+
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsProcessingImage(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
     return (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden group min-h-[300px] flex flex-col transition-all duration-300">
             <div className="flex items-center gap-3 mb-4">
@@ -279,6 +358,30 @@ export function QuickLog({ userId, onUpdate, profile, selectedDate, onDateChange
                         >
                             <Mic size={20} className={isListening ? "scale-110" : ""} />
                         </button>
+
+                        <button
+                            type="button"
+                            disabled={isProcessingImage}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={cn(
+                                "p-2 rounded-lg transition-all duration-300",
+                                isProcessingImage
+                                    ? "bg-blue-500/10 text-blue-500 animate-spin"
+                                    : "text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            )}
+                            title="Subir/Tomar foto del plato"
+                        >
+                            {isProcessingImage ? <Loader2 size={20} /> : <Camera size={20} />}
+                        </button>
+
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageCapture}
+                            accept="image/*"
+                            capture="environment"
+                            className="hidden"
+                        />
 
                         <button
                             disabled={loading || !input.trim()}

@@ -206,3 +206,51 @@ export const parseFitnessEntry = async (textInput: string) => {
   }
 };
 
+export const parseFoodImage = async (base64Image: string) => {
+  if (!genAI) throw new Error("No Gemini API Key found");
+
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+  const prompt = `
+    Analiza esta imagen de comida y estima las calorías y macros (proteínas, carbohidratos, grasas).
+    Identifica los alimentos presentes en el plato.
+    
+    ESTRUCTURA DE RETORNO (JSON):
+    {
+      "calories": int,
+      "protein": int,
+      "carbs": int,
+      "fat": int,
+      "food_description": "descripción de lo que ves",
+      "confidence": float (0-1)
+    }
+
+    REGLAS:
+    1. Sé preciso pero conservador con las estimaciones.
+    2. Si hay varios elementos, súmalos todos.
+    3. Responde UNICAMENTE el JSON.
+    4. Idioma de la descripción: ESPAÑOL.
+  `;
+
+  try {
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: base64Image.split(',')[1] || base64Image,
+          mimeType: "image/jpeg"
+        }
+      }
+    ]);
+    const response = await result.response;
+    const text = response.text();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Error analyzing food image:", error);
+    return null;
+  }
+};
+
+
