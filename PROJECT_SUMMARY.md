@@ -42,6 +42,7 @@ Fricción cero en la entrada de datos:
 *   **Reconocimiento de Voz Nativo**: Registro directo mediante micrófono desde la interfaz web.
 *   **Siri & iOS Integration**: Endpoint serverless (`api/voice-log.ts`) para registros externos mediante atajos de voz, sincronizando automáticamente con la zona horaria local.
 *   **Log Multifecha**: Selector de fecha en el `QuickLog` para registrar datos en días pasados de forma retrospectiva.
+*   **Registro Fotográfico (Vision AI)**: Análisis visual de platos de comida mediante Gemini 2.0 Flash para estimación automática de macros y calorías desde la cámara.
 *   **Lógica Aditiva Segura**: Los registros de nutrición y pasos son estrictamente aditivos para evitar sobreescrituras accidentales.
 
 ### 5. Experiencia de Usuario (UX/UI Premium)
@@ -66,3 +67,4 @@ Fricción cero en la entrada de datos:
 
 ## 🎯 Objetivo del Proyecto
 Eliminar la resistencia al seguimiento manual mediante automatización inteligente, permitiendo que el usuario se enfoque exclusivamente en la ejecución mientras el sistema genera la **inteligencia estratégica** necesaria para alcanzar un estado físico de élite.
+@
