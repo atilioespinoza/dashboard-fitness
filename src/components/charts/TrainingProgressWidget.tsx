@@ -14,6 +14,7 @@ import {
 import { TrendingUp, Activity, Award, Calendar, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { parseLocalDate } from '../../lib/utils';
 
 interface TrainingProgressWidgetProps {
     userId: string;
@@ -82,7 +83,7 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
             const selectedExerciseName = EXERCISE_DATABASE.find(e => e.id === selectedExerciseId)?.name;
             if (!selectedExerciseName) return;
 
-            const points: ExerciseDataPoint[] = [];
+            const pointsByDate = new Map<string, ExerciseDataPoint>();
             let allWeightIsZero = true;
 
             data.forEach((row: any) => {
@@ -93,9 +94,9 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
                 if (!exLog) return;
 
                 let maxWeight = 0;
-                let totalVolume = 0;
-                let max1RM = 0;
-                let totalReps = 0;
+                let sessionVolume = 0;
+                let session1RM = 0;
+                let sessionReps = 0;
 
                 const setsCount = exLog.actualReps ? exLog.actualReps.length : exLog.plannedSets;
 
@@ -106,26 +107,36 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
                     if (weight > 0) allWeightIsZero = false;
 
                     if (weight > maxWeight) maxWeight = weight;
-                    totalVolume += reps * weight;
-                    totalReps += reps;
+                    sessionVolume += reps * weight;
+                    sessionReps += reps;
 
                     if (weight > 0 && reps > 0) {
                         const oneRM = weight * (1 + reps / 30);
-                        if (oneRM > max1RM) max1RM = oneRM;
+                        if (oneRM > session1RM) session1RM = oneRM;
                     }
                 }
 
-                if (totalReps > 0) {
-                    points.push({
-                        date: row.date,
-                        maxWeight,
-                        totalVolume,
-                        estimated1RM: Math.round(max1RM),
-                        totalReps
-                    });
+                if (sessionReps > 0) {
+                    const dateStr = row.date;
+                    const existing = pointsByDate.get(dateStr);
+                    if (existing) {
+                        existing.maxWeight = Math.max(existing.maxWeight, maxWeight);
+                        existing.estimated1RM = Math.max(existing.estimated1RM, Math.round(session1RM));
+                        existing.totalVolume += sessionVolume;
+                        existing.totalReps += sessionReps;
+                    } else {
+                        pointsByDate.set(dateStr, {
+                            date: dateStr,
+                            maxWeight,
+                            totalVolume: sessionVolume,
+                            estimated1RM: Math.round(session1RM),
+                            totalReps: sessionReps
+                        });
+                    }
                 }
             });
 
+            const points = Array.from(pointsByDate.values());
             setHistoryData(points);
 
             // Si es un ejercicio corporal (todo peso 0), cambiar métrica por defecto a Reps
@@ -283,7 +294,7 @@ export function TrainingProgressWidget({ userId }: TrainingProgressWidgetProps) 
                                 <XAxis
                                     dataKey="date"
                                     tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 'bold' }}
-                                    tickFormatter={(val) => format(new Date(val), 'dd MMM', { locale: es })}
+                                    tickFormatter={(val) => format(parseLocalDate(val), 'dd MMM', { locale: es })}
                                     axisLine={false}
                                     tickLine={false}
                                     minTickGap={30}
@@ -348,7 +359,7 @@ const CustomTooltip = ({ active, payload, label, metricLabel, color, unit }: any
         return (
             <div className="bg-slate-900/95 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-2xl space-y-3 min-w-[180px]">
                 <div className="flex justify-between items-center gap-4">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{format(new Date(label), 'dd MMMM, yyyy', { locale: es })}</span>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{format(parseLocalDate(label), 'dd MMMM, yyyy', { locale: es })}</span>
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
                 </div>
                 <div className="space-y-1">
