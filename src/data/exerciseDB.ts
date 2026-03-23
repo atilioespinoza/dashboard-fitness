@@ -66,6 +66,10 @@ export const EXERCISE_DATABASE: Exercise[] = [
     { id: 'gym_romanian_deadlift', name: 'Peso Muerto Rumano (RDL)', category: 'Fuerza', metValue: 7.0, muscleGroup: ['Isquios', 'Glúteos'] },
     { id: 'gym_face_pulls', name: 'Face Pulls (Cara)', category: 'Fuerza', metValue: 3.0, muscleGroup: ['Deltoides Posterior', 'Espalda Alta'] },
     { id: 'gym_incline_bench_press', name: 'Press Superior (Inclinado)', category: 'Fuerza', metValue: 5.5, muscleGroup: ['Pecho Superior', 'Tríceps'] },
+    { id: 'gym_paused_deep_squat', name: 'Sentadilla Profunda con Pausa', category: 'Fuerza', metValue: 8.0, muscleGroup: ['Cuádriceps', 'Glúteos'] },
+    { id: 'gym_single_calf_raise', name: 'Elevación de Talones Unilateral', category: 'Fuerza', metValue: 3.0, muscleGroup: ['Pantorrillas'] },
+    { id: 'gym_lateral_lunge', name: 'Zancada Lateral', category: 'Fuerza', metValue: 5.5, muscleGroup: ['Cuádriceps', 'Glúteos', 'Aductores'] },
+    { id: 'gym_single_leg_rdl', name: 'RDL Unilateral', category: 'Fuerza', metValue: 6.5, muscleGroup: ['Isquios', 'Glúteos'] },
 
     // --- DEPORTES / OTROS ---
     { id: 'sport_soccer', name: 'Fútbol (Competitivo)', category: 'Deportes', metValue: 10.0 },
