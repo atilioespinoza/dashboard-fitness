@@ -73,6 +73,21 @@ export function QuickLog({ userId, onUpdate, profile, selectedDate, onDateChange
         };
     }, [profile]);
 
+    const fetchLatestKnownWeight = useCallback(async () => {
+        const { data } = await supabase
+            .from('fitness_logs')
+            .select('weight')
+            .eq('user_id', userId)
+            .not('weight', 'is', null)
+            .gt('weight', 0)
+            .lte('date', selectedDate)
+            .order('date', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        return data?.weight || null;
+    }, [userId, selectedDate]);
+
     const fetchSummary = useCallback(async () => {
         try {
             const { data: existing, error: fetchError } = await supabase
@@ -171,7 +186,9 @@ export function QuickLog({ userId, onUpdate, profile, selectedDate, onDateChange
 
             if (fetchError) console.error("Error fetching existing log:", fetchError);
 
-            const currentWeight = aiData.weight ?? existing?.weight ?? 80;
+            const latestKnownWeight = await fetchLatestKnownWeight();
+            const measuredWeight = aiData.weight ?? existing?.weight ?? null;
+            const weightForTdee = measuredWeight ?? latestKnownWeight ?? 80;
             const totalSteps = (existing?.steps || 0) + (aiData.steps || 0);
 
             const getExistingExKcal = (notes: string | null) => {
@@ -180,7 +197,7 @@ export function QuickLog({ userId, onUpdate, profile, selectedDate, onDateChange
             };
             const totalExKcal = getExistingExKcal(existing?.notes) + (aiData.burned_calories || 0);
 
-            const metrics = getDailyMetrics(currentWeight, totalSteps, totalExKcal);
+            const metrics = getDailyMetrics(weightForTdee, totalSteps, totalExKcal);
 
             const cleanNotes = (existing?.notes || '').replace(/\[ExKcal:\s*\d+\]/g, '').trim();
             const newNotes = `${cleanNotes}\n${input}\n[ExKcal: ${totalExKcal}]`.trim();
@@ -188,7 +205,7 @@ export function QuickLog({ userId, onUpdate, profile, selectedDate, onDateChange
             const payload = {
                 user_id: userId,
                 date: selectedDate,
-                weight: currentWeight,
+                weight: measuredWeight,
                 waist: aiData.waist ?? existing?.waist,
                 body_fat: aiData.body_fat ?? existing?.body_fat,
                 calories: (existing?.calories || 0) + (aiData.calories || 0),
@@ -267,13 +284,16 @@ export function QuickLog({ userId, onUpdate, profile, selectedDate, onDateChange
                 .eq('date', selectedDate)
                 .maybeSingle();
 
+            const latestKnownWeight = await fetchLatestKnownWeight();
+            const measuredWeight = existing?.weight ?? null;
+            const metrics = getDailyMetrics(measuredWeight ?? latestKnownWeight ?? 80, existing?.steps || 0, 0);
             const foodDesc = aiData.food_description || "Comida capturada por foto";
             const newNotes = `${existing?.notes || ''}\n[📸 Foto: ${foodDesc}]\n(Cal: ${aiData.calories}, P: ${aiData.protein}, C: ${aiData.carbs}, F: ${aiData.fat})`.trim();
 
             const payload = {
                 user_id: userId,
                 date: selectedDate,
-                weight: existing?.weight ?? 80,
+                weight: measuredWeight,
                 waist: existing?.waist,
                 body_fat: existing?.body_fat,
                 calories: (existing?.calories || 0) + (aiData.calories || 0),
@@ -283,7 +303,7 @@ export function QuickLog({ userId, onUpdate, profile, selectedDate, onDateChange
                 steps: existing?.steps || 0,
                 sleep: existing?.sleep,
                 training: existing?.training,
-                tdee: existing?.tdee || 2000,
+                tdee: existing?.tdee || metrics.tdee,
                 notes: newNotes,
             };
 

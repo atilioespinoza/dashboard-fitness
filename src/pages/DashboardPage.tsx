@@ -33,12 +33,14 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
     const age = useMemo(() => differenceInYears(new Date(), parseLocalDate(birthDate)), [birthDate]);
 
     const sortedData = [...data].sort((a, b) => b.Date.localeCompare(a.Date));
+    const weightEntries = sortedData.filter(d => d.Weight > 0);
+    const waistEntries = sortedData.filter(d => d.Waist > 0);
 
     // Multi-week averages for more stable trend analysis
     const getWeekAvg = (data: FitnessEntry[], weeksAgo: number) => {
         const start = weeksAgo * 7;
         const end = start + 7;
-        const weekSlice = data.slice(start, end);
+        const weekSlice = data.filter(d => d.Weight > 0).slice(start, end);
         if (weekSlice.length === 0) return null;
         const sum = weekSlice.reduce((acc, d) => acc + d.Weight, 0);
         return sum / weekSlice.length;
@@ -63,9 +65,10 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
         (diff3 === null || diff3 < 0.2);
 
     // Recomposition logic: weight stable but waist down
-    const latest = sortedData[0];
-    const prevWeekData = sortedData.slice(7, 14);
-    const avgWaist0 = sortedData.slice(0, 7).reduce((acc, d) => acc + d.Waist, 0) / Math.max(1, sortedData.slice(0, 7).length);
+    const latestWaist = waistEntries[0]?.Waist || 0;
+    const prevWeekData = waistEntries.slice(7, 14);
+    const currentWaistWindow = waistEntries.slice(0, 7);
+    const avgWaist0 = currentWaistWindow.reduce((acc, d) => acc + d.Waist, 0) / Math.max(1, currentWaistWindow.length);
     const avgWaist1 = prevWeekData.length > 0 ? prevWeekData.reduce((acc, d) => acc + d.Waist, 0) / prevWeekData.length : avgWaist0;
     const isRecomp = isStagnant && (avgWaist1 - avgWaist0) > 0.2;
 
@@ -74,7 +77,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
     const cumulativeDeficit = data.reduce((acc, day) => acc + (day.TDEE - day.Calories), 0);
     const theoreticalFatLoss = Number((cumulativeDeficit / 7700).toFixed(2));
 
-    const firstEntry = sortedData[sortedData.length - 1];
+    const firstEntry = weightEntries[weightEntries.length - 1];
     const initialWeight = firstEntry?.Weight || 0;
     const initialBodyFat = data.find(d => d.BodyFat > 0)?.BodyFat || profile?.target_body_fat || 20;
     const targetBodyFat = profile?.target_body_fat || 15;
@@ -106,7 +109,7 @@ export function DashboardPage({ data, profile }: DashboardPageProps) {
                 </FadeIn>
                 <FadeInStagger className="col-span-12 lg:col-span-4 flex flex-col gap-4 md:gap-6">
                     <FadeIn>
-                        <WaistCard currentWaist={latest?.Waist || 0} data={data} profile={profile} />
+                        <WaistCard currentWaist={latestWaist} data={data} profile={profile} />
                     </FadeIn>
                     <FadeIn delay={0.1}>
                         <LossGauge

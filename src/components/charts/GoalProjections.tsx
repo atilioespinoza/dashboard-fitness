@@ -16,13 +16,17 @@ export function GoalProjections({ data, profile }: GoalProjectionsProps) {
     if (data.length < 2) return null;
 
     const sortedData = [...data].sort((a, b) => new Date(a.Date).getTime() - new Date(b.Date).getTime());
-    const first = sortedData[0];
-    const latest = sortedData[sortedData.length - 1];
-
-    const daysDiff = differenceInDays(parseISO(latest.Date), parseISO(first.Date)) || 1;
-
     const waistEntries = sortedData.filter(d => d.Waist > 0);
-    const initialWaist = waistEntries.length > 0 ? waistEntries[0].Waist : latest.Waist;
+    const fatEntries = sortedData.filter(d => d.BodyFat > 0);
+
+    if (waistEntries.length < 2 && fatEntries.length < 2) return null;
+
+    const firstDate = (waistEntries[0] || fatEntries[0]).Date;
+    const latestDate = (waistEntries[waistEntries.length - 1] || fatEntries[fatEntries.length - 1]).Date;
+    const daysDiff = differenceInDays(parseISO(latestDate), parseISO(firstDate)) || 1;
+
+    const initialWaist = waistEntries.length > 0 ? waistEntries[0].Waist : 0;
+    const latestWaist = waistEntries[waistEntries.length - 1]?.Waist || 0;
 
     // Goals from Profile
     const waistGoals = {
@@ -31,8 +35,8 @@ export function GoalProjections({ data, profile }: GoalProjectionsProps) {
             : 91,
         final: profile?.target_waist || 83
     };
-    const fatEntries = sortedData.filter(d => d.BodyFat > 0);
-    const initialFat = fatEntries.length > 0 ? fatEntries[0].BodyFat : latest.BodyFat;
+    const initialFat = fatEntries.length > 0 ? fatEntries[0].BodyFat : 0;
+    const latestFat = fatEntries[fatEntries.length - 1]?.BodyFat || 0;
 
     const fatGoals = {
         inter: profile?.target_body_fat && initialFat > profile.target_body_fat
@@ -42,8 +46,8 @@ export function GoalProjections({ data, profile }: GoalProjectionsProps) {
     };
 
     // Rates (Units per day) - Global Average
-    const waistRate = (latest.Waist - first.Waist) / daysDiff;
-    const fatRate = (latest.BodyFat - first.BodyFat) / daysDiff;
+    const waistRate = waistEntries.length > 1 ? (latestWaist - initialWaist) / Math.max(1, differenceInDays(parseISO(waistEntries[waistEntries.length - 1].Date), parseISO(waistEntries[0].Date))) : 0;
+    const fatRate = fatEntries.length > 1 ? (latestFat - initialFat) / Math.max(1, differenceInDays(parseISO(fatEntries[fatEntries.length - 1].Date), parseISO(fatEntries[0].Date))) : 0;
 
     const calculateDate = (current: number, target: number, rate: number) => {
         if (current <= target) return "Completado";
@@ -51,7 +55,7 @@ export function GoalProjections({ data, profile }: GoalProjectionsProps) {
 
         const remaining = current - target;
         const daysToGoal = Math.ceil(remaining / Math.abs(rate));
-        const estimatedDate = addDays(parseISO(latest.Date), daysToGoal);
+        const estimatedDate = addDays(parseISO(latestDate), daysToGoal);
 
         return format(estimatedDate, "d 'de' MMMM, yyyy", { locale: es });
     };
@@ -60,29 +64,29 @@ export function GoalProjections({ data, profile }: GoalProjectionsProps) {
         {
             label: "Cintura Intermedia",
             target: `${waistGoals.inter}cm`,
-            date: calculateDate(latest.Waist, waistGoals.inter, waistRate),
-            progress: latest.Waist <= waistGoals.inter,
+            date: latestWaist ? calculateDate(latestWaist, waistGoals.inter, waistRate) : "Sin medición",
+            progress: latestWaist > 0 && latestWaist <= waistGoals.inter,
             color: "text-blue-500"
         },
         {
             label: "Cintura Final",
             target: `${waistGoals.final}cm`,
-            date: calculateDate(latest.Waist, waistGoals.final, waistRate),
-            progress: latest.Waist <= waistGoals.final,
+            date: latestWaist ? calculateDate(latestWaist, waistGoals.final, waistRate) : "Sin medición",
+            progress: latestWaist > 0 && latestWaist <= waistGoals.final,
             color: "text-blue-600"
         },
         {
             label: "% Grasa Intermedio",
             target: `${fatGoals.inter}%`,
-            date: calculateDate(latest.BodyFat, fatGoals.inter, fatRate),
-            progress: latest.BodyFat <= fatGoals.inter,
+            date: latestFat ? calculateDate(latestFat, fatGoals.inter, fatRate) : "Sin medición",
+            progress: latestFat > 0 && latestFat <= fatGoals.inter,
             color: "text-emerald-500"
         },
         {
             label: "% Grasa Final",
             target: `${fatGoals.final}%`,
-            date: calculateDate(latest.BodyFat, fatGoals.final, fatRate),
-            progress: latest.BodyFat <= fatGoals.final,
+            date: latestFat ? calculateDate(latestFat, fatGoals.final, fatRate) : "Sin medición",
+            progress: latestFat > 0 && latestFat <= fatGoals.final,
             color: "text-emerald-600"
         }
     ];

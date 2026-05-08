@@ -14,11 +14,11 @@ export const BMIDistributionChart: React.FC<BMIDistributionChartProps> = ({ data
     const heightM = heightCm / 100;
 
     const sortedData = [...data].sort((a, b) => a.Date.localeCompare(b.Date));
-    const weights = data.map(d => d.Weight);
+    const weights = data.map(d => d.Weight).filter(weight => weight > 0);
     const maxWeightEver = weights.length > 0 ? Math.max(...weights) : 94;
     const initialWeight = maxWeightEver > 90 ? maxWeightEver : 94;
 
-    const currentWeight = sortedData[sortedData.length - 1]?.Weight || 81;
+    const currentWeight = [...sortedData].reverse().find(d => d.Weight > 0)?.Weight || initialWeight;
     const initialBMI = Number((initialWeight / (heightM * heightM)).toFixed(1));
     const currentBMI = Number((currentWeight / (heightM * heightM)).toFixed(1));
 

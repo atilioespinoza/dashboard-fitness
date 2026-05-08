@@ -29,7 +29,7 @@ export const processVoiceLog = async (userId: string, text: string) => {
             .maybeSingle();
 
         // 3. Merge logic (Always ADD for incremental metrics to prevent accidental overwrites)
-        const currentWeight = aiData.weight ?? existing?.weight ?? 80;
+        const measuredWeight = aiData.weight ?? existing?.weight ?? null;
         const totalSteps = (existing?.steps || 0) + (aiData.steps || 0);
 
         const getExistingExKcal = (notes: string | null) => {
@@ -48,7 +48,7 @@ export const processVoiceLog = async (userId: string, text: string) => {
         const payload = {
             user_id: userId,
             date: today,
-            weight: currentWeight,
+            weight: measuredWeight,
             waist: aiData.waist ?? existing?.waist,
             body_fat: aiData.body_fat ?? existing?.body_fat,
             calories: (existing?.calories || 0) + (aiData.calories || 0),

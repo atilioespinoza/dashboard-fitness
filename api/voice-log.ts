@@ -83,6 +83,17 @@ export default async function handler(req: any, res: any) {
         const existing = logRes.data;
         const profile = profileRes.data;
 
+        const { data: latestWeightRow } = await supabase
+            .from('fitness_logs')
+            .select('weight')
+            .eq('user_id', userId)
+            .not('weight', 'is', null)
+            .gt('weight', 0)
+            .lte('date', today)
+            .order('date', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
         // 6. Merge Logic (Handling ADD vs SET for all metrics)
 
         // Nutrition (Always additive)
@@ -103,7 +114,8 @@ export default async function handler(req: any, res: any) {
         const finalExKcal = currentExKcal + (aiData.burned_calories || 0);
 
         // 7. Calculate TDEE dynamically
-        const currentWeight = aiData.weight ?? existing?.weight ?? 80;
+        const measuredWeight = aiData.weight ?? existing?.weight ?? null;
+        const currentWeight = measuredWeight ?? latestWeightRow?.weight ?? 80;
         const caloriePerStep = currentWeight * 0.0005;
         const stepsBonus = finalSteps * caloriePerStep;
 
@@ -125,7 +137,7 @@ export default async function handler(req: any, res: any) {
         const payload = {
             user_id: userId,
             date: today,
-            weight: currentWeight,
+            weight: measuredWeight,
             waist: aiData.waist ?? existing?.waist,
             body_fat: aiData.body_fat ?? existing?.body_fat,
             calories: finalCalories,

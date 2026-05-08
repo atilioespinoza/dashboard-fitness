@@ -10,12 +10,50 @@ export const useFitnessData = (userId?: string) => {
     const [dataSource, setDataSource] = useState<'supabase' | 'mock' | null>(null);
 
     useEffect(() => {
+        const cleanupLegacyDefaultWeights = async () => {
+            if (!userId || localStorage.getItem(`legacy_weight_cleanup_v1_${userId}`) === 'true') return;
+
+            const explicitWeightPattern = /(peso|pes[eé]|kg|kilos?|weigh|weight)\s*[:=]?\s*\d|\d+(?:[,.]\d+)?\s*(?:kg|kilos?)/i;
+            const { data: rows, error: fetchError } = await supabase
+                .from('fitness_logs')
+                .select('date, notes')
+                .eq('user_id', userId)
+                .eq('weight', 80);
+
+            if (fetchError) {
+                console.error('[useFitnessData] Legacy weight cleanup fetch error:', fetchError);
+                return;
+            }
+
+            const candidates = (rows || []).filter(row => !explicitWeightPattern.test(row.notes || ''));
+            if (candidates.length > 0) {
+                const updates = candidates.map(row => supabase
+                    .from('fitness_logs')
+                    .update({ weight: null })
+                    .eq('user_id', userId)
+                    .eq('date', row.date)
+                );
+
+                const results = await Promise.all(updates);
+                const failed = results.find(result => result.error);
+                if (failed?.error) {
+                    console.error('[useFitnessData] Legacy weight cleanup update error:', failed.error);
+                    return;
+                }
+
+                console.log(`[useFitnessData] Cleaned ${candidates.length} legacy default weight rows.`);
+            }
+
+            localStorage.setItem(`legacy_weight_cleanup_v1_${userId}`, 'true');
+        };
+
         const fetchData = async () => {
             if (data.length === 0) setLoading(true);
 
             // 1. Try Supabase if userId is present
             if (userId) {
                 try {
+                    await cleanupLegacyDefaultWeights();
                     console.log(`[useFitnessData] Fetching strictly from Supabase for: ${userId}`);
                     const { data: supabaseData, error: supabaseError } = await supabase
                         .from('fitness_logs')
