@@ -1,5 +1,6 @@
 import { useFitnessData } from './hooks/useFitnessData';
 import { Auth } from './components/auth/Auth';
+import { ResetPasswordScreen } from './components/auth/ResetPasswordScreen';
 import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
 import { supabase } from './lib/supabase';
@@ -14,7 +15,7 @@ import { ProfileModal } from './components/ui/ProfileModal';
 import { AnimatePresence, motion } from 'framer-motion';
 
 function AppContent() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, isPasswordRecovery, setIsPasswordRecovery } = useAuth();
     const { profile, loading: profileLoading, error: profileError, updateProfile } = useProfile(user?.id);
     const { data, loading: dataLoading, refresh: dataRefresh } = useFitnessData(user?.id);
     const location = useLocation();
@@ -71,7 +72,22 @@ function AppContent() {
         document.body.removeChild(link);
     };
 
-    if (authLoading || profileLoading) {
+    if (authLoading) {
+        return (
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center transition-colors duration-300">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 animate-pulse">Cargando sesión...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (isPasswordRecovery) {
+        return <ResetPasswordScreen onComplete={() => setIsPasswordRecovery(false)} />;
+    }
+
+    if (profileLoading) {
         return (
             <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center transition-colors duration-300">
                 <div className="flex flex-col items-center gap-4">
